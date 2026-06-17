@@ -324,13 +324,13 @@
                   <div id="demo-tabs" class="mb-5 flex flex-wrap items-center justify-center gap-2 sm:gap-3"></div>
                   <!-- Browser-framed live inbox demo (replaces the static dashboard screenshot) -->
                   <div class="mx-auto overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/10">
-                    <div class="flex h-10 items-center gap-2 border-b border-gray-100 bg-gray-50 px-4">
+                    <div id="demo-chrome" class="flex h-10 items-center gap-2 border-b border-gray-100 bg-gray-50 px-4">
                       <span class="h-3 w-3 rounded-full bg-[#ff5f57]"></span>
                       <span class="h-3 w-3 rounded-full bg-[#febc2e]"></span>
                       <span class="h-3 w-3 rounded-full bg-[#28c840]"></span>
                       <div class="mx-auto flex w-72 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1 text-xs text-gray-400">
                         <i class="ri-lock-line text-[11px]"></i>
-                        app.readychatai.com/dashboard/messages
+                        <span id="demo-url">app.readychatai.com/dashboard/messages</span>
                       </div>
                     </div>
                     <div id="demo-viewport" class="relative overflow-hidden bg-gray-100">
@@ -1108,13 +1108,20 @@
   <script>
     (function () {
       var VARIANTS = [
-        { id: 'realtime',  label: 'Realtime',   icon: 'ri-flashlight-fill', src: 'variant-realtime.html'  },
-        { id: 'cinematic', label: 'Cinemático', icon: 'ri-film-fill',       src: 'variant-cinematic.html' },
-        { id: 'concept',   label: 'Concepto',   icon: 'ri-broadcast-line',  src: 'variant-concept.html'   },
+        { id: 'realtime',  label: 'Realtime',   icon: 'ri-flashlight-fill', src: 'variant-realtime.html',  chrome: true,  url: 'app.readychatai.com/dashboard/messages' },
+        { id: 'cinematic', label: 'Cinemático', icon: 'ri-film-fill',       src: 'variant-cinematic.html', chrome: true,  url: 'app.readychatai.com/dashboard/messages' },
+        { id: 'concept',   label: 'Concepto',   icon: 'ri-broadcast-line',  src: 'variant-concept.html',   chrome: false, url: '' },
       ];
       var cur = 'realtime';
       var tabsEl = document.getElementById('demo-tabs');
       var frame = document.getElementById('demo-frame');
+      var chromeEl = document.getElementById('demo-chrome');
+      var urlEl = document.getElementById('demo-url');
+
+      function applyChrome(v) {
+        if (chromeEl) chromeEl.style.display = v.chrome ? '' : 'none';
+        if (urlEl && v.url) urlEl.textContent = v.url;
+      }
 
       function render() {
         if (!tabsEl) return;
@@ -1133,6 +1140,7 @@
         if (id === cur) { frame.src = frame.src.split('?')[0] + '?r=' + Date.now(); return; }
         cur = id;
         var v = VARIANTS.find(function (x) { return x.id === id; });
+        applyChrome(v);
         frame.src = v.src + '?r=' + Date.now();
         render();
       }
