@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ReadyChatAI — Tu agente de IA en vivo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%237f56d9'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='white'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Urbanist', 'sans-serif'] },
+        colors: {
+          brand: { 500: '#9e77ed', 600: '#7f56d9', 700: '#7354ef', 800: '#6941c6' },
+        },
+      },
+    },
+  };
+</script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Urbanist', sans-serif; -webkit-font-smoothing: antialiased; }
+  /* atmósfera de marca: malla morada muy suave sobre blanco */
+  .bg-mesh {
+    background:
+      radial-gradient(60% 50% at 15% 0%, rgba(127,86,217,.14), transparent 60%),
+      radial-gradient(50% 45% at 95% 5%, rgba(158,119,237,.16), transparent 60%),
+      linear-gradient(180deg, #faf8ff 0%, #ffffff 38%);
+  }
+  /* el demo se renderiza a tamaño desktop (1440) y se escala para caber */
+  #viewport { overflow: hidden; }
+  #scaler { width: 1440px; height: 880px; transform-origin: top left; }
+  #scaler iframe { width: 1440px; height: 880px; border: 0; display: block; }
+  .tab-active { color: #7354ef; }
+  .tab-active .tab-underline { transform: scaleX(1); }
+  .tab-underline { transform: scaleX(0); transform-origin: center; transition: transform .25s cubic-bezier(.22,1,.36,1); }
+  @keyframes floaty { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-6px) } }
+</style>
+</head>
+<body class="bg-mesh text-[#1d2939] min-h-screen">
+
+  <!-- ===== HEADER ===== -->
+  <header class="sticky top-0 z-30 backdrop-blur-md bg-white/70 border-b border-violet-100">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 grid place-items-center shadow-lg shadow-violet-300/50">
+          <i class="ri-robot-2-fill text-white text-lg"></i>
+        </div>
+        <span class="text-xl font-extrabold tracking-tight">Ready<span class="text-brand-700">Chat</span>AI</span>
+      </div>
+      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-gray-500">
+        <a href="#" class="hover:text-brand-700 transition">Producto</a>
+        <a href="#" class="hover:text-brand-700 transition">Soluciones</a>
+        <a href="#" class="hover:text-brand-700 transition">Precios</a>
+        <a href="#" class="hover:text-brand-700 transition">Recursos</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <a href="#" class="hidden sm:inline text-sm font-semibold text-gray-600 hover:text-brand-700 transition">Iniciar sesión</a>
+        <a href="#" class="text-sm font-bold text-white bg-brand-700 hover:bg-brand-800 transition px-4 py-2 rounded-xl shadow-lg shadow-violet-300/50">Crear cuenta</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== HERO ===== -->
+  <section class="max-w-5xl mx-auto px-6 pt-16 pb-8 text-center">
+    <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-700 bg-violet-100 px-3 py-1.5 rounded-full">
+      <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-500 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-brand-600"></span></span>
+      Demo en vivo
+    </span>
+    <h1 class="mt-6 text-4xl md:text-6xl font-900 font-extrabold tracking-tight leading-[1.05]">
+      Mira a tu agente de IA<br/>
+      <span class="bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent">atender solo, en vivo.</span>
+    </h1>
+    <p class="mt-5 text-lg text-gray-500 max-w-2xl mx-auto">
+      Tus clientes escriben desde WhatsApp, Facebook o Instagram — el bot de ReadyChatAI
+      responde al instante en tu bandeja de entrada. Mira cómo se ve, de verdad.
+    </p>
+  </section>
+
+  <!-- ===== TABS (estilo producto) ===== -->
+  <div class="max-w-3xl mx-auto px-6">
+    <div id="tabs" class="flex items-center justify-center gap-2 sm:gap-8 flex-wrap">
+      <!-- tabs inyectados por JS -->
+    </div>
+  </div>
+
+  <!-- ===== DEMO (marco de navegador) ===== -->
+  <section class="max-w-6xl mx-auto px-6 mt-8 pb-20">
+    <div class="rounded-2xl bg-white shadow-2xl shadow-violet-300/40 ring-1 ring-violet-100 overflow-hidden">
+      <!-- barra del navegador -->
+      <div class="flex items-center gap-2 px-4 h-11 bg-gray-50 border-b border-gray-100">
+        <span class="w-3 h-3 rounded-full bg-[#ff5f57]"></span>
+        <span class="w-3 h-3 rounded-full bg-[#febc2e]"></span>
+        <span class="w-3 h-3 rounded-full bg-[#28c840]"></span>
+        <div class="mx-auto flex items-center gap-2 text-xs text-gray-400 bg-white border border-gray-200 rounded-lg px-3 py-1 w-72 justify-center">
+          <i class="ri-lock-line text-[11px] text-gray-400"></i>
+          app.readychatai.com/dashboard/messages
+        </div>
+      </div>
+      <!-- viewport escalado con el demo -->
+      <div id="viewport" class="relative bg-gray-100">
+        <div id="scaler">
+          <iframe id="demo" src="variant-realtime.html" title="Demo del inbox de ReadyChatAI" loading="eager"></iframe>
+        </div>
+      </div>
+    </div>
+    <p class="text-center text-sm text-gray-400 mt-4">
+      <i class="ri-information-line"></i>
+      Interfaz real del dashboard de ReadyChatAI · conversación de ejemplo reproducida en bucle.
+    </p>
+  </section>
+
+  <footer class="border-t border-violet-100 py-8 text-center text-sm text-gray-400">
+    © ReadyChatAI · Demo interno — selecciona una variante de animación arriba.
+  </footer>
+
+  <script>
+    const VARIANTS = [
+      { id: 'realtime',  label: 'Realtime',   icon: 'ri-flashlight-fill', src: 'variant-realtime.html'  },
+      { id: 'cinematic', label: 'Cinemático', icon: 'ri-film-fill',       src: 'variant-cinematic.html' },
+      { id: 'mascot',    label: 'Mascota',    icon: 'ri-robot-2-fill',    src: 'variant-mascot.html'    },
+    ];
+
+    const tabsEl = document.getElementById('tabs');
+    const demo = document.getElementById('demo');
+    let current = 'realtime';
+
+    function renderTabs() {
+      tabsEl.innerHTML = '';
+      VARIANTS.forEach(v => {
+        const active = v.id === current;
+        const btn = document.createElement('button');
+        btn.className = 'group relative flex items-center gap-2 px-2 sm:px-3 pb-3 pt-2 text-sm sm:text-base font-bold transition-colors ' +
+          (active ? 'tab-active' : 'text-gray-400 hover:text-gray-600');
+        btn.innerHTML =
+          '<i class="' + v.icon + ' text-lg"></i>' +
+          '<span>' + v.label + '</span>' +
+          '<span class="tab-underline absolute left-1 right-1 -bottom-px h-0.5 rounded-full bg-brand-700"></span>';
+        btn.onclick = () => select(v.id);
+        tabsEl.appendChild(btn);
+      });
+    }
+
+    function select(id) {
+      if (id === current) {
+        // re-toca la misma → reinicia la animación
+        demo.src = demo.src.split('?')[0] + '?r=' + Date.now();
+        return;
+      }
+      current = id;
+      const v = VARIANTS.find(x => x.id === id);
+      demo.src = v.src + '?r=' + Date.now();
+      renderTabs();
+    }
+
+    // Escala el demo (renderizado a 1440px) para caber en el ancho del marco.
+    function fit() {
+      const vp = document.getElementById('viewport');
+      const scaler = document.getElementById('scaler');
+      const scale = vp.clientWidth / 1440;
+      scaler.style.transform = 'scale(' + scale + ')';
+      vp.style.height = (880 * scale) + 'px';
+    }
+
+    renderTabs();
+    window.addEventListener('resize', fit);
+    window.addEventListener('load', fit);
+    fit();
+  </script>
+</body>
+</html>
