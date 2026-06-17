@@ -39,7 +39,7 @@
   .thin-scrollbar::-webkit-scrollbar-thumb { background: var(--brand-secondary); border-radius: 0.3125rem; }
   /* Kill the transient horizontal scrollbar (a purple line) that flashed when a
      bot bubble's entrance transform momentarily overflowed the thread to the right. */
-  #thread, #thread-body { overflow-x: hidden; }
+  #thread { overflow-x: hidden; }
 
   /* RemixIcon webfont sizing trap: h-4/w-4 etc. do NOT size an <i> glyph.
      RemixIcon glyphs scale with font-size, so map Tailwind sizing units (1u=4px)
