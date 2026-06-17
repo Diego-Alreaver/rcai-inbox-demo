@@ -52,31 +52,17 @@
 
   /* ============================================================
      ANIMATION LAYER — pure presentation. The dashboard CHROME never
-     distorts: only the "camera" (a single outer wrapper) and the
-     bubbles move. No fabricated product features.
+     distorts. Per Benjamin's feedback the CAMERA ZOOM IS GONE: there is
+     NO intro zoom-in/zoom-out and NO focus-pull scale. The premium signal
+     is now the CHAT WINDOW MOVING — the thread smooth-scrolls like a real
+     chat as the conversation grows long. Only the bubbles + the in-thread
+     scroll move. No fabricated product features.
      ============================================================ */
 
-  /* The "camera". A single wrapper around the entire dashboard. The intro
-     zoom and focus-pull are applied HERE, never per-chrome-element, so the
-     sidebar/header/list never warp. transform-origin tracks the chat. */
+  /* The former "camera" is now an inert wrapper — NO transform, NO scale,
+     NO animation. Kept only so the existing DOM structure is unchanged. */
   #camera {
     height: 100%;
-    transform-origin: 62% 50%;
-    will-change: transform;
-    animation: cameraIntro 2200ms cubic-bezier(.22,.61,.36,1) both;
-  }
-  @keyframes cameraIntro {
-    0%   { transform: scale(1.14) translateY(8px); filter: saturate(1.08); }
-    60%  { transform: scale(1.035) translateY(0); }
-    100% { transform: scale(1) translateY(0); filter: saturate(1); }
-  }
-  /* Gentle focus-pull toward the active conversation while the script plays,
-     then settles. Subtle — a breathing push-in, not a jarring jump. */
-  #camera.focus-pull { animation: cameraFocus 4200ms ease-in-out both; }
-  @keyframes cameraFocus {
-    0%   { transform: scale(1) translateX(0); }
-    50%  { transform: scale(1.022) translateX(-0.7%); }
-    100% { transform: scale(1) translateX(0); }
   }
 
   /* ---- Bubble entrances (per-bubble scale-in with depth) ---- */
@@ -106,62 +92,25 @@
     100% { opacity: 1; transform: translateY(0) scale(1); }
   }
   /* Soft purple elevation glow overlay that blooms behind a freshly-landed
-     bot bubble. Absolutely positioned wrapper child — does not touch markup. */
+     bot bubble. Absolutely positioned wrapper child — does not touch markup.
+     Honest, on-brand elevation polish (NOT a fabricated product feature): a
+     real reply lands with a subtle brand bloom. Vertical inset is CLAMPED so
+     the bloom always reads as belonging to the bubble and never grazes the
+     composer border on a tall reply. */
   .bot-glow {
     position: absolute;
-    inset: -6px -10px -6px -10px;
+    inset: 0 -10px 0 -10px;
     border-radius: 18px;
-    background: radial-gradient(60% 80% at 70% 50%, rgba(127,86,217,.28), rgba(127,86,217,0) 70%);
+    background: radial-gradient(60% 80% at 70% 50%, rgba(127,86,217,.22), rgba(127,86,217,0) 70%);
     opacity: 0;
     pointer-events: none;
     z-index: 0;
     animation: botGlow 1400ms ease-out both;
   }
   @keyframes botGlow {
-    0%   { opacity: 0; transform: scale(.9); }
-    25%  { opacity: 1; transform: scale(1.02); }
-    100% { opacity: 0; transform: scale(1.06); }
-  }
-
-  /* ---- Inbound channel cue: a WhatsApp ping overlay near the bubble ----
-     Layered absolutely; it does NOT mutate the bubble's classes/markup. */
-  .channel-ping {
-    position: absolute;
-    left: -10px;
-    top: -10px;
-    width: 26px;
-    height: 26px;
-    border-radius: 9999px;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(16,24,40,.18);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-    transform: scale(0);
-    animation: pingPop 1500ms ease-out both;
-  }
-  .channel-ping i { font-size: 15px; line-height: 1; color: #25D366; }
-  /* expanding radar ring behind the cue */
-  .channel-ping::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 9999px;
-    border: 2px solid #25D366;
-    animation: pingRing 1500ms ease-out both;
-  }
-  @keyframes pingPop {
-    0%   { transform: scale(0); }
-    18%  { transform: scale(1.15); }
-    34%  { transform: scale(1); }
-    78%  { transform: scale(1); opacity: 1; }
-    100% { transform: scale(.85); opacity: 0; }
-  }
-  @keyframes pingRing {
-    0%   { transform: scale(.6); opacity: .7; }
-    70%  { transform: scale(2.4); opacity: 0; }
-    100% { transform: scale(2.4); opacity: 0; }
+    0%   { opacity: 0; transform: scale(.92); }
+    25%  { opacity: 1; transform: scale(1.01); }
+    100% { opacity: 0; transform: scale(1.04); }
   }
 
   /* ---- Typing indicator dots (mirrors real component: animate-bounce) ---- */
@@ -175,68 +124,14 @@
     40% { transform: translateY(-25%); }
   }
 
-  /* ---- The signature ROBOT: bot avatar that MOVES ----
-     Bobs + tilts continuously; pulses harder while "thinking" (typing). */
-  .robot-anim { display: inline-flex; transform-origin: 50% 70%; will-change: transform; }
-  .robot-bob { animation: robotBob 2600ms ease-in-out infinite; }
-  @keyframes robotBob {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-2px) rotate(-6deg); }
-    50%  { transform: translateY(0) rotate(0deg); }
-    75%  { transform: translateY(-2px) rotate(6deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  /* "thinking" — faster, bigger tilt + a glow pulse while composing */
-  .robot-think { animation: robotThink 700ms ease-in-out infinite; }
-  @keyframes robotThink {
-    0%   { transform: translateY(0) rotate(-10deg) scale(1); }
-    50%  { transform: translateY(-3px) rotate(10deg) scale(1.18); }
-    100% { transform: translateY(0) rotate(-10deg) scale(1); }
-  }
-
-  /* On-brand bot mascot — the wow element, now FLOATING in the bottom-right
-     CORNER of the viewport (direct child of <body>, outside #camera so it is
-     never inside a transformed ancestor and position:fixed anchors to the real
-     viewport). A brand-purple robot that bobs; it 'thinks' (radial halo glow +
-     speeds up) during typing. Presentation-only ornament; no button surface,
-     no product feature, no data. */
-  #botMascot {
-    position: fixed;
-    right: 24px;
-    bottom: 24px;            /* bottom-right CORNER — over the empty lower customer-profile area, never overlaps the chat thread */
-    width: 60px; height: 60px;
-    display: flex; align-items: center; justify-content: center;
-    pointer-events: none;
-    z-index: 50;
-    will-change: transform;
-  }
-  /* The robot character itself: brand-purple RemixIcon robot, floating, no button surface. */
-  #botMascot i {
-    color: #7354EF;
-    font-size: 54px;
-    line-height: 1;
-    filter: drop-shadow(0 6px 9px rgba(115, 84, 239, 0.38));
-  }
-  /* Soft radial halo that blooms ONLY while the robot is "thinking" — deliberately
-     NOT a solid circle/shadow, so the mascot never reads as a clickable FAB. */
-  #botMascot::before {
-    content: "";
-    position: absolute;
-    inset: -6px;
-    border-radius: 9999px;
-    background: radial-gradient(circle, rgba(127, 86, 217, 0.28), rgba(127, 86, 217, 0) 70%);
-    opacity: 0;
-    transition: opacity 250ms ease;
-  }
-  #botMascot.thinking::before { opacity: 1; }
-  /* little orbiting 'thinking' spark while the mascot thinks */
-  #botMascot .spark {
-    position: absolute; top: 2px; right: 8px;
-    width: 9px; height: 9px; border-radius: 9999px;
-    background: #b692f6; opacity: 0;
-  }
-  #botMascot.thinking .spark { opacity: 1; animation: sparkBlink 600ms ease-in-out infinite; }
-  @keyframes sparkBlink { 0%,100% { opacity: .3; transform: scale(.8);} 50% { opacity: 1; transform: scale(1.25);} }
+  /* NOTE: The fabricated ornaments are GONE for honesty + pixel fidelity to the
+     real inbox — no floating corner robot (#botMascot), no WhatsApp radar ring
+     (.channel-ping), and the in-bubble Bot icon (ri-robot-2-line) renders STATIC
+     exactly as the real app does (no robot-bob / robot-think). The only motion
+     left is what the product genuinely does: realtime messages arriving, the bot
+     reply landing, the honest typing indicator, and the chat window scrolling
+     like a real chat. The bot-avatar / floating-chat motion belongs in the
+     separate CONCEPT variant, where Benjamin actually placed it. */
 
   /* Conversation-list active row preview update — soft flash when it changes */
   .row-flash { animation: rowFlash 700ms ease-out both; }
@@ -257,14 +152,10 @@
   /* Reduced motion: HARD no-op. Render the full final state, no camera, no
      slide, no scale, no robot motion. Everything is shown at rest. */
   @media (prefers-reduced-motion: reduce) {
-    #camera, #camera.focus-pull { animation: none !important; transform: none !important; filter: none !important; }
+    #camera { animation: none !important; transform: none !important; filter: none !important; }
     .anim-in, .anim-bot { animation: none !important; opacity: 1 !important; transform: none !important; }
-    .bot-glow, .channel-ping { display: none !important; }
-    .robot-bob, .robot-think, .typing-dot, #botMascot.thinking, #botMascot .spark, .row-flash {
-      animation: none !important;
-    }
-    /* Hide the floating mascot entirely at rest under reduced-motion (parity with inbox-demo). */
-    #botMascot { display: none !important; }
+    .bot-glow { display: none !important; }
+    .typing-dot, .row-flash { animation: none !important; }
   }
 </style>
 
@@ -334,8 +225,10 @@
 <body class="font-urbanist">
 
 <!-- ============================================================
-     CAMERA WRAPPER — the ONLY element the intro zoom / focus-pull
-     transforms. The dashboard chrome inside it never distorts.
+     WRAPPER — formerly the "camera". Per Benjamin's feedback the intro
+     zoom + focus-pull are REMOVED entirely; this is now an inert wrapper
+     with no transform. The cinematic motion lives in the chat thread
+     scrolling, not in a camera zoom.
      ============================================================ -->
 <div id="camera">
 
@@ -925,16 +818,9 @@
 
 </div><!-- /#camera -->
 
-<!-- FLOATING MASCOT — direct child of <body>, OUTSIDE #camera, so it is never
-     inside a transformed ancestor (the intro zoom / focus-pull camera hooks).
-     position:fixed thus anchors to the REAL viewport: parked in the bottom-right
-     CORNER, well clear of the chat thread and the Send button. Decorative robot,
-     aria-hidden, pointer-events:none. JS keeps driving it by id (#botMascot) —
-     the .thinking class + robot-bob/robot-think icon swap are unchanged. -->
-<div id="botMascot" aria-hidden="true" title="Ready Bot">
-  <span class="spark"></span>
-  <i class="ri-robot-2-fill robot-anim robot-bob"></i>
-</div>
+<!-- No floating mascot: the real ReadyChatAI inbox has no such element, so this
+     pixel-faithful dashboard variant drops it. The in-thread message flow + the
+     chat window scrolling carry the life. -->
 
 <script>
 (function () {
@@ -945,9 +831,6 @@
 
   var thread     = document.getElementById('thread');
   var body       = document.getElementById('thread-body');
-  var camera     = document.getElementById('camera');
-  var mascot     = document.getElementById('botMascot');
-  var mascotIcon = mascot ? mascot.querySelector('i') : null;
   var emmaPrev   = document.getElementById('emma-preview');
   var emmaPrevCheck = document.getElementById('emma-preview-check');
   var emmaTime   = document.getElementById('emma-time');
@@ -955,10 +838,27 @@
 
   // ---- The conversation script. role: 'in' = INBOUND (customer's WhatsApp),
   //      'bot' = our bot's auto-reply. delay = wait before this step starts.
-  //      typing = ms the bot/customer "typing…" indicator shows first.
+  //      typing = ms the bot "typing…" indicator shows first.
+  //      seed: true = pre-existing HISTORY. These render INSTANTLY at loop start
+  //      (no delay, no typing, receipts already read) so the thread is taller
+  //      than the viewport immediately — we go STRAIGHT to a conversation already
+  //      in progress (Benjamin: "skip the zoom, go straight to that part"). That
+  //      makes every live message below produce a clear, premium chat scroll and
+  //      kills the sparse "barely animated" opening. History is honest — a real
+  //      chat has history.
   var SCRIPT = [
-    { role: 'in',  text: '¡Hola! Quiero encargar un pastel 🎂', delay: 700, time: '10:38 AM' },
-    { role: 'bot', text: '¡Hola! 👋 Claro que sí. ¿Para qué ocasión es y cuántas personas?', typing: 1300, time: '10:38 AM' },
+    // ----- SEEDED HISTORY (instant, already read) -----
+    // Six bubbles so the thread is taller than the viewport the instant a loop
+    // starts (even on a tall screen) — no empty pane, no dead-air opening.
+    { role: 'in',  seed: true, text: 'Hola, buenos días 😊', time: '10:28 AM' },
+    { role: 'bot', seed: true, text: '¡Buenos días! 👋 Bienvenida a Dulce Lina · Repostería. ¿En qué te puedo ayudar hoy?', time: '10:28 AM' },
+    { role: 'in',  seed: true, text: 'Vi sus pasteles en Instagram, se ven hermosos ✨', time: '10:30 AM' },
+    { role: 'bot', seed: true, text: '¡Mil gracias! 🥰 Nos encanta lo que hacemos. ¿Buscas algo para una fecha especial?', time: '10:30 AM' },
+    { role: 'in',  seed: true, text: '¿Hacen pasteles por encargo?', time: '10:33 AM' },
+    { role: 'bot', seed: true, text: '¡Claro que sí! 🎂 Hacemos pasteles personalizados para todo tipo de eventos. ¿Qué tienes en mente?', time: '10:33 AM' },
+    // ----- LIVE EXCHANGE (animated, top of the thread already overflows) -----
+    { role: 'in',  text: '¡Perfecto! Quiero encargar un pastel 🎂', delay: 700, time: '10:38 AM' },
+    { role: 'bot', text: '¡Genial! 👋 ¿Para qué ocasión es y cuántas personas?', typing: 1300, time: '10:38 AM' },
     { role: 'in',  text: 'Es para una boda 💍 unas 60 personas. Lo quiero personalizado.', delay: 1400, time: '10:40 AM' },
     { role: 'bot', text: '¡Qué emoción! Manejamos diseños personalizados desde $1,800. ¿Para qué fecha lo necesitas?', typing: 1500, time: '10:40 AM' },
     { role: 'in',  text: 'Para el sábado 27 de junio 🗓️', delay: 1300, time: '10:41 AM' },
@@ -971,13 +871,13 @@
   //      classes live on the wrapper .anim-row, never on the bubble itself.
 
   function inboundRow(item) {
-    // Mirrors the static "GROUP: Emma (customer)" block exactly. The channel-ping
-    // overlay + .anim-in wrapper are presentation-only additions.
+    // Mirrors the static "GROUP: Emma (customer)" block exactly. Only the
+    // .anim-in wrapper (slide-in) is a presentation-only addition — no fabricated
+    // channel overlay. The bubble markup is verbatim the real inbox.
     var wrap = document.createElement('div');
     wrap.className = 'flex justify-start anim-row anim-in';
     wrap.innerHTML =
       '<div class="flex flex-col max-w-[75%] relative">' +
-        '<span class="channel-ping" aria-hidden="true"><i class="ri-whatsapp-fill"></i></span>' +
         '<div class="flex items-center gap-4 mb-1 mt-4 justify-start">' +
           '<span class="text-xs text-gray-400 whitespace-nowrap">' + item.time + '</span>' +
         '</div>' +
@@ -995,7 +895,8 @@
   function botRow(item) {
     // Mirrors the static "GROUP: Bot" block exactly. Check starts gray-single
     // (sent) and is upgraded to blue-double (read) by JS. .bot-glow + .anim-bot
-    // are presentation-only.
+    // are presentation-only. The in-bubble Bot icon (ri-robot-2-line) is STATIC,
+    // exactly as the real inbox renders it — no fabricated bobbing.
     var wrap = document.createElement('div');
     wrap.className = 'flex justify-end anim-row anim-bot';
     wrap.innerHTML =
@@ -1003,7 +904,7 @@
         '<span class="bot-glow" aria-hidden="true"></span>' +
         '<div class="flex items-center gap-4 mb-1 mt-2 justify-between" style="position:relative;z-index:1;">' +
           '<div class="flex items-center gap-1.5">' +
-            '<i class="ri-robot-2-line ri-size-4 text-violet-500 robot-anim robot-bob"></i>' +
+            '<i class="ri-robot-2-line ri-size-4 text-violet-500"></i>' +
             '<span class="text-sm font-medium text-gray-900">Bot</span>' +
           '</div>' +
           '<span class="text-xs text-gray-400 whitespace-nowrap">' + item.time + '</span>' +
@@ -1023,13 +924,15 @@
   }
 
   // Bot "typing…" indicator IN THE THREAD (right side), under the Bot header.
+  // The honest part is the 3 bouncing dots (mirrors the real animate-bounce
+  // component); the Bot icon itself stays STATIC like the real inbox.
   function botTyping() {
     var wrap = document.createElement('div');
     wrap.className = 'flex justify-end anim-row anim-bot bot-typing';
     wrap.innerHTML =
       '<div class="flex flex-col max-w-[75%] items-end">' +
         '<div class="flex items-center gap-1.5 mb-1.5 mt-2 self-end">' +
-          '<i class="ri-robot-2-line ri-size-4 text-violet-500 robot-anim robot-think"></i>' +
+          '<i class="ri-robot-2-line ri-size-4 text-violet-500"></i>' +
           '<span class="text-sm font-medium text-gray-900">Bot</span>' +
         '</div>' +
         // dot bubble mirrors real component (bg-gray-100 rounded-2xl, 3 bouncing dots)
@@ -1085,57 +988,79 @@
     return new Promise(function (res) { setTimeout(res, prefersReduced ? 0 : ms); });
   }
 
+  // Render one SCRIPT entry INSTANTLY at rest (no entrance animation, receipts
+  // already "read"). Used to seed pre-existing conversation history.
+  function appendStatic(item) {
+    var row = (item.role === 'in') ? inboundRow(item) : botRow(item);
+    row.classList.remove('anim-in', 'anim-bot', 'anim-row');
+    var glow = row.querySelector('.bot-glow');
+    if (glow) glow.remove(); // no bloom on static history
+    if (item.role === 'bot') {
+      var holder = row.querySelector('.msg-receipt');
+      if (holder) holder.innerHTML = '<i class="ri-check-double-line ri-size-3-5 text-blue-500"></i>';
+    }
+    body.appendChild(row);
+    return row;
+  }
+
+  // The live (animated) entries — everything after the seeded history block.
+  function liveScript() {
+    return SCRIPT.filter(function (it) { return !it.seed; });
+  }
+
   function reset() {
     body.innerHTML = '';
-    emmaPrev.textContent = '¡Hola! Quiero encargar un pastel 🎂';
-    emmaTime.textContent = '10:38 AM';
-    emmaPrevCheck.style.display = 'none';
-    thread.scrollTop = 0;
+    // Pre-seed the HISTORY so the thread is already taller than the viewport —
+    // we open mid-conversation, not on an empty pane.
+    SCRIPT.forEach(function (item) { if (item.seed) appendStatic(item); });
+    // List preview reflects the last seeded message (last thing that "happened").
+    var seeded = SCRIPT.filter(function (it) { return it.seed; });
+    var lastSeed = seeded[seeded.length - 1];
+    if (lastSeed) {
+      emmaPrev.textContent = lastSeed.text;
+      emmaTime.textContent = lastSeed.time;
+      emmaPrevCheck.style.display = (lastSeed.role === 'bot') ? '' : 'none';
+    }
+    // Rest scrolled to the bottom of the seeded history so the next live message
+    // visibly pushes the thread and scrolls — premium chat motion from message 1.
+    thread.scrollTop = thread.scrollHeight;
   }
 
   // ===== REDUCED MOTION: render full final state, no motion, no loop. =====
   function renderFinalStatic() {
-    SCRIPT.forEach(function (item) {
-      var row = (item.role === 'in') ? inboundRow(item) : botRow(item);
-      // strip animation classes; show at rest
-      row.classList.remove('anim-in', 'anim-bot', 'anim-row');
-      if (item.role === 'bot') {
-        var holder = row.querySelector('.msg-receipt');
-        if (holder) holder.innerHTML = '<i class="ri-check-double-line ri-size-3-5 text-blue-500"></i>';
-      }
-      body.appendChild(row);
-    });
+    // History + live, all at rest (seeded flag is irrelevant here — everything
+    // is shown statically, receipts already read).
+    SCRIPT.forEach(function (item) { appendStatic(item); });
     // Final list preview = last bot reply
     var last = SCRIPT[SCRIPT.length - 1];
     emmaPrev.textContent = last.text;
     emmaTime.textContent = last.time;
     emmaPrevCheck.style.display = '';
-    // Reduced motion rests at the conversation start (top): the full 8-message
-    // thread is shown at rest with no motion, scrolling naturally if the reader
-    // wants the rest. Avoids a reflow-timing race on the sticky day-divider.
+    // Reduced motion rests at the conversation start (top): the full thread is
+    // shown at rest with no motion, scrolling naturally if the reader wants the
+    // rest. Avoids a reflow-timing race on the sticky day-divider.
   }
 
   // ===== The animated, looping playthrough =====
   async function playOnce() {
-    reset();
+    reset(); // seeds history; thread already overflows + rests at the bottom
 
-    for (var i = 0; i < SCRIPT.length; i++) {
-      var item = SCRIPT[i];
+    var live = liveScript();
+    for (var i = 0; i < live.length; i++) {
+      var item = live[i];
 
       if (item.role === 'in') {
-        // INBOUND: customer is composing on THEIR phone — optional left hint,
-        // then the message ARRIVES from the channel.
+        // INBOUND: customer is composing on THEIR phone — wait, then the message
+        // ARRIVES from the channel and visibly scrolls the thread.
         await delay(item.delay || 800);
         var row = inboundRow(item);
         body.appendChild(row);
         scrollToLatest();
         setEmmaPreview(item);
       } else {
-        // BOT: show the bot "typing…" in-thread (mascot + robot avatar 'think'),
-        // then the reply lands with glow.
+        // BOT: show the honest "typing…" indicator in-thread, then the reply
+        // lands with the soft brand glow and scrolls the thread.
         await delay(350);
-        if (mascot) mascot.classList.add('thinking');
-        if (mascotIcon) { mascotIcon.classList.remove('robot-bob'); mascotIcon.classList.add('robot-think'); }
         var typingEl = botTyping();
         body.appendChild(typingEl);
         scrollToLatest();
@@ -1143,8 +1068,6 @@
         await delay(item.typing || 1400);
 
         typingEl.remove();
-        if (mascot) mascot.classList.remove('thinking');
-        if (mascotIcon) { mascotIcon.classList.remove('robot-think'); mascotIcon.classList.add('robot-bob'); }
 
         var botEl = botRow(item);
         body.appendChild(botEl);
@@ -1154,18 +1077,15 @@
       }
     }
 
-    // Hold on the finished thread, then loop cleanly.
-    await delay(3500);
+    // Hold ~6s on the finished thread so a viewer can READ the whole
+    // exchange (Benjamin: "make it pause longer at the end"), then loop.
+    await delay(6000);
   }
 
   async function loop() {
-    // gentle focus-pull during the conversation, restarted each cycle
+    // No camera zoom. The cinematic motion is the thread scrolling as the
+    // conversation grows — driven per-message inside playOnce().
     while (true) {
-      if (!prefersReduced && camera) {
-        camera.classList.remove('focus-pull');
-        void camera.offsetWidth;
-        camera.classList.add('focus-pull');
-      }
       await playOnce();
     }
   }
@@ -1174,9 +1094,9 @@
   if (prefersReduced) {
     renderFinalStatic();
   } else {
-    // start after the intro camera zoom fully lands (cameraIntro = 2200ms) so the
-    // focus-pull (higher specificity) doesn't replace the intro mid-flight.
-    setTimeout(loop, 2200);
+    // No intro zoom to wait for — go STRAIGHT into the conversation after a
+    // short beat on the empty thread + day divider.
+    setTimeout(loop, 450);
   }
 })();
 </script>

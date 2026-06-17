@@ -58,28 +58,11 @@
      none of it changes the product's structure or classNames.
      ============================================================ */
 
-  /* --- Intro zoom into the dashboard on load / loop restart --- */
-  @keyframes demoIntroZoom {
-    0%   { transform: scale(1.035); opacity: 0; }
-    100% { transform: scale(1);     opacity: 1; }
-  }
-  .demo-intro-zoom {
-    animation: demoIntroZoom 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
-    transform-origin: 60% 45%;
-  }
-
-  /* --- Per-loop gentle zoom on the chat panel so scale motion RECURS every
-         cycle (not just first paint). Kept subtle + origin centered on the
-         thread so it never clips the sidebar (the mistake the cinematic
-         variant made with scale 1.14). --- */
-  @keyframes demoLoopZoom {
-    0%   { transform: scale(1.018); }
-    100% { transform: scale(1); }
-  }
-  .demo-loop-zoom {
-    animation: demoLoopZoom 1100ms cubic-bezier(0.22, 1, 0.36, 1) both;
-    transform-origin: 50% 40%;
-  }
+  /* NO INTRO ZOOM, NO LOOP ZOOM.
+     Benjamin: "remove the weird zoom in zoom out at the beginning of cinematic …
+     i'd maybe skip the zoom, go straight to that part." The premium signal is the
+     chat WINDOW MOVING (the thread filling + auto-scrolling like a real chat),
+     not a camera move. There is deliberately no scale/zoom animation anywhere. */
 
   /* --- Inbound customer bubble: arrives from the channel (slide-in left + pop) --- */
   @keyframes inboundArrive {
@@ -140,97 +123,6 @@
   }
   .robot-halo { border-radius: 9999px; animation: robotHalo 0.9s ease-in-out infinite; }
 
-  /* ============================================================
-     FLOATING MASCOT (additive overlay — grafted from mascot-showcase).
-     aria-hidden + pointer-events:none, absolutely positioned in the
-     bottom-right gutter of the chat panel, OUTSIDE the reading column.
-     It NEVER touches a real chrome element; it is a decorative ornament
-     that satisfies the "visibly MOVING ROBOT" requirement, and carries
-     the bot's "thinking" cue while the (now-faithful) typing bubble plays.
-     ============================================================ */
-  #demo-mascot {
-    position: fixed;
-    right: 24px;
-    bottom: 24px;            /* bottom-right CORNER of the viewport (over the empty lower customer-profile area) — never overlaps the chat thread */
-    width: 60px;
-    height: 60px;
-    pointer-events: none;
-    z-index: 50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    will-change: transform;
-  }
-  /* Soft glow that appears ONLY while the robot is "thinking" — a radial halo,
-     deliberately NOT a solid circle/shadow, so the mascot never reads as a clickable FAB. */
-  #demo-mascot::before {
-    content: "";
-    position: absolute;
-    inset: -6px;
-    border-radius: 9999px;
-    background: radial-gradient(circle, rgba(127, 86, 217, 0.28), rgba(127, 86, 217, 0) 70%);
-    opacity: 0;
-    transition: opacity 250ms ease;
-  }
-  #demo-mascot.is-thinking::before { opacity: 1; }
-  /* The robot character itself: brand-purple RemixIcon robot, floating, no button surface. */
-  #demo-mascot .bot-face {
-    color: #7354EF;
-    font-size: 54px;
-    line-height: 1;
-    filter: drop-shadow(0 6px 9px rgba(115, 84, 239, 0.38));
-  }
-  /* Resting state: gentle continuous bob + tilt so the robot is always alive. */
-  @keyframes mascotBob {
-    0%   { transform: translateY(0)    rotate(0deg); }
-    25%  { transform: translateY(-5px) rotate(-6deg); }
-    50%  { transform: translateY(0)    rotate(0deg); }
-    75%  { transform: translateY(-5px) rotate(6deg); }
-    100% { transform: translateY(0)    rotate(0deg); }
-  }
-  #demo-mascot.is-idle { animation: mascotBob 3.2s ease-in-out infinite; }
-  /* Springy scale-pop reaction when an inbound customer message arrives. */
-  @keyframes mascotReact {
-    0%   { transform: scale(1)    rotate(0deg); }
-    35%  { transform: scale(1.18) rotate(-8deg); }
-    70%  { transform: scale(0.96) rotate(4deg); }
-    100% { transform: scale(1)    rotate(0deg); }
-  }
-  #demo-mascot.is-reacting { animation: mascotReact 620ms cubic-bezier(0.16, 1, 0.3, 1) both; }
-  /* Thinking state (during bot typing): faster, energetic bob + glowing ring. */
-  @keyframes mascotThink {
-    0%   { transform: translateY(0)    rotate(-7deg) scale(1); }
-    50%  { transform: translateY(-4px) rotate(7deg)  scale(1.1); }
-    100% { transform: translateY(0)    rotate(-7deg) scale(1); }
-  }
-  #demo-mascot.is-thinking { animation: mascotThink 0.7s ease-in-out infinite; }
-  /* The robot's antenna/cog spins while thinking (small brand-purple accent). */
-  #demo-mascot .mascot-cog {
-    position: absolute;
-    top: 1px;
-    right: 8px;
-    width: 14px;
-    height: 14px;
-    opacity: 0;
-    color: #7354EF;
-    font-size: 14px;
-    line-height: 1;
-    transition: opacity 200ms ease;
-  }
-  #demo-mascot.is-thinking .mascot-cog { opacity: 1; animation: cogSpin 1.4s linear infinite; }
-  @keyframes cogSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-  /* --- WhatsApp green "new message" ping that blooms on inbound arrival --- */
-  @keyframes channelPing {
-    0%   { transform: scale(0.6); opacity: 0.85; }
-    100% { transform: scale(2.6); opacity: 0; }
-  }
-  .channel-ping {
-    position: absolute; inset: 0; border-radius: 9999px;
-    background: #25d366; pointer-events: none;
-    animation: channelPing 900ms ease-out forwards;
-  }
-
   /* --- Conversation-list row gentle highlight pulse when its preview updates --- */
   @keyframes rowFlash {
     0%   { background-color: rgba(124, 58, 237, 0.16); }
@@ -254,16 +146,12 @@
   /* Respect reduced-motion: kill every demo animation, show the final thread. */
   @media (prefers-reduced-motion: reduce) {
     #thread { scroll-behavior: auto; }
-    .demo-intro-zoom, .demo-loop-zoom, .anim-inbound, .anim-bot, .anim-bot-glow, .anim-group-fade,
-    .anim-typing-in, .robot-anim, .robot-think, .robot-halo, .channel-ping,
-    .row-flash, .animate-bounce,
-    #demo-mascot, #demo-mascot.is-idle, #demo-mascot.is-reacting,
-    #demo-mascot.is-thinking, #demo-mascot .mascot-cog {
+    .anim-inbound, .anim-bot, .anim-bot-glow, .anim-group-fade,
+    .anim-typing-in, .robot-anim, .robot-think, .robot-halo,
+    .row-flash, .animate-bounce {
       animation: none !important;
       transition: none !important;
     }
-    .channel-ping { display: none !important; }
-    #demo-mascot { display: none !important; }
   }
 </style>
 
@@ -334,7 +222,7 @@
 
 <!-- ============================================================
      LAYOUT GRID (layoutWrapper.tsx): grid-rows-[auto_1fr] h-dvh bg-white
-     (wrapped with a demo-intro-zoom hook — additive class only)
+     (no intro/loop zoom — the demo leads with the chat window MOVING, not a camera move)
      ============================================================ -->
 <div id="demo-root" class="grid grid-rows-[auto_1fr] h-dvh bg-white">
 
@@ -772,8 +660,6 @@
 
           <!-- ============================================================
                CHAT PANEL (flex-1): header + thread + composer
-               (`relative` is an additive positioning context for the floating
-                mascot overlay below — it changes no layout of real chrome)
                ============================================================ -->
           <div id="demo-chatpanel" class="flex-1 flex flex-col min-w-0 hidden lg:flex relative">
 
@@ -916,15 +802,6 @@
   </div>
 </div>
 
-<!-- FLOATING MASCOT — direct child of <body>, OUTSIDE #demo-root, so it is never
-     inside a transformed ancestor (the intro/loop zoom hooks). position:fixed thus
-     anchors to the REAL viewport: parked in the bottom-right CORNER, well clear of
-     the chat thread. Decorative robot, aria-hidden, pointer-events:none. -->
-<div id="demo-mascot" class="is-idle" aria-hidden="true">
-  <i class="ri-robot-2-fill bot-face"></i>
-  <i class="ri-loader-4-line mascot-cog"></i>
-</div>
-
 <!-- ============================================================
      DEMO TIMELINE DRIVER (vanilla JS, additive).
      Builds verbatim message-group markup (cloned char-for-char from the
@@ -942,42 +819,45 @@
   var emmaPreview = document.getElementById('row-emma-preview');
   var emmaTime = document.getElementById('row-emma-time');
   var emmaRow = document.getElementById('row-emma');
-  var demoRoot = document.getElementById('demo-root');
-  var mascot = document.getElementById('demo-mascot');
 
-  // --- Floating mascot state machine (idle bob / inbound react / typing think). ---
-  var mascotReactTimer = null;
-  function setMascot(state) {
-    if (!mascot || reduceMotion) return;
-    mascot.classList.remove('is-idle', 'is-reacting', 'is-thinking');
-    mascot.classList.add(state);
-  }
-  function mascotIdle() { setMascot('is-idle'); }
-  function mascotThink() { setMascot('is-thinking'); }
-  function mascotReact() {
-    if (!mascot || reduceMotion) return;
-    if (mascotReactTimer) { clearTimeout(mascotReactTimer); mascotReactTimer = null; }
-    setMascot('is-reacting');
-    // Return to the resting bob after the one-shot react finishes.
-    mascotReactTimer = later(function () { mascotIdle(); }, 660);
-  }
-
-  // --- The 8-step script. role: 'in' = inbound customer, 'bot' = bot reply.
+  // --- The conversation script. role: 'in' = inbound customer, 'bot' = bot reply.
   //     For inbound steps, `gap` = ms to wait before the step. For bot steps,
   //     `type` = how long the typing indicator shows before the reply lands
-  //     (a fixed 600ms post-inbound delay precedes it in playStep). ---
+  //     (a fixed 600ms post-inbound delay precedes it in playStep).
+  //
+  //     LENGTH IS DELIBERATE (Benjamin's note). The thread panel is ~640px tall
+  //     and one message group is ~80-120px, so ~6-7 groups fill the panel. With
+  //     this 14-message wedding-cake order the thread OVERFLOWS around the
+  //     midpoint, so every message in the back half visibly PUSHES the older
+  //     bubbles up and the view auto-advances a full bubble height each time —
+  //     "the chat window has to move like a real chat window." Not a 1px nudge. ---
   var SCRIPT = [
-    { role: 'in',  text: '¡Hola! Quiero encargar un pastel 🎂',                                                              time: '10:38 AM', gap: 700 },
-    { role: 'bot', text: '¡Hola! 👋 Claro que sí. ¿Para qué ocasión es y cuántas personas?',                                 time: '10:38 AM', type: 1300 },
-    { role: 'in',  text: 'Es para una boda 💍 unas 60 personas. Lo quiero personalizado.',                                   time: '10:40 AM', gap: 1400 },
-    { role: 'bot', text: '¡Qué emoción! Manejamos diseños personalizados desde $1,800. ¿Para qué fecha lo necesitas?',        time: '10:40 AM', type: 1500 },
-    { role: 'in',  text: 'Para el sábado 27 de junio 🗓️',                                                                    time: '10:41 AM', gap: 1300 },
-    { role: 'bot', text: 'Perfecto, tenemos cupo ese día ✅ Te paso el catálogo y el link del anticipo.',                     time: '10:41 AM', type: 1500 },
-    { role: 'in',  text: '¡Sí, porfa! 🙏',                                                                                    time: '10:42 AM', gap: 900 },
-    { role: 'bot', text: '¡Listo! 🎉 Te envié el catálogo y el link de pago seguro 💳 Tu cita de degustación queda el jueves 5:00 pm.', time: '10:42 AM', type: 1700 }
+    { role: 'in',  text: '¡Hola! Quiero encargar un pastel 🎂',                                                                  time: '10:38 AM', gap: 700 },
+    { role: 'bot', text: '¡Hola! 👋 Bienvenida a Dulce Lina. Claro que sí. ¿Para qué ocasión es y cuántas personas?',           time: '10:38 AM', type: 1300 },
+    { role: 'in',  text: 'Es para una boda 💍 unas 60 personas. Lo quiero personalizado.',                                       time: '10:40 AM', gap: 1400 },
+    { role: 'bot', text: '¡Qué emoción! 🥳 Manejamos diseños personalizados de boda desde $1,800. ¿Tienes ya un estilo o color en mente?', time: '10:40 AM', type: 1500 },
+    { role: 'in',  text: 'Algo elegante, en tonos blanco y dorado ✨ tres pisos si se puede.',                                    time: '10:41 AM', gap: 1500 },
+    { role: 'bot', text: '¡Hermosa elección! Un tres pisos blanco con detalles en dorado es de nuestros más pedidos. ¿Algún sabor favorito? Tenemos vainilla, red velvet, chocolate y zanahoria.', time: '10:41 AM', type: 1700 },
+    { role: 'in',  text: 'Red velvet el de en medio y vainilla los otros dos 😍',                                                 time: '10:43 AM', gap: 1500 },
+    { role: 'bot', text: '¡Anotado! 📝 Piso 1 vainilla, piso 2 red velvet, piso 3 vainilla. ¿Para qué fecha lo necesitas?',      time: '10:43 AM', type: 1500 },
+    { role: 'in',  text: 'Para el sábado 27 de junio 🗓️',                                                                       time: '10:44 AM', gap: 1300 },
+    { role: 'bot', text: 'Perfecto, tenemos cupo ese día ✅ Para apartarlo pedimos un anticipo del 30%. ¿Te parece bien?',       time: '10:44 AM', type: 1500 },
+    { role: 'in',  text: 'Sí, claro. ¿Cómo hago el anticipo? 💳',                                                                time: '10:45 AM', gap: 1300 },
+    { role: 'bot', text: 'Te paso el link de pago seguro y el catálogo completo para que elijas los detalles finales 💳',         time: '10:45 AM', type: 1500 },
+    { role: 'in',  text: '¡Sí, porfa! 🙏',                                                                                        time: '10:46 AM', gap: 900 },
+    { role: 'bot', text: '¡Listo! 🎉 Te envié el catálogo y el link de pago seguro 💳 En cuanto recibamos el anticipo queda apartado. Tu cita de degustación queda el jueves a las 5:00 pm 🍰', time: '10:46 AM', type: 1800 }
   ];
 
-  var HOLD_MS = 3500;     // pause at the end before looping
+  var HOLD_MS = 6000;     // Benjamin: "make it pause longer at the end, so people can read it" (~6s)
+  // Seed the thread with the first few messages already present + scrolled BEFORE
+  // live playback starts. Benjamin's #1 note: "looks same, but a tiny bit animated."
+  // An empty thread that only overflows around msg 7 means the first half of every
+  // loop has no scroll motion. Pre-filling past the overflow point means a viewer
+  // landing mid-loop immediately sees a FULL, MOVING chat that scrolls like a real
+  // chat window from the very first live message. (6 entries overflow the ~640px
+  // panel; live playback continues from index 6 with the window already scrolling.)
+  var SEED_COUNT = 6;
+  var FADE_MS = 320;      // soft fade-out of the old thread before rebuild (loop seam)
   var timers = [];        // every setTimeout id, cleared on reset
   var cycleToken = 0;     // guards against overlapping cycles
 
@@ -1074,9 +954,8 @@
   //     renders ALL typing indicators identically: a left-aligned `w-full mb-3`
   //     block, a name-only header (`flex items-start justify-between mb-1.5`),
   //     and the gray dots bubble. No robot avatar, never right-justified.
-  //     The robot "thinking" cue lives on the floating mascot (#demo-mascot
-  //     .is-thinking) instead, so this indicator reads as the same affordance
-  //     as the customer one. ---
+  //     This in-thread indicator is the ONLY "bot is thinking" cue — it is a
+  //     faithful clone of the real component, so nothing fake carries the beat. ---
   function botTypingHTML() {
     return ''
       + '<div id="bot-typing" class="w-full mb-3 anim-typing-in">'
@@ -1128,6 +1007,24 @@
     }
   }
 
+  // Scroll to the latest, then re-run once layout + fonts/emoji have settled.
+  // The reduced-motion path renders all 14 groups at t≈0; emoji/webfont metrics
+  // arrive a beat later and grow the thread taller, so a single synchronous scroll
+  // can land short of the last message. Re-running after rAF (and again on `load`)
+  // pins the open position to the final message. Live path is unaffected — its
+  // per-message scrolls run long after fonts have loaded.
+  function scrollToLatestSettled() {
+    scrollToLatest();
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(scrollToLatest);
+      });
+    }
+    if (document.readyState !== 'complete') {
+      window.addEventListener('load', scrollToLatest, { once: true });
+    }
+  }
+
   // --- Render the FULL completed thread instantly (reduced-motion / fallback). ---
   function renderFinalThread() {
     var html = '';
@@ -1139,41 +1036,18 @@
     }
     feed.innerHTML = html;
     updateListRow(SCRIPT[SCRIPT.length - 1]);
-    scrollToLatest();
+    scrollToLatestSettled();
   }
 
   // --- Append one inbound message (with arrival animation + list update). ---
   function appendInbound(step) {
     removeTypingNodes();
-    mascotReact();   // mascot pops/reacts as the customer message lands
 
     var wrap = document.createElement('div');
     wrap.innerHTML = inboundGroupHTML(step, !reduceMotion);
     var node = wrap.firstChild;
     feed.appendChild(node);
 
-    // green WhatsApp "new message" ping overlay on the customer bubble (additive)
-    if (!reduceMotion) {
-      var bubble = node.querySelector('.anim-inbound');
-      if (bubble) {
-        var pingHost = document.createElement('span');
-        pingHost.style.position = 'absolute';
-        pingHost.style.left = '-6px';
-        pingHost.style.top = '50%';
-        pingHost.style.transform = 'translateY(-50%)';
-        pingHost.style.width = '10px';
-        pingHost.style.height = '10px';
-        pingHost.style.pointerEvents = 'none';
-        var ping = document.createElement('span');
-        ping.className = 'channel-ping';
-        pingHost.appendChild(ping);
-        // bubble's parent is position:static; make the column relative to host the ping
-        var col = bubble.parentNode; // .flex.flex-col.items-start
-        col.style.position = 'relative';
-        col.appendChild(pingHost);
-        later(function () { if (pingHost.parentNode) pingHost.parentNode.removeChild(pingHost); }, 1000);
-      }
-    }
     updateListRow(step);
     scrollToLatest();
   }
@@ -1181,7 +1055,6 @@
   // --- Append one bot reply (bubble + check), animating sent->read. ---
   function appendBot(step) {
     removeTypingNodes();
-    mascotIdle();   // done thinking; mascot returns to its resting bob
 
     var wrap = document.createElement('div');
     wrap.innerHTML = botGroupHTML(step, !reduceMotion, 'sent');
@@ -1219,7 +1092,10 @@
   function playStep(index, token) {
     if (token !== cycleToken) return;
     if (index >= SCRIPT.length) {
-      // hold, then loop
+      // Conversation complete. Re-pin the view to the last message so the ~6s
+      // end-hold reliably rests on the final reply (a smooth auto-scroll can be
+      // left mid-flight by the last bubble's late layout/glow), then hold + loop.
+      scrollToLatestSettled();
       later(function () { if (token === cycleToken) startCycle(); }, HOLD_MS);
       return;
     }
@@ -1227,8 +1103,8 @@
 
     if (step.role === 'in') {
       // Optionally show a brief left-side "customer is typing…" hint on their
-      // phone before steps 3 and 5 (longer, more deliberate replies).
-      var showHint = (index === 2 || index === 4) && !reduceMotion;
+      // phone before a few of the longer, more deliberate inbound replies.
+      var showHint = (index === 4 || index === 6 || index === 10) && !reduceMotion;
       if (showHint) {
         removeTypingNodes();
         var wrap = document.createElement('div');
@@ -1246,11 +1122,12 @@
         later(function () { playStep(index + 1, token); }, 600);
       }
     } else {
-      // Bot: show the faithful typing indicator in-thread while the floating
-      // mascot "thinks" (faster bob + glow + spinning cog), then the reply pops.
+      // Bot: show the faithful in-thread typing indicator (a verbatim clone of
+      // the real component) while the bot "thinks", then the reply pops. The
+      // in-thread dots + the bobbing Bot-header robot icon carry the thinking
+      // cue honestly — there is no invented corner widget.
       if (!reduceMotion) {
         removeTypingNodes();
-        mascotThink();
         var wrap2 = document.createElement('div');
         wrap2.innerHTML = botTypingHTML();
         feed.appendChild(wrap2.firstChild);
@@ -1266,27 +1143,50 @@
     }
   }
 
-  var chatPanel = document.getElementById('demo-chatpanel');
+  // --- Render the seeded (pre-existing) head of the thread instantly, no animation.
+  //     Bot replies in the seed show the settled 'read' (blue double-check) state. ---
+  function renderSeed() {
+    var html = '';
+    var seedN = Math.min(SEED_COUNT, SCRIPT.length);
+    for (var i = 0; i < seedN; i++) {
+      var s = SCRIPT[i];
+      html += s.role === 'in'
+        ? inboundGroupHTML(s, false)
+        : botGroupHTML(s, false, 'read');
+    }
+    feed.innerHTML = html;
+    if (seedN > 0) updateListRow(SCRIPT[seedN - 1]);
+    scrollToLatest();
+  }
+
+  // --- Build the seeded thread + start live playback from the first un-seeded step.
+  //     No zoom of any kind on loop restart — the demo leads with the thread already
+  //     full and auto-scrolling as each new message arrives ("chat window moving"). ---
+  function buildAndPlay(token) {
+    feed.style.opacity = '';
+    feed.innerHTML = '';
+    renderSeed();
+    var startIdx = Math.min(SEED_COUNT, SCRIPT.length);
+    // Brief beat so the seeded thread reads as "settled" before the next live
+    // message arrives and pushes the window.
+    later(function () { if (token === cycleToken) playStep(startIdx, token); }, 900);
+  }
 
   function startCycle() {
     clearTimers();
     cycleToken++;
     var token = cycleToken;
-    feed.innerHTML = '';
-    // reset list row to "incoming" state
-    if (emmaPreview) emmaPreview.innerHTML = '<span class="truncate">Nuevo mensaje…</span>';
-    if (emmaTime) emmaTime.textContent = 'now';
-    mascotIdle();
-    scrollToLatest();
-    // Per-loop gentle zoom on the chat panel so scale motion recurs every cycle
-    // (remove + reflow + re-add re-triggers the one-shot animation). Skipped on
-    // the very first cycle — the dramatic dashboard intro zoom already covers it.
-    if (chatPanel && !reduceMotion && token > 1) {
-      chatPanel.classList.remove('demo-loop-zoom');
-      void chatPanel.offsetWidth;
-      chatPanel.classList.add('demo-loop-zoom');
+
+    // Soft fade-out of the previous thread before rebuild, so the loop seam reads
+    // as a new conversation settling in rather than a hard one-frame wipe.
+    if (!reduceMotion && feed.childNodes.length) {
+      feed.style.transition = 'opacity ' + FADE_MS + 'ms ease-out';
+      feed.style.opacity = '0';
+      later(function () { if (token === cycleToken) buildAndPlay(token); }, FADE_MS);
+    } else {
+      feed.style.transition = '';
+      buildAndPlay(token);
     }
-    later(function () { playStep(0, token); }, SCRIPT[0].gap);
   }
 
   function init() {
@@ -1294,16 +1194,7 @@
       renderFinalThread();
       return;
     }
-    // subtle intro zoom into the dashboard on load
-    if (demoRoot) {
-      demoRoot.classList.add('demo-intro-zoom');
-      demoRoot.addEventListener('animationend', function handler(e) {
-        if (e.target === demoRoot) {
-          demoRoot.classList.remove('demo-intro-zoom');
-          demoRoot.removeEventListener('animationend', handler);
-        }
-      });
-    }
+    // No intro zoom — go straight into the live conversation (Benjamin's note).
     startCycle();
   }
 
