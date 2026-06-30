@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ReadyChatAI · Tu WhatsApp responde solo</title>
+<!-- Inline favicon so the demo emits zero 404s (no external favicon request). -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%237354EF'/%3E%3Ccircle%20cx='12'%20cy='16'%20r='2.6'%20fill='white'/%3E%3Ccircle%20cx='20'%20cy='16'%20r='2.6'%20fill='white'/%3E%3C/svg%3E" />
+
+<!-- Preload the in-chat photo so it decodes instantly when the bubble reveals. -->
+<link rel="preload" as="image" href="assets/gen/bakery-product.png" />
+
+<!-- Google Fonts: Urbanist (the real app wires next/font Urbanist to --font-urbanist) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Real-SVG icon kit ("iconos de verdad") — replaces RemixIcon. -->
+<script src="assets/chat-kit.js"></script>
+
+<!-- Tailwind v3 Play CDN (matches the repo's Tailwind 3.4) -->
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+
+<style>
+  :root {
+    /* Brand Colors (globals.css :root, verbatim) */
+    --brand-secondary: #7f56d9;
+    --brand-700: #7354ef;
+    --brand-500: #9e77ed;
+    --font-urbanist: 'Urbanist', sans-serif;
+
+    /* WhatsApp palette (authentic — current LIGHT scheme). */
+    --wa-surface: #ffffff;    /* modern light status bar + conversation header */
+    --wa-accent:  #008069;    /* modern WhatsApp green accent (back + actions) */
+    --wa-hairline: rgba(11,20,26,0.10); /* hairline under the header */
+    --wa-ink:    #111b21;     /* near-black header text */
+    --wa-send:   #00A884;     /* round send button */
+    --wa-out:    #D9FDD3;     /* outgoing (customer) bubble */
+    --wa-paper:  #EFEAE2;     /* chat wallpaper beige */
+    --wa-tick:   #53BDEB;     /* blue read ticks */
+    --wa-meta:   #667781;     /* timestamp gray */
+  }
+  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  .ic { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
+
+  /* ============================================================
+     STAGE — fixed 1440x880 canvas (matches the landing iframe).
+     RCAI purple ambient world hosting a WhatsApp-green story.
+     ============================================================ */
+  #stage {
+    position: relative;
+    width: 1440px; height: 880px;
+    margin: 0 auto; overflow: hidden;
+    background:
+      radial-gradient(1200px 700px at 50% 38%, #ffffff 0%, #faf8ff 46%, #f3effc 100%),
+      linear-gradient(180deg, #ffffff, #f6f3fe);
+    font-family: var(--font-urbanist);
+    color: #1d2939;
+  }
+  #stage::before {
+    content: ""; position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(115,84,239,0.06) 1.4px, transparent 1.4px);
+    background-size: 30px 30px; pointer-events: none;
+  }
+  .orb { position: absolute; border-radius: 9999px; filter: blur(60px); pointer-events: none; opacity: 0.5; }
+  .orb-1 { width: 420px; height: 420px; left: -120px; top: -90px;  background: radial-gradient(circle, rgba(158,119,237,0.45), transparent 70%); }
+  .orb-2 { width: 480px; height: 480px; right: -150px; bottom: -130px; background: radial-gradient(circle, rgba(16,185,129,0.30), transparent 70%); }
+
+  /* ============================================================
+     HEADLINE — brand + "instant AI" story lives AROUND the phone,
+     NEVER inside the WhatsApp UI (honesty requirement).
+     ============================================================ */
+  .headline { position: absolute; left: 90px; top: 188px; width: 600px; z-index: 6; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 11px;
+    font-size: 21px; font-weight: 800; letter-spacing: 0.03em;
+    color: #075E54; background: rgba(7,94,84,0.09);
+    padding: 9px 18px 9px 11px; border-radius: 9999px;
+  }
+  .eyebrow .wa-badge {
+    width: 30px; height: 30px; border-radius: 9px; background: #25D366;
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 10px -3px rgba(37,211,102,0.55);
+  }
+  .eyebrow .bolt { color: #f5a623; font-size: 21px; }
+  .headline h1 {
+    margin: 22px 0 0; font-size: 53px; font-weight: 800; line-height: 1.06;
+    letter-spacing: -0.025em; color: #101828;
+  }
+  .headline h1 .accent { color: #075E54; }
+  .headline p {
+    margin: 18px 0 0; font-size: 30px; font-weight: 500; line-height: 1.36; color: #667085;
+    max-width: 556px;
+  }
+  .ticks { margin: 28px 0 0; display: flex; flex-direction: column; gap: 15px; }
+  .tick { display: flex; align-items: center; gap: 13px; font-size: 30px; font-weight: 600; color: #344054; }
+  .tick .ic { width: 34px; height: 34px; color: #075E54; }
+
+  /* ============================================================
+     PHONE — the dominant element. 500x818 (>= 80% of 880 tall).
+     ============================================================ */
+  #phone {
+    position: absolute; left: 745px; top: 31px; z-index: 5;
+    width: 500px; height: 818px;
+    background: linear-gradient(160deg, #15151c, #050507);
+    border-radius: 52px; padding: 12px;
+    box-shadow:
+      0 50px 90px -30px rgba(16,24,40,0.50),
+      0 14px 40px -16px rgba(7,94,84,0.28),
+      0 0 0 1px rgba(16,24,40,0.04);
+  }
+  .screen {
+    position: relative; width: 100%; height: 100%;
+    background: var(--wa-paper);
+    border-radius: 41px; overflow: hidden;
+    display: flex; flex-direction: column;
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  .island {
+    position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
+    width: 116px; height: 28px; background: #000; border-radius: 16px; z-index: 30;
+  }
+
+  /* Status bar — modern light safe-area: white surface, dark glyphs. */
+  .statusbar {
+    flex: 0 0 44px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px; background: var(--wa-surface); color: #0b141a;
+  }
+  .sb-time { font-size: 19px; font-weight: 600; letter-spacing: 0.01em; }
+  .sb-icons { display: flex; align-items: center; gap: 7px; }
+  .sb-icons .ic { width: 21px; height: 21px; }
+
+  /* WhatsApp conversation header (modern light: white surface, green accents). */
+  .wa-header {
+    flex: 0 0 80px; display: flex; align-items: center;
+    padding: 0 16px 0 10px; background: var(--wa-surface); color: var(--wa-ink);
+    box-shadow: 0 0.5px 0 var(--wa-hairline);
+    position: relative; z-index: 2;
+  }
+  .wa-header .back { width: 28px; height: 30px; margin-right: 4px; color: var(--wa-accent); }
+  .wa-avatar {
+    flex: 0 0 46px; width: 46px; height: 46px; border-radius: 50%;
+    overflow: hidden; margin-right: 12px; background: #d9d2c5;
+    box-shadow: 0 0 0 1px rgba(11,20,26,0.08);
+  }
+  .wa-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .wa-id { flex: 1 1 auto; min-width: 0; }
+  .wa-name {
+    font-size: 27px; font-weight: 600; color: var(--wa-ink); letter-spacing: -0.01em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.08;
+  }
+  .wa-presence { font-size: 19px; font-weight: 400; color: var(--wa-meta); margin-top: 1px; }
+  .wa-presence.typing { color: var(--wa-accent); font-weight: 500; }
+  .wa-actions { display: flex; align-items: center; gap: 20px; margin-left: 8px; }
+  .wa-actions .ic { width: 27px; height: 27px; color: var(--wa-accent); }
+  .wa-actions .ic.menu { width: 24px; }
+
+  /* Thread — WhatsApp wallpaper; bottom-anchored so the newest is always visible
+     and older messages clip at the TOP (realistic scrolled-to-newest view). */
+  .thread {
+    flex: 1 1 auto; overflow: hidden;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 12px 18px 14px;
+    background-color: var(--wa-paper);
+    background-repeat: repeat;
+  }
+  .feed { display: flex; flex-direction: column; }
+  .feed.dissolving { opacity: 0; transition: opacity 0.5s ease; }
+
+  /* Centered set-dressing pills (date + encryption). */
+  .center-pill {
+    align-self: center; text-align: center;
+    border-radius: 9px; padding: 6px 14px; margin: 4px 0 2px;
+    font-size: 18px; font-weight: 500; color: #54656f;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+  }
+  .pill-date { background: rgba(255,255,255,0.92); letter-spacing: 0.04em; }
+  .pill-enc {
+    background: #FDF4C5; color: #5b6b4f; max-width: 86%;
+    display: flex; align-items: center; gap: 8px; justify-content: center;
+    line-height: 1.28; font-size: 17px; padding: 9px 16px;
+  }
+  .pill-enc .ic { width: 16px; height: 16px; color: #b39b2e; flex: 0 0 16px; }
+
+  .row {
+    display: flex; margin-top: 8px;
+    opacity: 0; transform: translateY(14px);
+    transition: opacity 0.4s ease, transform 0.46s cubic-bezier(0.22,1,0.36,1);
+  }
+  .row.shown { opacity: 1; transform: none; }
+  .row.out { justify-content: flex-end; }
+  .row.in  { justify-content: flex-start; }
+  .center-pill { opacity: 0; transform: translateY(8px); transition: opacity 0.4s ease, transform 0.4s ease; }
+  .center-pill.shown { opacity: 1; transform: none; }
+
+  /* Bubbles. */
+  .bubble {
+    position: relative; max-width: 80%;
+    display: flex; flex-direction: column;
+    padding: 9px 12px 8px 13px;
+    border-radius: 10px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.13), 0 1px 0.5px rgba(0,0,0,0.06);
+  }
+  .b-in  { background: #fff; border-top-left-radius: 1px; }
+  .b-out { background: var(--wa-out); border-top-right-radius: 1px; }
+  /* WhatsApp tail flags. */
+  .b-in::before {
+    content: ""; position: absolute; top: 0; left: -9px; width: 13px; height: 14px;
+    background: #fff; clip-path: polygon(100% 0, 100% 100%, 0 0);
+  }
+  .b-out::before {
+    content: ""; position: absolute; top: 0; right: -9px; width: 13px; height: 14px;
+    background: var(--wa-out); clip-path: polygon(0 0, 0 100%, 100% 0);
+  }
+  /* A continuation bubble (same sender, stacked) drops its tail + sharp corner. */
+  .b-cont::before { display: none; }
+  .b-cont.b-in  { border-top-left-radius: 10px; margin-top: -2px; }
+
+  .btext { font-size: 31px; line-height: 1.28; font-weight: 400; color: #111b21; word-wrap: break-word; }
+  .meta { align-self: flex-end; display: flex; align-items: center; gap: 5px; margin-top: 1px; }
+  .meta .t { font-size: 17px; font-weight: 400; color: var(--wa-meta); }
+  .meta .ic { width: 22px; height: 22px; margin-left: -1px; }
+
+  /* Photo message. */
+  .b-photo { padding: 5px 5px 7px; }
+  .ph-img {
+    width: 290px; max-width: 100%; height: 250px; border-radius: 8px;
+    overflow: hidden; background: #e6e0d7;
+  }
+  .ph-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ph-cap { padding: 7px 8px 0; }
+  .ph-cap .btext { font-size: 31px; }
+  .b-photo .meta { padding-right: 4px; }
+
+  /* ============================================================
+     REDUCED MOTION — compose a full static frame (whole exchange).
+     ============================================================ */
+  @media (prefers-reduced-motion: reduce) {
+    .row, .center-pill, .feed { transition: none !important; }
+  }
+</style>
+
+<script>
+  tailwind.config = { theme: { extend: { fontFamily: {
+    urbanist: ['var(--font-urbanist)', 'sans-serif'],
+    sans:     ['var(--font-urbanist)', 'sans-serif'],
+  } } } };
+</script>
+</head>
+
+<body class="font-urbanist">
+  <!-- Fixed 1440x880 canvas so it drops into the landing hero iframe unchanged. -->
+  <div id="stage" aria-label="Ilustración: ReadyChatAI responde automáticamente los mensajes de WhatsApp de Dulce Lina Repostería">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <!-- Brand headline / AI-speed story (lives on the stage, not inside WhatsApp). -->
+    <div class="headline">
+      <span class="eyebrow">
+        <span class="wa-badge"><span class="ic" data-ic="wa-logo" data-sz="20"></span></span>
+        WhatsApp · al instante
+      </span>
+      <h1>Tu WhatsApp<br><span class="accent">responde solo.</span></h1>
+      <p>El bot contesta los mensajes de tus clientes al instante, 24/7 — sin que muevas un dedo.</p>
+      <div class="ticks">
+        <div class="tick"><span class="ic" data-ic="check" data-sz="30" data-st="2.6"></span> Respuestas en segundos</div>
+        <div class="tick"><span class="ic" data-ic="check" data-sz="30" data-st="2.6"></span> Atiende de día y de noche</div>
+        <div class="tick"><span class="ic" data-ic="check" data-sz="30" data-st="2.6"></span> Cero clientes perdidos</div>
+      </div>
+    </div>
+
+    <!-- The phone (dominant). Inside it: an authentic WhatsApp thread. -->
+    <div id="phone">
+      <div class="screen">
+        <div class="island"></div>
+
+        <div class="statusbar">
+          <span class="sb-time">9:41</span>
+          <span class="sb-icons">
+            <span class="ic" data-ic="signal" data-sz="20"></span>
+            <span class="ic" data-ic="wifi" data-sz="21"></span>
+            <span class="ic" data-ic="battery" data-sz="22"></span>
+          </span>
+        </div>
+
+        <div class="wa-header">
+          <span class="ic back" data-ic="chevron-left" data-sz="30" data-st="2.4"></span>
+          <div class="wa-avatar"><img src="assets/gen/bakery-avatar.png" alt="Dulce Lina" /></div>
+          <div class="wa-id">
+            <div class="wa-name">Dulce Lina</div>
+            <div class="wa-presence" id="presence">en línea</div>
+          </div>
+          <div class="wa-actions">
+            <span class="ic" data-ic="wa-video" data-sz="27"></span>
+            <span class="ic" data-ic="wa-call" data-sz="25"></span>
+            <span class="ic menu" data-ic="more-v" data-sz="24"></span>
+          </div>
+        </div>
+
+        <div class="thread">
+          <div class="feed" id="feed"></div>
+        </div>
+
+        <div class="composer" id="composer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Composer markup is static; kept out of the timeline. -->
+  <template id="composer-tpl">
+    <div class="cwrap">
+      <div class="cpill">
+        <span class="ic emoji" data-ic="wa-emoji" data-sz="26"></span>
+        <span class="cph">Mensaje</span>
+        <span class="cright">
+          <span class="ic" data-ic="wa-attach" data-sz="24"></span>
+          <span class="ic" data-ic="wa-camera" data-sz="24"></span>
+        </span>
+      </div>
+      <div class="csend"><span class="ic" data-ic="wa-send" data-sz="26"></span></div>
+    </div>
+  </template>
+
+  <style>
+    .composer { flex: 0 0 86px; display: flex; align-items: center; gap: 10px; padding: 0 14px; background: var(--wa-paper); }
+    .cwrap { display: flex; align-items: center; gap: 10px; width: 100%; }
+    .cpill {
+      flex: 1 1 auto; height: 56px; background: #fff; border-radius: 9999px;
+      display: flex; align-items: center; gap: 12px; padding: 0 14px 0 16px;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.07);
+    }
+    .cpill .emoji { color: #54656f; }
+    .cpill .cph { flex: 1 1 auto; font-size: 23px; color: #8696a0; font-weight: 400; }
+    .cpill .cright { display: flex; align-items: center; gap: 16px; color: #54656f; }
+    .cpill .ic { width: 26px; height: 26px; }
+    .csend {
+      flex: 0 0 56px; width: 56px; height: 56px; border-radius: 50%;
+      background: var(--wa-send); display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px -4px rgba(0,168,132,0.6);
+    }
+    .csend .ic { width: 27px; height: 27px; color: #fff; }
+  </style>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ---- Paint every real-icon placeholder ([data-ic]) via the kit. --------
+      function paintIcons(root) {
+        (root || document).querySelectorAll('[data-ic]').forEach(function (e) {
+          if (e.dataset.painted) return;
+          e.innerHTML = RCAI_ICON(e.dataset.ic, {
+            size: e.dataset.sz ? +e.dataset.sz : 24,
+            color: e.dataset.col || undefined,
+            stroke: e.dataset.st ? +e.dataset.st : 2,
+          });
+          e.dataset.painted = '1';
+        });
+      }
+
+      // Mount the static composer, then paint all chrome icons.
+      var composer = document.getElementById('composer');
+      composer.appendChild(document.getElementById('composer-tpl').content.cloneNode(true));
+      paintIcons(document);
+
+      // ---- WhatsApp wallpaper: beige (#EFEAE2) is the load-bearing recognizable
+      // part; a VERY faint, trademark-safe doodle tile adds texture on top. ----
+      (function paintWallpaper() {
+        var thread = document.querySelector('.thread');
+        if (!thread) return;
+        var SVG =
+          "<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'>" +
+          "<g fill='none' stroke='#6b5d45' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' stroke-opacity='0.05'>" +
+          "<path d='M30 44c-6-9-18-4-18 4 0 7 9 12 18 19 9-7 18-12 18-19 0-8-12-13-18-4z'/>" +
+          "<path d='M150 28h26v12a13 13 0 0 1-13 13 13 13 0 0 1-13-13z'/><path d='M176 32h6a5 5 0 0 1 0 10h-6'/><path d='M150 60h26'/>" +
+          "<path d='M104 96l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z'/>" +
+          "<circle cx='44' cy='150' r='17'/><path d='M38 147h.1M50 147h.1M37 156a9 9 0 0 0 14 0'/>" +
+          "<rect x='150' y='150' width='40' height='28' rx='5'/><circle cx='170' cy='164' r='8'/><path d='M158 150l3-5h18l3 5'/>" +
+          "<path d='M192 92v26a8 8 0 1 1-5-7V96l14-4v22a8 8 0 1 1-5-7'/>" +
+          "<path d='M96 188c-12 2-22-6-22-18 12-2 22 6 22 18z'/><path d='M96 188c0-10 8-18 18-18'/>" +
+          "</g></svg>";
+        thread.style.backgroundImage = "url(\"data:image/svg+xml," + encodeURIComponent(SVG) + "\")";
+        thread.style.backgroundSize = "220px 220px";
+      })();
+
+      var feed = document.getElementById('feed');
+      var presence = document.getElementById('presence');
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Authentic, short, legible bakery WhatsApp thread (Dulce Lina · Repostería).
+      var TIME = '14:32';
+      var TICKS = '<span class="ic" data-ic="check-double" data-sz="22" data-col="' + getComputedStyle(document.documentElement).getPropertyValue('--wa-tick').trim() + '"></span>';
+
+      function metaOut() { return '<div class="meta"><span class="t">' + TIME + '</span>' + TICKS + '</div>'; }
+      function metaIn()  { return '<div class="meta"><span class="t">' + TIME + '</span></div>'; }
+
+      function el(cls, html) {
+        var d = document.createElement('div');
+        d.className = cls; d.innerHTML = html;
+        feed.appendChild(d); paintIcons(d);
+        return d;
+      }
+      function reveal(node) {
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { node.classList.add('shown'); });
+        });
+      }
+      function setTyping(on) {
+        presence.textContent = on ? 'escribiendo…' : 'en línea';
+        presence.classList.toggle('typing', !!on);
+      }
+
+      function addDate() { return el('center-pill pill-date', 'HOY'); }
+      function addEnc()  { return el('center-pill pill-enc',
+        '<span class="ic" data-ic="info" data-sz="16"></span>Los mensajes están cifrados de extremo a extremo.'); }
+      function addCustomer(t) {
+        return el('row out', '<div class="bubble b-out"><div class="btext">' + t + '</div>' + metaOut() + '</div>');
+      }
+      function addBot(t) {
+        return el('row in', '<div class="bubble b-in"><div class="btext">' + t + '</div>' + metaIn() + '</div>');
+      }
+      function addBotPhoto(cap) {
+        return el('row in',
+          '<div class="bubble b-in b-photo">' +
+            '<div class="ph-img"><img src="assets/gen/bakery-product.png" alt="Pastel de muestra de Dulce Lina" /></div>' +
+            '<div class="ph-cap"><div class="btext">' + cap + '</div>' + metaIn() + '</div>' +
+          '</div>');
+      }
+
+      var CUST1 = '¡Hola! 🎂 ¿Hacen pasteles a pedido?';
+      var BOT1  = '¡Hola Emma! 💜 ¡Claro que sí! ¿Para qué fecha lo necesitas?';
+      var CUST2 = 'Para el sábado 🎉 ¿Tienen diseños bonitos?';
+      var CAP   = '¡Mira este diseño! 😍 ¿Para cuántas personas sería?';
+
+      // ---- Reduced motion: compose the full static exchange. ------------------
+      if (reduce) {
+        addDate().classList.add('shown');
+        addEnc().classList.add('shown');
+        addCustomer(CUST1).classList.add('shown');
+        addBot(BOT1).classList.add('shown');
+        addCustomer(CUST2).classList.add('shown');
+        addBotPhoto(CAP).classList.add('shown');
+        return;
+      }
+
+      // ---- Animated timeline (whole exchange settled by ~5s, then holds). -----
+      var timers = [];
+      function after(ms, fn) { timers.push(setTimeout(fn, ms)); }
+      function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+
+      function runCycle() {
+        clearTimers();
+        feed.classList.remove('dissolving');
+        feed.innerHTML = '';
+        setTyping(false);
+
+        var t = 0;
+
+        after((t += 280), function () { reveal(addDate()); reveal(addEnc()); });
+
+        // Exchange 1 — customer asks; bot "escribiendo…"; fast reply.
+        after((t += 560), function () { reveal(addCustomer(CUST1)); });
+        after((t += 620), function () { setTyping(true); });
+        after((t += 760), function () { setTyping(false); reveal(addBot(BOT1)); });
+
+        // Exchange 2 — quick follow-up; bot replies with a real cake photo.
+        after((t += 820), function () { reveal(addCustomer(CUST2)); });
+        after((t += 600), function () { setTyping(true); });
+        after((t += 860), function () { setTyping(false); reveal(addBotPhoto(CAP)); });
+
+        // Long readable end-hold (covers the 6.5s screenshot), then dissolve + loop.
+        after((t += 6200), function () { feed.classList.add('dissolving'); });
+        after((t += 560), function () { runCycle(); });
+      }
+
+      function start() { after(450, runCycle); }
+      if (document.readyState === 'complete') start();
+      else window.addEventListener('load', start, { once: true });
+    })();
+  </script>
+</body>
+</html>

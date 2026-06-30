@@ -335,7 +335,7 @@
                     </div>
                     <div id="demo-viewport" class="relative overflow-hidden bg-gray-100">
                       <div id="demo-scaler" style="width:1440px;height:880px;transform-origin:top left;">
-                        <iframe id="demo-frame" src="variant-instagram-a.html" title="ReadyChatAI inbox demo" loading="eager" style="width:1440px;height:880px;border:0;display:block;"></iframe>
+                        <iframe id="demo-frame" src="variant-whatsapp.html" title="ReadyChatAI inbox demo" loading="eager" style="width:1440px;height:880px;border:0;display:block;"></iframe>
                       </div>
                     </div>
                   </div>
@@ -1111,13 +1111,14 @@
       // variants additionally ship a PORTRAIT 430x900 sibling used on mobile, so the demo
       // fills a narrow phone column legibly instead of shrinking a wide layout to ~0.2x.
       var VARIANTS = [
-        { id: 'instagram-a', label: 'Instagram',      icon: 'ri-instagram-line', src: 'variant-instagram-a.html', mobileSrc: 'variant-instagram-a-mobile.html', mW: 430, mH: 900, chrome: false, url: '' },
-        { id: 'instagram-b', label: 'IG Comentarios', icon: 'ri-chat-3-line',    src: 'variant-instagram-b.html', mobileSrc: 'variant-instagram-b-mobile.html', mW: 430, mH: 900, chrome: false, url: '' },
-        { id: 'realtime',  label: 'Realtime',   icon: 'ri-flashlight-fill', src: 'variant-realtime.html',  chrome: true,  url: 'app.readychatai.com/dashboard/messages' },
-        { id: 'cinematic', label: 'Cinemático', icon: 'ri-film-fill',       src: 'variant-cinematic.html', chrome: true,  url: 'app.readychatai.com/dashboard/messages' },
-        { id: 'concept',   label: 'Concepto',   icon: 'ri-broadcast-line',  src: 'variant-concept.html',   chrome: false, url: '' },
+        { id: 'whatsapp',  label: 'WhatsApp',       icon: 'ri-whatsapp-line',  src: 'variant-whatsapp.html',    mobileSrc: 'variant-whatsapp-mobile.html',    mW: 430, mH: 900, chrome: false, url: '' },
+        { id: 'instagram', label: 'Instagram',      icon: 'ri-instagram-line', src: 'variant-instagram-a.html', mobileSrc: 'variant-instagram-a-mobile.html', mW: 430, mH: 900, chrome: false, url: '' },
+        { id: 'igcomment', label: 'IG Comentarios', icon: 'ri-chat-3-line',    src: 'variant-instagram-b.html', mobileSrc: 'variant-instagram-b-mobile.html', mW: 430, mH: 900, chrome: false, url: '' },
+        { id: 'concept',   label: 'Multicanal',     icon: 'ri-broadcast-line', src: 'variant-concept.html',     chrome: false, url: '' },
+        { id: 'realtime',  label: 'Dashboard',      icon: 'ri-flashlight-fill', src: 'variant-realtime.html',  chrome: true,  url: 'app.readychatai.com/dashboard/messages' },
+        { id: 'cinematic', label: 'Cinemático',     icon: 'ri-film-fill',       src: 'variant-cinematic.html', chrome: true,  url: 'app.readychatai.com/dashboard/messages' },
       ];
-      var cur = 'instagram-a';
+      var cur = 'whatsapp';
       var tabsEl = document.getElementById('demo-tabs');
       var frame = document.getElementById('demo-frame');
       var scalerEl = document.getElementById('demo-scaler');

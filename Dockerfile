@@ -2,6 +2,7 @@
 # with the live animated inbox demo embedded in the hero.
 FROM nginx:alpine
 COPY index.html \
+     variant-whatsapp.html variant-whatsapp-mobile.html \
      variant-instagram-a.html variant-instagram-b.html \
      variant-instagram-a-mobile.html variant-instagram-b-mobile.html \
      variant-realtime.html variant-cinematic.html variant-concept.html \
