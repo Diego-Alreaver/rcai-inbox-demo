@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ReadyChatAI · Tu WhatsApp responde y vende solo</title>
+<title>ReadyChatAI · Tu WhatsApp toma el pedido y cobra solo</title>
 <!-- Inline favicon so the demo emits zero 404s (no external favicon request). -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%237354EF'/%3E%3Ccircle%20cx='12'%20cy='16'%20r='2.6'%20fill='white'/%3E%3Ccircle%20cx='20'%20cy='16'%20r='2.6'%20fill='white'/%3E%3C/svg%3E" />
 
-<!-- Preload the in-chat photo (optimized WebP) so it decodes instantly when the bubble reveals. -->
-<link rel="preload" as="image" href="assets/gen/bakery-product.webp" />
+<!-- Preload the in-chat product photo (optimized WebP) so it decodes instantly when the card reveals. -->
+<link rel="preload" as="image" href="assets/gen/dulcelina-cake.webp" />
 
 <!-- Google Fonts: Urbanist (the real app wires next/font Urbanist to --font-urbanist) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -69,43 +69,47 @@
 
   /* ============================================================
      HEADLINE — brand + "instant AI" story lives AROUND the phone,
-     NEVER inside the WhatsApp UI (honesty requirement).
+     NEVER inside the WhatsApp UI (honesty requirement). The stage
+     headline uses the SHARED brand purple so every channel tab lines
+     up in the hero; the WhatsApp green identity stays inside the phone.
      ============================================================ */
-  .headline { position: absolute; left: 116px; top: 198px; width: 600px; z-index: 6; }
+  .headline { position: absolute; left: 104px; top: 230px; width: 600px; z-index: 6; }
   .eyebrow {
     display: inline-flex; align-items: center; gap: 10px;
     font-size: 19px; font-weight: 800; letter-spacing: 0.03em;
-    color: #075E54; background: rgba(7,94,84,0.09);
-    padding: 8px 17px 8px 10px; border-radius: 9999px;
+    color: #7354ef; background: rgba(115,84,239,0.09);
+    padding: 8px 18px 8px 9px; border-radius: 9999px;
   }
   .eyebrow .wa-badge {
     width: 28px; height: 28px; border-radius: 8px; background: #25D366;
     display: inline-flex; align-items: center; justify-content: center;
     box-shadow: 0 4px 10px -3px rgba(37,211,102,0.55);
   }
-  .eyebrow .bolt { color: #f5a623; font-size: 19px; }
   .headline h1 {
     margin: 20px 0 0; font-size: 47px; font-weight: 800; line-height: 1.08;
     letter-spacing: -0.025em; color: #101828;
   }
-  .headline h1 .accent { color: #075E54; }
+  .headline h1 .accent { color: #7354ef; }
   .headline p {
     margin: 16px 0 0; font-size: 25px; font-weight: 500; line-height: 1.38; color: #667085;
-    max-width: 540px;
+    max-width: 548px;
   }
   .ticks { margin: 26px 0 0; display: flex; flex-direction: column; gap: 14px; }
-  .tick { display: flex; align-items: center; gap: 12px; font-size: 24px; font-weight: 600; color: #344054; }
-  .tick .ic { width: 28px; height: 28px; color: #075E54; }
+  .tick { display: flex; align-items: center; gap: 13px; font-size: 24px; font-weight: 600; color: #344054; }
+  .tick .tick-ic {
+    flex: 0 0 34px; width: 34px; height: 34px; border-radius: 9999px;
+    background: rgba(115,84,239,0.12); color: #7354ef;
+  }
 
   /* ============================================================
      PHONE — the dominant hero element. A real smartphone: tall + narrow
      (406x860, ~9:19.5, ~98% of the 880 stage height).
      ============================================================ */
   #phone {
-    position: absolute; left: 900px; top: 10px; z-index: 5;
-    width: 406px; height: 860px;
+    position: absolute; left: 872px; top: 10px; z-index: 5;
+    width: 404px; height: 860px;
     background: linear-gradient(160deg, #15151c, #050507);
-    border-radius: 50px; padding: 12px;
+    border-radius: 48px; padding: 12px;
     box-shadow:
       0 50px 90px -30px rgba(16,24,40,0.50),
       0 14px 40px -16px rgba(7,94,84,0.28),
@@ -114,7 +118,7 @@
   .screen {
     position: relative; width: 100%; height: 100%;
     background: var(--wa-paper);
-    border-radius: 40px; overflow: hidden;
+    border-radius: 37px; overflow: hidden;
     display: flex; flex-direction: column;
     font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
@@ -223,16 +227,62 @@
   .meta .t { font-size: 13px; font-weight: 400; color: var(--wa-meta); }
   .meta .ic { width: 16px; height: 16px; margin-left: -1px; }
 
-  /* Photo message. */
-  .b-photo { padding: 4px 4px 6px; }
-  .ph-img {
-    width: 250px; max-width: 100%; height: 210px; border-radius: 7px;
-    overflow: hidden; background: #e6e0d7;
+  /* ============================================================
+     RICH BOT CARDS — productCard / paymentLink / bookingConfirmed.
+     All render on the BOT (received) side as a same-sender continuation
+     of the preceding bot text bubble (no tail), themed in WhatsApp green.
+     ============================================================ */
+  .wa-card { max-width: 84%; padding: 5px 5px 4px; }
+
+  /* productCard — cake photo on top, title, big green price, size chips. */
+  .pc-img { width: 100%; height: 176px; border-radius: 7px; overflow: hidden; background: #e6e0d7; }
+  .pc-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pc-body { padding: 9px 8px 2px; }
+  .pc-title { font-size: 23px; font-weight: 700; color: #111b21; line-height: 1.16; }
+  .pc-sub { font-size: 17px; font-weight: 400; color: #667781; margin-top: 2px; }
+  .pc-price { font-size: 30px; font-weight: 800; color: var(--wa-accent); margin-top: 7px; letter-spacing: -0.01em; }
+  .pc-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+  .pc-chip {
+    font-size: 16px; font-weight: 600; color: #1c6152;
+    background: rgba(0,128,105,0.10); border-radius: 9999px; padding: 5px 12px;
   }
-  .ph-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .ph-cap { padding: 6px 7px 0; }
-  .ph-cap .btext { font-size: 24px; }
-  .b-photo .meta { padding-right: 4px; }
+  .wa-card .meta { padding: 4px 6px 1px; }
+
+  /* paymentLink — compact secure-payment card with a green CTA link button. */
+  .pay-card { max-width: 76%; padding: 13px 14px 11px; }
+  .pay-head { display: flex; align-items: center; gap: 8px; }
+  .pay-head .ic { width: 19px; height: 19px; color: #2a6f60; }
+  .pay-head .lbl { font-size: 15px; font-weight: 700; color: #667781; letter-spacing: 0.05em; text-transform: uppercase; }
+  .pay-amount { font-size: 33px; font-weight: 800; color: #111b21; margin: 7px 0 1px; letter-spacing: -0.02em; }
+  .pay-sub { font-size: 16px; color: #667781; margin-bottom: 11px; }
+  .pay-btn {
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    height: 50px; border-radius: 12px; background: var(--wa-accent); color: #fff;
+    font-size: 21px; font-weight: 700;
+    box-shadow: 0 8px 18px -8px rgba(0,128,105,0.6);
+  }
+  .pay-btn .ic { width: 21px; height: 21px; }
+  .pay-card .meta { padding: 7px 2px 0; }
+
+  /* bookingConfirmed — THE CLOSE. Green header + item summary + detail rows. */
+  .bk-card { max-width: 84%; padding: 0; overflow: hidden; }
+  .bk-top {
+    display: flex; align-items: center; gap: 9px;
+    padding: 11px 14px; background: rgba(0,128,105,0.10);
+  }
+  .bk-top .ic { width: 25px; height: 25px; }
+  .bk-top .bk-ttl { font-size: 21px; font-weight: 800; color: #1c6152; letter-spacing: -0.01em; }
+  .bk-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px 9px; }
+  .bk-thumb { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 8px; overflow: hidden; background: #e6e0d7; }
+  .bk-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .bk-item-txt { flex: 1 1 auto; min-width: 0; }
+  .bk-item-name { font-size: 19px; font-weight: 700; color: #111b21; line-height: 1.16; }
+  .bk-item-meta { font-size: 15px; color: #667781; margin-top: 2px; }
+  .bk-item-price { font-size: 20px; font-weight: 800; color: var(--wa-accent); white-space: nowrap; align-self: flex-start; }
+  .bk-rows { padding: 4px 15px 8px; display: flex; flex-direction: column; gap: 9px; }
+  .bk-row { display: flex; align-items: center; gap: 11px; font-size: 20px; color: #111b21; font-weight: 500; }
+  .bk-row .ic { width: 20px; height: 20px; color: #5b7a72; flex: 0 0 20px; }
+  .bk-card .meta { padding: 0 13px 8px; }
 
   /* ============================================================
      REDUCED MOTION — compose a full static frame (whole exchange).
@@ -252,22 +302,22 @@
 
 <body class="font-urbanist">
   <!-- Fixed 1440x880 canvas so it drops into the landing hero iframe unchanged. -->
-  <div id="stage" aria-label="Ilustración: ReadyChatAI responde automáticamente los mensajes de WhatsApp de Dulce Lina Repostería">
+  <div id="stage" aria-label="Ilustración: ReadyChatAI toma el pedido y cobra por WhatsApp para Dulce Lina Repostería">
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
 
     <!-- Brand headline / AI-speed story (lives on the stage, not inside WhatsApp). -->
     <div class="headline">
       <span class="eyebrow">
-        <span class="wa-badge"><span class="ic" data-ic="wa-logo" data-sz="19"></span></span>
-        WhatsApp · al instante
+        <span class="wa-badge"><span class="ic" data-ic="wa-logo" data-sz="19" data-col="#ffffff"></span></span>
+        WhatsApp para tu repostería
       </span>
-      <h1>Tu WhatsApp responde<br>y <span class="accent">vende solo.</span></h1>
-      <p>El bot atiende cada mensaje al instante, 24/7. Tú solo recibes los pedidos.</p>
+      <h1>Tu WhatsApp toma el pedido<br>y <span class="accent">cobra solo.</span></h1>
+      <p>Responde en segundos, arma la orden completa, manda el link de pago y te confirma la venta — aunque tengas las manos en la masa.</p>
       <div class="ticks">
-        <div class="tick"><span class="ic" data-ic="check" data-sz="26" data-st="2.6"></span> Responde en segundos</div>
-        <div class="tick"><span class="ic" data-ic="check" data-sz="26" data-st="2.6"></span> Atiende día y noche</div>
-        <div class="tick"><span class="ic" data-ic="check" data-sz="26" data-st="2.6"></span> Cierra ventas sin que estés</div>
+        <div class="tick"><span class="ic tick-ic" data-ic="check" data-sz="20" data-st="2.6"></span> Responde al instante con tus sabores, tamaños y precios</div>
+        <div class="tick"><span class="ic tick-ic" data-ic="check" data-sz="20" data-st="2.6"></span> Arma el pedido: producto, cantidad y fecha de entrega</div>
+        <div class="tick"><span class="ic tick-ic" data-ic="check" data-sz="20" data-st="2.6"></span> Envía el link de pago y confirma la orden por ti</div>
       </div>
     </div>
 
@@ -389,9 +439,10 @@
       var presence = document.getElementById('presence');
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      // Authentic, short, legible bakery WhatsApp thread (Dulce Lina · Repostería).
+      // Authentic, founder-approved Dulce Lina order+payment flow (10 turns).
       var TIME = '14:32';
       var TICKS = '<span class="ic" data-ic="check-double" data-sz="18" data-col="' + getComputedStyle(document.documentElement).getPropertyValue('--wa-tick').trim() + '"></span>';
+      var CAKE = 'assets/gen/dulcelina-cake.webp';
 
       function metaOut() { return '<div class="meta"><span class="t">' + TIME + '</span>' + TICKS + '</div>'; }
       function metaIn()  { return '<div class="meta"><span class="t">' + TIME + '</span></div>'; }
@@ -414,29 +465,72 @@
 
       function addDate() { return el('center-pill pill-date', 'HOY'); }
       function addEnc()  { return el('center-pill pill-enc',
-        '<span class="ic" data-ic="info" data-sz="16"></span>Los mensajes están cifrados de extremo a extremo.'); }
+        '<span class="ic" data-ic="lock" data-sz="14"></span>Los mensajes están cifrados de extremo a extremo.'); }
       function addCustomer(t) {
         return el('row out', '<div class="bubble b-out"><div class="btext">' + t + '</div>' + metaOut() + '</div>');
       }
       function addBot(t) {
         return el('row in', '<div class="bubble b-in"><div class="btext">' + t + '</div>' + metaIn() + '</div>');
       }
-      // Photo bubble is a same-sender continuation of BOT2 (no tail, b-cont).
-      function addBotPhoto(cap) {
+
+      // ---- BEAT: productCard (chocolate cake x20, $35.000) — bot continuation. -
+      function addProductCard() {
         return el('row in',
-          '<div class="bubble b-in b-cont b-photo">' +
-            '<div class="ph-img"><img src="assets/gen/bakery-product.webp" alt="Pastel de muestra de Dulce Lina" loading="lazy" decoding="async" /></div>' +
-            '<div class="ph-cap"><div class="btext">' + cap + '</div>' + metaIn() + '</div>' +
+          '<div class="bubble b-in b-cont wa-card pc-card">' +
+            '<div class="pc-img"><img src="' + CAKE + '" alt="Torta de chocolate de Dulce Lina" loading="lazy" decoding="async" /></div>' +
+            '<div class="pc-body">' +
+              '<div class="pc-title">Torta de Chocolate 🍫</div>' +
+              '<div class="pc-sub">Relleno de manjar + cobertura</div>' +
+              '<div class="pc-price">$35.000</div>' +
+              '<div class="pc-chips"><span class="pc-chip">Para 20</span><span class="pc-chip">Personalizada</span></div>' +
+            '</div>' +
+            metaIn() +
           '</div>');
       }
 
-      var CUST1 = 'Hola 👋 ¿Hacen pasteles para el sábado?';
-      var BOT1  = '¡Hola! Sí 🎉 ¿Para cuántas personas?';
-      var CUST2 = 'Para unas 15 🎂';
-      var BOT2  = '¡Perfecto! Te muestro un diseño que encanta 👇';
-      var CAP   = 'Pastel de vainilla con flores naturales 🌸';
+      // ---- BEAT: paymentLink ($35.000, "Pagar ahora") — bot continuation. -----
+      function addPaymentCard() {
+        return el('row in',
+          '<div class="bubble b-in b-cont wa-card pay-card">' +
+            '<div class="pay-head"><span class="ic" data-ic="lock" data-sz="19"></span><span class="lbl">Pago seguro</span></div>' +
+            '<div class="pay-amount">$35.000</div>' +
+            '<div class="pay-sub">Aparta tu torta · expira en 24h</div>' +
+            '<div class="pay-btn"><span class="ic" data-ic="credit-card" data-sz="21" data-col="#ffffff"></span>Pagar ahora<span class="ic" data-ic="arrow-right" data-sz="20" data-col="#ffffff"></span></div>' +
+            metaIn() +
+          '</div>');
+      }
 
-      // ---- Reduced motion: compose the full static 5-message exchange. --------
+      // ---- BEAT: bookingConfirmed (order confirmed for Saturday, pickup) — CLOSE.
+      function addBookingCard() {
+        return el('row in',
+          '<div class="bubble b-in b-cont wa-card bk-card">' +
+            '<div class="bk-top"><span class="ic" data-ic="check-circle-fill" data-sz="25" data-col="#16a34a"></span><span class="bk-ttl">Pedido confirmado</span></div>' +
+            '<div class="bk-item">' +
+              '<div class="bk-thumb"><img src="' + CAKE + '" alt="" loading="lazy" decoding="async" /></div>' +
+              '<div class="bk-item-txt"><div class="bk-item-name">Torta de chocolate × 20</div><div class="bk-item-meta">Placa: “Feliz cumple Mati”</div></div>' +
+              '<div class="bk-item-price">$35.000</div>' +
+            '</div>' +
+            '<div class="bk-rows">' +
+              '<div class="bk-row"><span class="ic" data-ic="calendar" data-sz="20"></span>Sábado · recoges en tienda</div>' +
+              '<div class="bk-row"><span class="ic" data-ic="map-pin" data-sz="20"></span>Dulce Lina · Av. Las Flores 240</div>' +
+            '</div>' +
+            metaIn() +
+          '</div>');
+      }
+
+      // ---- The 10-turn script (lightly trimmed to fit bubbles; meaning + prices kept). --
+      var CUST1 = 'Holaa 🙌 ¿hacen tortas para cumpleaños?';
+      var BOT1  = '¡Hola! Claro que sí 🎂 Hacemos tortas personalizadas. ¿Para cuántas personas y para qué día?';
+      var CUST2 = 'Como pa 20 personas, la quiero el sábado. De chocolate porfa 🍫';
+      var BOT2  = '¡Buenísima elección! 🍫 Torta de chocolate para 20, con relleno de manjar y cobertura. ¿Le ponemos algún mensaje en la placa?';
+      var CUST3 = 'Siii que diga “Feliz cumple Mati” 🥳';
+      var BOT3  = '¡Me encanta! 😍 Una última cosa: ¿la recoges en la tienda o prefieres que te la llevemos?';
+      var CUST4 = 'La recojo yo el sábado 🙌';
+      var BOT4  = 'Perfecto 😍 Te resumo: torta de chocolate ×20, placa “Feliz cumple Mati”, la recoges el sábado. Total $35.000 👇';
+      var CUST5 = 'Ya quedó, acabo de pagar 🙌';
+      var BOT5  = '¡Recibido! 🧾 Tu pedido quedó confirmado para el sábado 💛 Te aviso apenas esté lista. ¡Gracias por elegir a Dulce Lina!';
+
+      // ---- Reduced motion: compose the full static exchange (10 turns + beats).
       if (reduce) {
         addDate().classList.add('shown');
         addEnc().classList.add('shown');
@@ -444,13 +538,24 @@
         addBot(BOT1).classList.add('shown');
         addCustomer(CUST2).classList.add('shown');
         addBot(BOT2).classList.add('shown');
-        addBotPhoto(CAP).classList.add('shown');
+        addProductCard().classList.add('shown');
+        addCustomer(CUST3).classList.add('shown');
+        addBot(BOT3).classList.add('shown');
+        addCustomer(CUST4).classList.add('shown');
+        addBot(BOT4).classList.add('shown');
+        addPaymentCard().classList.add('shown');
+        addCustomer(CUST5).classList.add('shown');
+        addBot(BOT5).classList.add('shown');
+        addBookingCard().classList.add('shown');
         return;
       }
 
-      // ---- Animated timeline — calm, readable cadence (POINT 2). --------------
-      // Each message sits ~3.0s before the next; "escribiendo…" shows ~1.45s
-      // before each bot reply; the full exchange holds ~6s before the reset.
+      // ---- Animated timeline — tightened so the CLOSE lands fast. ------------
+      // "escribiendo…" shows ~0.95s before each bot reply; a rich beat (card)
+      // slides in ~0.65s after its bot text bubble as a same-sender continuation.
+      // Five exchanges build to the CLOSE (bookingConfirmed ~16.5s cycle / ~17s
+      // from load), which then HOLDS ~5.5s as the resting "Pedido confirmado"
+      // money-shot before the feed dissolves and the ~23s loop restarts.
       var timers = [];
       function after(ms, fn) { timers.push(setTimeout(fn, ms)); }
       function clearTimers() { timers.forEach(clearTimeout); timers = []; }
@@ -463,22 +568,39 @@
 
         var t = 0;
 
-        after((t += 400),  function () { reveal(addDate()); reveal(addEnc()); });
+        after((t += 150),  function () { reveal(addDate()); reveal(addEnc()); });
 
         // Exchange 1 — customer asks; bot composes (escribiendo…); calm reply.
-        after((t += 950),  function () { reveal(addCustomer(CUST1)); });
-        after((t += 1550), function () { setTyping(true); });
-        after((t += 1450), function () { setTyping(false); reveal(addBot(BOT1)); });
+        after((t += 600),  function () { reveal(addCustomer(CUST1)); });
+        after((t += 850),  function () { setTyping(true); });
+        after((t += 950),  function () { setTyping(false); reveal(addBot(BOT1)); });
 
-        // Exchange 2 — customer answers; bot confirms, then shows the cake design.
-        after((t += 2900), function () { reveal(addCustomer(CUST2)); });
-        after((t += 1550), function () { setTyping(true); });
-        after((t += 1450), function () { setTyping(false); reveal(addBot(BOT2)); });
-        after((t += 1550), function () { setTyping(true); });
-        after((t += 1450), function () { setTyping(false); reveal(addBotPhoto(CAP)); });
+        // Exchange 2 — order details; bot confirms + sends the productCard.
+        after((t += 1200), function () { reveal(addCustomer(CUST2)); });
+        after((t += 850),  function () { setTyping(true); });
+        after((t += 950),  function () { setTyping(false); reveal(addBot(BOT2)); });
+        after((t += 650),  function () { reveal(addProductCard()); });
 
-        // Calm end-hold (~6s) on the full exchange, then dissolve + loop.
-        after((t += 6000), function () { feed.classList.add('dissolving'); });
+        // Exchange 3 — placa message; bot asks pickup vs delivery.
+        after((t += 1200), function () { reveal(addCustomer(CUST3)); });
+        after((t += 850),  function () { setTyping(true); });
+        after((t += 950),  function () { setTyping(false); reveal(addBot(BOT3)); });
+
+        // Exchange 4 — pickup; bot summarizes + sends the paymentLink.
+        after((t += 1200), function () { reveal(addCustomer(CUST4)); });
+        after((t += 850),  function () { setTyping(true); });
+        after((t += 950),  function () { setTyping(false); reveal(addBot(BOT4)); });
+        after((t += 650),  function () { reveal(addPaymentCard()); });
+
+        // Exchange 5 — customer paid; bot CLOSES with the confirmation card.
+        after((t += 1200), function () { reveal(addCustomer(CUST5)); });
+        after((t += 850),  function () { setTyping(true); });
+        after((t += 950),  function () { setTyping(false); reveal(addBot(BOT5)); });
+        after((t += 650),  function () { reveal(addBookingCard()); });
+
+        // ~5.5s readable end-hold on the CLOSED sale (the money-shot the viewer
+        // rests on), then dissolve + loop.
+        after((t += 5500), function () { feed.classList.add('dissolving'); });
         after((t += 560),  function () { runCycle(); });
       }
 

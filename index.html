@@ -1107,16 +1107,20 @@
     </main>
   <script>
     (function () {
-      // Each variant renders a 1440x880 LANDSCAPE stage on desktop. The two Instagram
-      // variants additionally ship a PORTRAIT 430x900 sibling used on mobile, so the demo
-      // fills a narrow phone column legibly instead of shrinking a wide layout to ~0.2x.
+      // Each variant renders a 1440x880 LANDSCAPE stage on desktop. Every CHANNEL variant
+      // additionally ships a PORTRAIT 430x900 sibling used on mobile, so the demo fills a
+      // narrow phone column legibly instead of shrinking a wide layout to ~0.2x. Each channel
+      // showcases a different bot capability on a different (relatable) business:
+      //   WhatsApp=órdenes+pago · Instagram DM=memoria/FAQ · Messenger=agenda citas ·
+      //   IG Comentarios=comentario→DM→venta · FB Comentarios=anuncio→Messenger→lead · Widget=web atiende+agenda.
       var VARIANTS = [
-        { id: 'whatsapp',  label: 'WhatsApp',       icon: 'ri-whatsapp-line',  src: 'variant-whatsapp.html',    mobileSrc: 'variant-whatsapp-mobile.html',    mW: 430, mH: 900, chrome: false, url: '' },
-        { id: 'instagram', label: 'Instagram',      icon: 'ri-instagram-line', src: 'variant-instagram-a.html', mobileSrc: 'variant-instagram-a-mobile.html', mW: 430, mH: 900, chrome: false, url: '' },
-        { id: 'igcomment', label: 'IG Comentarios', icon: 'ri-chat-3-line',    src: 'variant-instagram-b.html', mobileSrc: 'variant-instagram-b-mobile.html', mW: 430, mH: 900, chrome: false, url: '' },
-        { id: 'concept',   label: 'Multicanal',     icon: 'ri-broadcast-line', src: 'variant-concept.html',     chrome: false, url: '' },
-        { id: 'realtime',  label: 'Dashboard',      icon: 'ri-flashlight-fill', src: 'variant-realtime.html',  chrome: true,  url: 'app.readychatai.com/dashboard/messages' },
-        { id: 'cinematic', label: 'Cinemático',     icon: 'ri-film-fill',       src: 'variant-cinematic.html', chrome: true,  url: 'app.readychatai.com/dashboard/messages' },
+        { id: 'whatsapp',  label: 'WhatsApp',       icon: 'ri-whatsapp-line',     src: 'variant-whatsapp.html',           mobileSrc: 'variant-whatsapp-mobile.html',           mW: 430, mH: 900, chrome: false, url: '' },
+        { id: 'instagram', label: 'Instagram',      icon: 'ri-instagram-line',    src: 'variant-instagram-a.html',        mobileSrc: 'variant-instagram-a-mobile.html',        mW: 430, mH: 900, chrome: false, url: '' },
+        { id: 'messenger', label: 'Messenger',      icon: 'ri-messenger-line',    src: 'variant-facebook-messenger.html', mobileSrc: 'variant-facebook-messenger-mobile.html', mW: 430, mH: 900, chrome: false, url: '' },
+        { id: 'igcomment', label: 'IG Comentarios', icon: 'ri-chat-3-line',       src: 'variant-instagram-b.html',        mobileSrc: 'variant-instagram-b-mobile.html',        mW: 430, mH: 900, chrome: false, url: '' },
+        { id: 'fbcomment', label: 'FB Comentarios', icon: 'ri-facebook-circle-line', src: 'variant-facebook-comments.html', mobileSrc: 'variant-facebook-comments-mobile.html', mW: 430, mH: 900, chrome: false, url: '' },
+        { id: 'widget',    label: 'Widget web',     icon: 'ri-window-2-line',     src: 'variant-widget.html',             mobileSrc: 'variant-widget-mobile.html',             mW: 430, mH: 900, chrome: false, url: '' },
+        { id: 'realtime',  label: 'Dashboard',      icon: 'ri-flashlight-fill',   src: 'variant-realtime.html',           chrome: true,  url: 'app.readychatai.com/dashboard/messages' },
       ];
       var cur = 'whatsapp';
       var tabsEl = document.getElementById('demo-tabs');

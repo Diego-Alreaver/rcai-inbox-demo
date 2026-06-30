@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ReadyChatAI · Comentarios + DMs de Instagram en automático</title>
+<title>ReadyChatAI · Comentarios de Instagram que cierran ventas</title>
 <!-- Inline favicon so the demo emits zero 404s (no external favicon request). -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%237354EF'/%3E%3Ccircle%20cx='12'%20cy='16'%20r='2.6'%20fill='white'/%3E%3Ccircle%20cx='20'%20cy='16'%20r='2.6'%20fill='white'/%3E%3C/svg%3E" />
 
@@ -35,6 +35,8 @@
     --ig-border: #dbdbdb;
     --ig-incoming: #efefef;
     --ig-heart: #ed4956;
+    --ig-accent: #8A3AB9;
+    --ig-grad: linear-gradient(120deg, #3797F0 0%, #5B51D8 46%, #8A3AB9 100%);
   }
   * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
@@ -71,31 +73,40 @@
   .orb-2 { width: 480px; height: 480px; right: -150px; bottom: -130px; background: radial-gradient(circle, rgba(115,84,239,0.40), transparent 70%); }
 
   /* ============================================================
-     BRAND COLUMN (left) — the surrounding RCAI story. The ONLY
-     place we spend boldness: one signature chip + headline. Stays
+     BRAND COLUMN (left) — the surrounding RCAI story. Stays
      Urbanist; never bleeds into the Instagram UI (honesty rule).
+     Eyebrow pill (with IG logo) + headline + sub + 3 ticks,
+     compact so it shares the canvas with the post card.
      ============================================================ */
-  .brand { position: absolute; left: 85px; top: 290px; width: 340px; z-index: 6; }
+  .brand { position: absolute; left: 84px; top: 196px; width: 350px; z-index: 6; }
   .brand-chip {
     display: inline-flex; align-items: center; gap: 9px; white-space: nowrap;
-    font-size: 15px; font-weight: 800; letter-spacing: 0.01em;
+    font-size: 16px; font-weight: 800; letter-spacing: 0.01em;
     color: #7354ef;
     background: rgba(115,84,239,0.09);
-    padding: 8px 16px 8px 10px; border-radius: 9999px;
+    padding: 8px 16px 8px 13px; border-radius: 9999px;
   }
-  .rcai-mark { width: 23px; height: 23px; display: inline-flex; }
+  .brand-chip .ig-mark { display: inline-flex; }
   .brand h1 {
-    margin: 22px 0 0; font-size: 42px; font-weight: 800; line-height: 1.08;
+    margin: 20px 0 0; font-size: 39px; font-weight: 800; line-height: 1.08;
     letter-spacing: -0.025em; color: #101828;
   }
   .brand h1 .accent { color: #7354ef; }
-  .brand p { margin: 18px 0 0; font-size: 20px; font-weight: 500; line-height: 1.42; color: #667085; }
+  .brand p { margin: 16px 0 0; font-size: 19px; font-weight: 500; line-height: 1.4; color: #667085; max-width: 340px; }
+
+  .brand .ticks { margin: 22px 0 0; display: flex; flex-direction: column; gap: 12px; }
+  .brand .tick { display: flex; align-items: flex-start; gap: 11px; font-size: 16.5px; font-weight: 600; color: #344054; line-height: 1.26; }
+  .brand .tick .tick-ic {
+    flex: 0 0 27px; width: 27px; height: 27px; border-radius: 9999px; margin-top: 1px;
+    background: rgba(115,84,239,0.12); color: #7354ef;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
 
   /* ============================================================
      INSTAGRAM POST CARD (center-left) — authentic chrome wrapped
-     around a REAL bakery photo. The customer comment + the public
-     bot auto-reply live here. The supporting actor: narrower than
-     the phone so the device reads as the hero. System font.
+     around a REAL dress photo. The customer comment + the public
+     bot auto-reply live here. Narrower than the phone so the
+     device reads as the hero. System font.
      ============================================================ */
   .post-card {
     position: absolute; left: 495px; top: 60px; z-index: 4;
@@ -111,22 +122,22 @@
   }
   .pc-header { display: flex; align-items: center; gap: 11px; padding: 0 14px; height: 60px; flex: none; }
 
-  /* IG story-ring avatar wrapping the real bakery photo. */
+  /* IG story-ring avatar wrapping the real boutique photo. */
   .ig-ring {
     flex: none; border-radius: 50%; padding: 2.5px;
     background: conic-gradient(from 220deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5, #feda75);
     display: inline-flex;
   }
-  .ig-ring img { display: block; border-radius: 50%; border: 2px solid #fff; object-fit: cover; background: #f3e3ef; }
+  .ig-ring img { display: block; border-radius: 50%; border: 2px solid #fff; object-fit: cover; background: #f3e8ef; }
   .pc-header .ig-ring img { width: 44px; height: 44px; }
   .pc-handle { font-size: 18px; font-weight: 600; color: var(--ig-text); line-height: 1.05; }
   .pc-sub { font-size: 13px; font-weight: 400; color: var(--ig-gray); margin-top: 2px; }
   .pc-more { margin-left: auto; color: var(--ig-text); }
 
-  /* Post media — the REAL chocolate cake. flex-grows to absorb slack so the
+  /* Post media — the REAL dress. flex-grows to absorb slack so the
      two comments below are ALWAYS fully visible; the photo fills the rest. */
-  .pc-media { position: relative; flex: 1 1 auto; min-height: 200px; overflow: hidden; background: #f0e9f6; }
-  .pc-media img { width: 100%; height: 100%; object-fit: cover; object-position: center 45%; display: block; }
+  .pc-media { position: relative; flex: 1 1 auto; min-height: 200px; overflow: hidden; background: #efe7f3; }
+  .pc-media img { width: 100%; height: 100%; object-fit: cover; object-position: center 36%; display: block; }
 
   .pc-actions { display: flex; align-items: center; gap: 16px; padding: 10px 14px 4px; flex: none; color: var(--ig-text); }
   .pc-actions .ico { color: var(--ig-text); }
@@ -139,7 +150,7 @@
 
   .comment { display: flex; align-items: flex-start; gap: 12px; padding: 6px 0; }
   .comment .c-av { flex: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; overflow: hidden; }
-  .comment .c-av.cust { width: 44px; height: 44px; font-size: 18px; background: linear-gradient(135deg, #fbc2eb 0%, #f78fb3 100%); }
+  .comment .c-av.cust { width: 44px; height: 44px; font-size: 18px; background: linear-gradient(135deg, #f7b8d6 0%, #e98aae 100%); }
   .c-body { flex: 1; min-width: 0; }
   .c-name { font-size: 17px; font-weight: 600; color: var(--ig-text); line-height: 1.12; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .c-text { font-size: 22px; line-height: 1.3; color: var(--ig-text); margin-top: 3px; }
@@ -148,8 +159,7 @@
 
   /* Nested reply thread — the business auto-reply is indented UNDER Sofía's
      comment with the authentic IG "⎯ Ver respuestas (1)" affordance + a smaller
-     business avatar, so it clearly reads as a REPLY, not a second top-level
-     comment. */
+     business avatar, so it clearly reads as a REPLY, not a second top-level comment. */
   .reply-block { margin-left: 44px; display: flex; flex-direction: column; }
   .reply-toggle { display: flex; align-items: center; gap: 11px; font-size: 13px; font-weight: 600; color: var(--ig-gray); padding: 4px 0 2px; }
   .reply-toggle .rt-dash { width: 26px; height: 1px; background: #c7c7c7; flex: none; }
@@ -166,8 +176,7 @@
   /* ============================================================
      CONNECTOR — slim brand-layer flow cue (NOT fake IG UI) that
      narrates the comment -> DM jump. Sits in the gutter between the
-     post and the phone, at the post's mid-height. No filled circle,
-     no heavy shadow: just a flipped chevron + a two-word label.
+     post and the phone, at the post's mid-height.
      ============================================================ */
   .connector {
     position: absolute; z-index: 7; left: 871px; top: 415px; width: 64px;
@@ -183,8 +192,7 @@
   /* ============================================================
      PHONE / DM PANEL (right) — the dominant hero device. Slides in.
      Authentic IG DM: gray incoming bot bubble + IG-gradient outgoing
-     customer bubble. System font inside. Text-only thread about the
-     SAME chocolate cake shown in the post.
+     customer bubble. Carries the product card + payment link beats.
      ============================================================ */
   .phone {
     position: absolute; z-index: 4; left: 951px; top: 12px;
@@ -216,7 +224,7 @@
 
   /* DM thread — a REAL scroll container. Starts with an authentic IG new-thread
      intro at the top; as the conversation grows past the screen it scrolls so the
-     newest bubble bottom-anchors (intro + oldest messages scroll up off the top),
+     newest beat bottom-anchors (intro + oldest messages scroll up off the top),
      exactly like a live chat. Scrollbar hidden for a clean device look. */
   .dm-thread { flex: 1; padding: 14px 16px 10px; display: flex; flex-direction: column; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; -ms-overflow-style: none; scrollbar-width: none; overscroll-behavior: contain; }
   .dm-thread::-webkit-scrollbar { width: 0; height: 0; display: none; }
@@ -233,13 +241,47 @@
   .dm-row { display: flex; align-items: flex-end; gap: 8px; max-width: 100%; margin-top: 12px; }
   .dm-row.in { justify-content: flex-start; }
   .dm-row.out { justify-content: flex-end; }
-  .av-sm { width: 32px; height: 32px; border-radius: 50%; flex: none; object-fit: cover; background: #f3e3ef; }
+  .av-sm { width: 32px; height: 32px; border-radius: 50%; flex: none; object-fit: cover; background: #f3e8ef; }
   .dm-bubble { max-width: 285px; padding: 12px 17px; font-size: 24px; line-height: 1.32; font-weight: 400; border-radius: 24px; }
   .dm-bubble.incoming { background: var(--ig-incoming); color: var(--ig-text); border-bottom-left-radius: 7px; }
-  .dm-bubble.outgoing { color: #fff; border-bottom-right-radius: 7px; background: linear-gradient(120deg, #3797F0 0%, #5B51D8 46%, #8A3AB9 100%); }
+  .dm-bubble.outgoing { color: #fff; border-bottom-right-radius: 7px; background: var(--ig-grad); }
 
   .dm-row.reveal { opacity: 0; transform: translateY(16px); }
   .dm-row.reveal.show { opacity: 1; transform: none; transition: opacity 460ms ease, transform 560ms cubic-bezier(0.22,1,0.36,1); }
+
+  /* ---- BEAT: productCard (bot side) — dress image + title + price + size chips ---- */
+  .dm-card {
+    max-width: 286px; background: #fff;
+    border: 1px solid #e7e7e7; border-radius: 20px; border-bottom-left-radius: 7px;
+    overflow: hidden; box-shadow: 0 14px 32px -18px rgba(16,24,40,0.32);
+  }
+  .dm-card-img { width: 100%; aspect-ratio: 16 / 11; object-fit: cover; object-position: center 32%; display: block; background: #efe7f3; }
+  .dm-card-body { padding: 12px 15px 14px; }
+  .dm-card-title { font-size: 21px; font-weight: 700; color: var(--ig-text); line-height: 1.18; }
+  .dm-card-meta { font-size: 14.5px; font-weight: 500; color: var(--ig-gray); margin-top: 3px; }
+  .dm-card-price { font-size: 29px; font-weight: 800; color: var(--ig-accent); margin-top: 7px; letter-spacing: -0.01em; }
+  .dm-card-chips { display: flex; align-items: center; gap: 8px; margin-top: 11px; flex-wrap: wrap; }
+  .chip { min-width: 38px; height: 34px; padding: 0 13px; border-radius: 9999px; border: 1.5px solid var(--ig-border); display: inline-flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: var(--ig-text); }
+  .chip.sel { background: var(--ig-grad); color: #fff; border-color: transparent; box-shadow: 0 8px 18px -10px rgba(106,49,185,0.65); }
+  .dm-card-note { font-size: 15px; font-weight: 700; color: #2e9e6a; margin-left: 2px; }
+
+  /* ---- BEAT: paymentLink (bot side) — secure-payment card with CTA pill ---- */
+  .dm-pay {
+    max-width: 286px; background: #fff;
+    border: 1px solid #e7e7e7; border-radius: 20px; border-bottom-left-radius: 7px;
+    padding: 15px 16px 16px; box-shadow: 0 14px 32px -18px rgba(16,24,40,0.32);
+  }
+  .pay-top { display: flex; align-items: center; gap: 8px; font-size: 14.5px; font-weight: 700; color: var(--ig-gray); letter-spacing: 0.01em; }
+  .pay-top .ico { color: #2e9e6a; }
+  .pay-amount { font-size: 31px; font-weight: 800; color: var(--ig-text); margin-top: 8px; letter-spacing: -0.01em; }
+  .pay-meta { font-size: 14px; font-weight: 500; color: var(--ig-gray); margin-top: 2px; }
+  .pay-btn {
+    margin-top: 13px; height: 48px; border-radius: 9999px; background: var(--ig-grad);
+    color: #fff; font-size: 19px; font-weight: 800; letter-spacing: 0.01em;
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    box-shadow: 0 12px 26px -12px rgba(106,49,185,0.6);
+  }
+  .pay-btn .ico { color: #fff; }
 
   /* Typing dots (authentic IG: gray bubble with 3 dots) */
   .typing-bubble { background: var(--ig-incoming); border-radius: 24px; border-bottom-left-radius: 7px; padding: 15px 18px; display: flex; gap: 8px; }
@@ -260,8 +302,10 @@
   .dissolving .phone.show { transform: translateX(34px) scale(0.99) !important; transition: opacity 460ms ease, transform 460ms ease !important; }
 
   /* ============================================================
-     REDUCED MOTION — static composed frame: BOTH the public reply
-     AND the full text-only DM (answer + reaction + price) visible.
+     REDUCED MOTION — static composed frame: the public reply AND
+     the full DM (product card collapsed to a compact line + payment
+     line + paid close) visible. Cards collapse to text so the
+     no-scroll frame never clips.
      ============================================================ */
   @media (prefers-reduced-motion: reduce) {
     .reveal, .connector, .phone, .dm-row.reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
@@ -281,35 +325,38 @@
 
 <body class="font-urbanist">
   <!-- Stage is a fixed 1440x880 canvas so it drops into the landing hero iframe unchanged. -->
-  <div id="stage" aria-label="Ilustración: ReadyChatAI responde un comentario de Instagram en público y continúa la venta por mensaje directo, sobre el mismo pastel de chocolate del post">
+  <div id="stage" aria-label="Ilustración: ReadyChatAI responde un comentario de Instagram en público y cierra la venta por mensaje directo con ficha de producto y link de pago, sobre el mismo Vestido Aura midi del post">
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
 
-    <!-- ===== Brand column (the one bold RCAI signature) ===== -->
+    <!-- ===== Brand column (eyebrow + headline + sub + 3 ticks) ===== -->
     <div class="brand">
       <span class="brand-chip">
-        <span class="rcai-mark">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="23" height="23"><rect width="32" height="32" rx="9" fill="#7354EF"/><circle cx="12" cy="16" r="2.7" fill="#fff"/><circle cx="20" cy="16" r="2.7" fill="#fff"/></svg>
-        </span>
-        Comentarios + DMs automáticos
+        <span class="ig-mark ico" data-icon="ig-logo" data-size="20"></span>
+        Comentarios de Instagram
       </span>
-      <h1>Tu Instagram<br>responde y <span class="accent">vende solo.</span></h1>
-      <p>El bot responde el comentario en público y cierra la venta por DM — sobre el mismo pastel que viste.</p>
+      <h1>Tus comentarios de Instagram<br><span class="accent">ahora cierran ventas.</span></h1>
+      <p>Tu boutique responde cada "¿precio?" al instante, lleva la charla al DM con foto y link de pago, y cierra la venta — aunque estés durmiendo.</p>
+      <div class="ticks">
+        <div class="tick"><span class="ico tick-ic" data-icon="check" data-size="16" data-stroke="2.7"></span> Responde precio y tallas al instante, en público o por DM</div>
+        <div class="tick"><span class="ico tick-ic" data-icon="check" data-size="16" data-stroke="2.7"></span> Mueve el comentario a DM con ficha de producto y pago</div>
+        <div class="tick"><span class="ico tick-ic" data-icon="check" data-size="16" data-stroke="2.7"></span> Te guarda la talla y cierra la venta 24/7</div>
+      </div>
     </div>
 
-    <!-- ===== Instagram POST card (real chocolate-cake photo) ===== -->
+    <!-- ===== Instagram POST card (real Aura dress photo) ===== -->
     <section class="post-card">
       <div class="pc-header">
-        <span class="ig-ring"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></span>
+        <span class="ig-ring"><img src="assets/gen/aura-avatar.webp" alt="Aura Boutique" decoding="async" /></span>
         <div>
-          <div class="pc-handle">dulcelina.reposteria</div>
-          <div class="pc-sub">Repostería artesanal</div>
+          <div class="pc-handle">aura.boutique</div>
+          <div class="pc-sub">Moda femenina</div>
         </div>
         <span class="ico pc-more" data-icon="more-h" data-size="22"></span>
       </div>
 
       <div class="pc-media">
-        <img src="assets/gen/bakery-post.webp" alt="Pastel de chocolate y frutos rojos" decoding="async" />
+        <img src="assets/gen/aura-dress.webp" alt="Vestido Aura midi en lino" decoding="async" />
       </div>
 
       <div class="pc-actions">
@@ -318,29 +365,29 @@
         <span class="ico" data-icon="ig-share" data-size="26"></span>
         <span class="ico spacer" data-icon="ig-bookmark" data-size="26"></span>
       </div>
-      <div class="pc-likes">342 Me gusta</div>
-      <div class="pc-caption"><b>dulcelina.reposteria</b> Pastel de chocolate y frutos rojos 🍫🍓</div>
+      <div class="pc-likes">1.284 Me gusta</div>
+      <div class="pc-caption"><b>aura.boutique</b> ✨ Nuevo drop: Vestido Aura midi en lino 🤍 #NuevaColección</div>
 
       <div class="pc-comments">
-        <!-- Customer comment (asks about THE cake in the photo) -->
+        <!-- Customer comment (asks price + size about THE dress in the photo) -->
         <div class="comment reveal" id="comment-customer">
-          <div class="c-av cust">S</div>
+          <div class="c-av cust">V</div>
           <div class="c-body">
-            <div class="c-name">sofia.delgado</div>
-            <div class="c-text">¿Este pastel está disponible para el sábado? 😍</div>
+            <div class="c-name">valen.rios</div>
+            <div class="c-text">Aaay me encanta 😍 cuánto cuesta?? y queda en talla M??</div>
             <div class="c-meta"><span>2 h</span><span>Me gusta</span><span>Responder</span></div>
           </div>
           <span class="ico c-like" data-icon="ig-like" data-size="20"></span>
         </div>
 
-        <!-- Nested reply: the public bot auto-reply, indented UNDER Sofía -->
+        <!-- Nested reply: the public bot auto-reply, indented UNDER the commenter -->
         <div class="reply-block reveal" id="comment-reply">
           <div class="reply-toggle"><span class="rt-dash"></span>Ver respuestas (1)</div>
           <div class="comment reply">
-            <div class="c-av"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></div>
+            <div class="c-av"><img src="assets/gen/aura-avatar.webp" alt="Aura Boutique" decoding="async" /></div>
             <div class="c-body">
-              <div class="c-name">dulcelina.reposteria</div>
-              <div class="c-text">¡Hola Sofía! 🎉 Sí 💜 Te escribimos por DM con los detalles</div>
+              <div class="c-name">aura.boutique</div>
+              <div class="c-text">¡Hola hermosa! 🤍 Te escribimos por DM con el precio y las tallas ✨</div>
               <div class="c-meta"><span>Ahora</span><span>Me gusta</span><span>Responder</span></div>
             </div>
             <span class="ico c-like" data-icon="ig-heart" data-size="18" data-color="#8e8e8e"></span>
@@ -370,9 +417,9 @@
 
         <div class="dm-header">
           <span class="ico dm-back" data-icon="chevron-left" data-size="26" data-stroke="2.4"></span>
-          <span class="ig-ring"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></span>
+          <span class="ig-ring"><img src="assets/gen/aura-avatar.webp" alt="Aura Boutique" decoding="async" /></span>
           <div class="dm-id">
-            <div class="dm-handle">dulcelina.reposteria</div>
+            <div class="dm-handle">aura.boutique</div>
             <div class="dm-active">Activa ahora</div>
           </div>
           <div class="dm-call">
@@ -384,9 +431,9 @@
         <div class="dm-thread">
           <!-- Native IG thread-top: profile mini-card + "Hoy" date separator. -->
           <div class="thread-intro">
-            <span class="ig-ring"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></span>
-            <div class="ti-name">dulcelina.reposteria</div>
-            <div class="ti-meta">Instagram · 12,4 mil seguidores</div>
+            <span class="ig-ring"><img src="assets/gen/aura-avatar.webp" alt="Aura Boutique" decoding="async" /></span>
+            <div class="ti-name">aura.boutique</div>
+            <div class="ti-meta">Instagram · 24,1 mil seguidores</div>
             <div class="ti-date">Hoy</div>
           </div>
           <div class="dm-feed" id="dm-feed"></div>
@@ -430,19 +477,46 @@
       var feed        = document.getElementById('dm-feed');
       var thread      = document.querySelector('.dm-thread');
 
-      var AV   = '<img class="av-sm" src="assets/gen/bakery-avatar.webp" alt="" loading="lazy" decoding="async" />';
+      var AV   = '<img class="av-sm" src="assets/gen/aura-avatar.webp" alt="" loading="lazy" decoding="async" />';
       var DOTS = '<span></span><span></span><span></span>';
 
-      // Bot talks about the SAME chocolate cake shown in the post (text-only, cleaner).
-      var BOT1  = '¡Hola Sofía! 🍫 El pastel de chocolate y frutos rojos está disponible para el sábado.';
-      var CUST  = '¡Genial! ¿Cuánto cuesta? 😍';
-      var BOT2  = 'Cuesta $45.000 con entrega 🚚 ¿Te lo aparto?';
-      // Closing exchange — the bot actually CLOSES the sale by DM (stage copy: "cierra la venta por DM").
-      var CUST2 = '¡Sí, porfa! 🙌';
-      var BOT3  = '¡Listo! Confirmado para el sábado ✅';
+      // The DM closes the sale the commenter started in public: the bot greets,
+      // sends the product card (dress + price + sizes, M in stock), the customer
+      // asks how to pay, the bot sends the payment link, the customer pays. CLOSE.
+      var BOT_CARD_INTRO = '¡Hola! 🤍 Te paso los detalles del que comentaste 👇';
+      var CUST_BUY       = 'siií porfa lo quiero en M 🥹 cómo pago?';
+      var BOT_PAY_INTRO  = '¡Listo, te guardé la M! 🎉 Asegúralo acá 👇 (queda reservado 30 min)';
+      var CUST_PAID      = 'ya hice el pago 🤍✨ graciaaas, no veo la hora de estrenarlo 🥹';
 
-      // Keep the newest bubble bottom-anchored: scroll the thread to its end as
-      // each message/typing-indicator lands, so the close is always on screen.
+      // The product card + payment link beats (rich messages on the bot side).
+      var CARD_HTML =
+        '<div class="dm-card">' +
+          '<img class="dm-card-img" src="assets/gen/aura-dress.webp" alt="Vestido Aura midi en lino" loading="lazy" decoding="async" />' +
+          '<div class="dm-card-body">' +
+            '<div class="dm-card-title">Vestido Aura midi · lino</div>' +
+            '<div class="dm-card-meta">Envío gratis · despacho hoy</div>' +
+            '<div class="dm-card-price">$139.900</div>' +
+            '<div class="dm-card-chips">' +
+              '<span class="chip">S</span><span class="chip sel">M</span><span class="chip">L</span>' +
+              '<span class="dm-card-note">¡sí hay M! 🙌</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      var PAY_HTML =
+        '<div class="dm-pay">' +
+          '<div class="pay-top"><span class="ico" data-icon="lock" data-size="16" data-stroke="2.2"></span> Pago seguro</div>' +
+          '<div class="pay-amount">$139.900</div>' +
+          '<div class="pay-meta">Vestido Aura midi · Talla M · Reservado 30 min</div>' +
+          '<div class="pay-btn">Pagar ahora <span class="ico" data-icon="arrow-right" data-size="20" data-stroke="2.4"></span></div>' +
+        '</div>';
+
+      // Reduced-motion fallback: collapse the rich cards to compact lines that fit
+      // the no-scroll static frame.
+      var CARD_TEXT = '👗 Vestido Aura midi · lino — <b>$139.900</b> · Tallas S · M · L (¡sí hay M! 🙌)';
+      var PAY_TEXT  = '🔒 Pago seguro · <b>$139.900</b> · Talla M — Pagar ahora →';
+
+      // Keep the newest beat bottom-anchored: scroll the thread to its end as each
+      // message/card/typing-indicator lands, so the close is always on screen.
       function scrollDown(smooth) {
         if (!thread) return;
         requestAnimationFrame(function () {
@@ -461,24 +535,21 @@
       }
       function botText(t)  { return el('dm-row in reveal',  AV + '<div class="dm-bubble incoming">' + t + '</div>'); }
       function custText(t) { return el('dm-row out reveal', '<div class="dm-bubble outgoing">' + t + '</div>'); }
+      function botBeat(h)  { var n = el('dm-row in reveal', AV + h); paintIcons(n); return n; }
       function typing()    { return el('dm-row in typing-row', AV + '<div class="typing-bubble" id="dm-typing">' + DOTS + '</div>'); }
 
-      function showStatic() {
-        botText(BOT1).classList.add('show');
-        custText(CUST).classList.add('show');
-        botText(BOT2).classList.add('show');
-        custText(CUST2).classList.add('show');
-        botText(BOT3).classList.add('show');
-      }
-
-      // ---- Reduced motion: compose the full static frame (public reply + full DM).
+      // ---- Reduced motion: compose the full static frame (public reply + DM).
       if (reduce) {
         elCust.classList.add('show');
         elReply.classList.add('show');
         elConnector.classList.add('show');
         elPhone.classList.add('show');
-        showStatic();
-        scrollDown(false);   // bottom-anchor the static frame so the close ("¡Listo!…") is on screen
+        botText(BOT_CARD_INTRO).classList.add('show');
+        botText(CARD_TEXT).classList.add('show');
+        custText(CUST_BUY).classList.add('show');
+        botText(PAY_TEXT).classList.add('show');
+        custText(CUST_PAID).classList.add('show');
+        scrollDown(false);   // bottom-anchor so the paid close is on screen
         return;
       }
 
@@ -491,34 +562,34 @@
         feed.innerHTML = '';
         if (thread) thread.scrollTop = 0;   // reset to the thread-intro top for each loop
         var typingNode = null;
+        function clearTyping() { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode); typingNode = null; }
 
-        // POST: customer comment, then a calm public auto-reply.
+        // POST: customer comment, then the public auto-reply ("te escribimos por DM").
         after(400,  function () { elCust.classList.add('show'); });
-        after(3300, function () { elReply.classList.add('show'); });
+        after(3100, function () { elReply.classList.add('show'); });
 
         // Brand cue + DM phone slide in.
-        after(4200, function () { elConnector.classList.add('show'); elPhone.classList.add('show'); });
+        after(4100, function () { elConnector.classList.add('show'); elPhone.classList.add('show'); });
 
-        // DM: typing -> bot answers about the SAME chocolate cake.
-        after(5100, function () { typingNode = typing(); reveal(typingNode); });
-        after(6550, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
-                                  reveal(botText(BOT1)); });
+        // DM: typing -> bot greets and sends the PRODUCT CARD beat.
+        after(5050, function () { typingNode = typing(); reveal(typingNode); });
+        after(6500, function () { clearTyping(); reveal(botText(BOT_CARD_INTRO)); });
+        after(7250, function () { reveal(botBeat(CARD_HTML)); });
 
-        // Customer asks the price; bot quotes it and offers to reserve.
-        after(9550,  function () { reveal(custText(CUST)); });
-        after(10900, function () { typingNode = typing(); reveal(typingNode); });
-        after(12350, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
-                                   reveal(botText(BOT2)); });
+        // Customer commits to size M and asks how to pay.
+        after(10100, function () { reveal(custText(CUST_BUY)); });
+        after(11350, function () { typingNode = typing(); reveal(typingNode); });
 
-        // Customer says yes; bot CLOSES the sale. The thread now overflows, so each
-        // of these lands with a visible auto-scroll — the close sits at the bottom.
-        after(14200, function () { reveal(custText(CUST2)); });
-        after(15400, function () { typingNode = typing(); reveal(typingNode); });
-        after(16850, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
-                                   reveal(botText(BOT3)); });
+        // Bot confirms the reserve and sends the PAYMENT LINK beat.
+        after(12800, function () { clearTyping(); reveal(botText(BOT_PAY_INTRO)); });
+        after(13550, function () { reveal(botBeat(PAY_HTML)); });
 
-        // Long readable end-hold (close fully on screen), then a clean dissolve + loop.
-        after(16850 + 6000, function () {
+        // Customer pays — the CLOSE. The thread has overflowed, so this lands with a
+        // visible auto-scroll and the payment card + paid message sit at the bottom.
+        after(16300, function () { reveal(custText(CUST_PAID)); });
+
+        // Long readable end-hold on the closed sale, then a clean dissolve + loop.
+        after(16300 + 6000, function () {
           stage.classList.add('dissolving');
           after(640, function () {
             elCust.classList.remove('show');

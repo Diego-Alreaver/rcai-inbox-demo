@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ReadyChatAI · Tu Instagram contesta como tú, en segundos</title>
+<title>ReadyChatAI · Tu agenda se llena sola por Messenger</title>
 <!-- Inline favicon so the demo emits zero 404s (no external favicon request). -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%237354EF'/%3E%3Ccircle%20cx='12'%20cy='16'%20r='2.6'%20fill='white'/%3E%3Ccircle%20cx='20'%20cy='16'%20r='2.6'%20fill='white'/%3E%3C/svg%3E" />
 
@@ -29,11 +29,12 @@
     --font-urbanist: 'Urbanist', sans-serif;
 
     /* Inside the phone: the platform's OWN system font (reads native, not branded). */
-    --ig-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --fb-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
 
-    /* Instagram DM sent-bubble gradient (authentic: blue -> purple). */
-    --ig-sent: linear-gradient(135deg, #3A7BDE 0%, #4F5BD5 34%, #6D3DC4 72%, #8A3AB9 100%);
-    --ig-gray: #efefef;
+    /* Facebook Messenger palette (authentic modern light scheme). */
+    --fb-blue: #0084FF;       /* Messenger blue: sent bubble, chrome accents */
+    --fb-gray: #f0f0f0;       /* received (bot) bubble */
+    --fb-input: #f0f2f5;      /* composer input pill */
   }
   * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
@@ -67,13 +68,13 @@
   }
   .orb { position: absolute; border-radius: 9999px; filter: blur(60px); pointer-events: none; opacity: 0.5; }
   .orb-1 { width: 420px; height: 420px; left: -120px; top: -90px;  background: radial-gradient(circle, rgba(158,119,237,0.45), transparent 70%); }
-  .orb-2 { width: 480px; height: 480px; right: -150px; bottom: -130px; background: radial-gradient(circle, rgba(115,84,239,0.40), transparent 70%); }
+  .orb-2 { width: 480px; height: 480px; right: -150px; bottom: -130px; background: radial-gradient(circle, rgba(0,132,255,0.26), transparent 70%); }
 
   /* ============================================================
      HEADLINE — brand + "instant AI" story lives AROUND the phone,
-     NEVER inside the Instagram UI (honesty requirement).
+     NEVER inside the Messenger UI (honesty requirement).
      ============================================================ */
-  .headline { position: absolute; left: 104px; top: 230px; width: 600px; z-index: 6; }
+  .headline { position: absolute; left: 104px; top: 214px; width: 600px; z-index: 6; }
   .eyebrow {
     display: inline-flex; align-items: center; gap: 10px;
     font-size: 19px; font-weight: 800; letter-spacing: 0.03em;
@@ -82,17 +83,17 @@
     padding: 9px 18px; border-radius: 9999px;
   }
   .eyebrow .bolt { color: #f5a623; }
-  .eyebrow .ig-mark { display: inline-flex; }
+  .eyebrow .fb-mark { display: inline-flex; }
   .headline h1 {
     margin: 22px 0 0; font-size: 46px; font-weight: 800; line-height: 1.06;
     letter-spacing: -0.027em; color: #101828;
   }
   .headline h1 .accent { color: #7354ef; }
   .headline p {
-    margin: 18px 0 0; font-size: 25px; font-weight: 500; line-height: 1.38; color: #667085;
-    max-width: 520px;
+    margin: 18px 0 0; font-size: 24px; font-weight: 500; line-height: 1.38; color: #667085;
+    max-width: 540px;
   }
-  .ticks { margin: 28px 0 0; display: flex; flex-direction: column; gap: 14px; }
+  .ticks { margin: 26px 0 0; display: flex; flex-direction: column; gap: 14px; }
   .tick { display: flex; align-items: center; gap: 13px; font-size: 24px; font-weight: 600; color: #344054; }
   .tick .tick-ic {
     flex: 0 0 34px; width: 34px; height: 34px; border-radius: 9999px;
@@ -100,10 +101,8 @@
   }
 
   /* ============================================================
-     PHONE — a real modern smartphone: tall + narrow (404x860,
-     ~9:19.1, ~98% of 880 tall). The device carries the piece;
-     in-phone text stays elegantly sized (not shrunk to fit) so
-     bubbles wrap to 2-3 lines like a real phone.
+     PHONE — a real modern smartphone: tall + narrow (404x860).
+     KEEP THESE NUMBERS EXACT so every hero tab lines up.
      ============================================================ */
   #phone {
     position: absolute; left: 872px; top: 10px; z-index: 5;
@@ -113,7 +112,7 @@
     padding: 12px;
     box-shadow:
       0 50px 90px -30px rgba(16,24,40,0.50),
-      0 14px 40px -16px rgba(115,84,239,0.30),
+      0 14px 40px -16px rgba(0,132,255,0.28),
       0 0 0 1px rgba(16,24,40,0.04);
   }
   .screen {
@@ -123,7 +122,7 @@
     border-radius: 37px;
     overflow: hidden;
     display: flex; flex-direction: column;
-    font-family: var(--ig-font);
+    font-family: var(--fb-font);
   }
   /* Dynamic-island hint. */
   .island {
@@ -139,31 +138,37 @@
   .sb-time { font-size: 15px; font-weight: 700; letter-spacing: 0.02em; }
   .sb-icons { display: flex; align-items: center; gap: 8px; }
 
-  /* Instagram DM header. */
-  .ig-header {
+  /* Messenger conversation header (white surface, blue accents). */
+  .fb-header {
     flex: 0 0 64px; display: flex; align-items: center; gap: 0;
-    padding: 0 14px; border-bottom: 1px solid #efefef; background: #fff;
+    padding: 0 14px; border-bottom: 1px solid #ededed; background: #fff;
   }
-  .ig-header .back { color: #111; margin-right: 5px; }
-  .ig-avatar {
+  .fb-header .back { color: var(--fb-blue); margin-right: 8px; }
+  .fb-avatar {
+    position: relative;
     flex: 0 0 42px; width: 42px; height: 42px; border-radius: 50%;
-    overflow: hidden; background: #e7f3ea;
+    overflow: hidden; background: #f6e7ee;
     box-shadow: 0 3px 10px -4px rgba(16,24,40,0.35);
     margin-right: 10px;
   }
-  .ig-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .ig-id { flex: 1 1 auto; min-width: 0; }
-  .ig-name {
-    font-size: 18px; font-weight: 700; color: #0a0a0a; letter-spacing: -0.02em;
+  .fb-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fb-avatar .dot {
+    position: absolute; right: -1px; bottom: -1px; width: 12px; height: 12px;
+    border-radius: 50%; background: #31cc6a; border: 2px solid #fff;
+  }
+  .fb-id { flex: 1 1 auto; min-width: 0; }
+  .fb-name {
+    font-size: 18px; font-weight: 700; color: #050505; letter-spacing: -0.02em;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.08;
   }
-  .ig-status { font-size: 13px; font-weight: 400; color: #8e8e8e; margin-top: 2px; }
-  .ig-header .hdr-ic { color: #111; }
-  .ig-header .hdr-ic.call { margin-left: 4px; margin-right: 12px; }
+  .fb-status { font-size: 13px; font-weight: 400; color: #8a8d91; margin-top: 2px; }
+  .fb-header .hdr-ic { color: var(--fb-blue); }
+  .fb-header .hdr-ic.call { margin-left: 4px; margin-right: 14px; }
+  .fb-header .hdr-ic.video { margin-right: 14px; }
 
   /* Thread — clips overflow; the feed is BOTTOM-anchored (chat scrolled to
      newest). justify-content:flex-end makes a tall feed overflow at the TOP
-     (oldest date/message clips, realistic) so the newest bot reply is always
+     (oldest message clips, realistic) so the newest bot reply is always
      fully visible above the composer — never bottom-clipped. */
   .thread {
     flex: 1 1 auto; overflow: hidden;
@@ -171,9 +176,11 @@
     padding: 12px 14px 14px;
     background: #fff;
   }
+  .feed { display: flex; flex-direction: column; }
+  .feed.dissolving { opacity: 0; transition: opacity 0.5s ease; }
 
   .row {
-    display: flex; margin-top: 13px;
+    display: flex; margin-top: 11px;
     opacity: 0; transform: translateY(16px);
     transition: opacity 0.4s ease, transform 0.46s cubic-bezier(0.22,1,0.36,1);
   }
@@ -181,6 +188,8 @@
   .row.out { justify-content: flex-end; }
   .row.in  { justify-content: flex-start; align-items: flex-end; gap: 8px; }
   .row.date-row { justify-content: center; margin: 6px 0 2px; }
+  /* Beat rows (chips / card) nest under the bot bubble: indent past the avatar gutter. */
+  .row.beat { padding-left: 42px; }
 
   .datestamp { font-size: 15px; font-weight: 600; color: #b0b0b0; letter-spacing: 0.03em; }
 
@@ -190,74 +199,98 @@
     font-size: 24px; line-height: 1.32; font-weight: 400;
     border-radius: 21px;
     word-wrap: break-word;
+    white-space: pre-line;
   }
   .msg-out {
-    background: var(--ig-sent); color: #fff;
-    border-bottom-right-radius: 8px;
-    box-shadow: 0 10px 22px -12px rgba(106,49,185,0.55);
+    background: var(--fb-blue); color: #fff;
+    border-bottom-right-radius: 7px;
+    box-shadow: 0 10px 22px -13px rgba(0,132,255,0.55);
   }
   .msg-in {
-    background: var(--ig-gray); color: #0a0a0a;
-    border-bottom-left-radius: 8px;
+    background: var(--fb-gray); color: #050505;
+    border-bottom-left-radius: 7px;
   }
 
   /* Small business avatar beside bot (received) bubbles. */
   .av-sm {
     flex: 0 0 34px; width: 34px; height: 34px; border-radius: 50%;
-    overflow: hidden; background: #e7f3ea; margin-bottom: 2px;
+    overflow: hidden; background: #f6e7ee; margin-bottom: 2px;
   }
   .av-sm img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-  /* Instagram typing-dots indicator (gray bubble). */
+  /* Messenger typing-dots indicator (gray bubble). */
   .msg.typing { display: flex; align-items: center; gap: 8px; padding: 15px 17px; }
   .msg.typing span {
     width: 11px; height: 11px; border-radius: 50%; background: #b0b0b0;
-    animation: igdot 1.2s infinite ease-in-out;
+    animation: fbdot 1.2s infinite ease-in-out;
   }
   .msg.typing span:nth-child(2) { animation-delay: 0.18s; }
   .msg.typing span:nth-child(3) { animation-delay: 0.36s; }
-  @keyframes igdot {
+  @keyframes fbdot {
     0%, 80%, 100% { transform: translateY(0);   opacity: 0.40; }
     40%           { transform: translateY(-8px); opacity: 1; }
   }
 
-  /* Instagram composer (at rest — never typed into). */
+  /* ---- slotPicker beat: a row of quick-reply / mini-calendar chips. -------- */
+  .slots { display: flex; flex-wrap: wrap; gap: 9px; max-width: 300px; }
+  .slot-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 14px; border-radius: 9999px;
+    border: 1.5px solid var(--fb-blue); color: var(--fb-blue);
+    background: #fff; font-size: 18px; font-weight: 700; letter-spacing: -0.01em;
+    box-shadow: 0 5px 14px -10px rgba(0,132,255,0.5);
+    transition: background 0.35s ease, color 0.35s ease, transform 0.35s ease;
+  }
+  .slot-chip .ic { color: inherit; }
+  .slot-chip.picked {
+    background: var(--fb-blue); color: #fff; border-color: var(--fb-blue);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px -10px rgba(0,132,255,0.65);
+  }
+
+  /* ---- bookingConfirmed beat: the CLOSE — a confirmation card. ------------- */
+  .booking-card {
+    width: 304px; max-width: 100%;
+    background: #fff; border: 1px solid #e8e8ec;
+    border-radius: 18px; overflow: hidden;
+    box-shadow: 0 14px 32px -16px rgba(16,24,40,0.30);
+  }
+  .bc-head {
+    display: flex; align-items: center; gap: 9px;
+    padding: 13px 16px; background: #e9f9f0;
+    color: #157f4a; font-weight: 800; font-size: 19px; letter-spacing: -0.01em;
+  }
+  .bc-head .ic { flex: 0 0 22px; }
+  .bc-body { padding: 14px 16px 16px; }
+  .bc-title { font-size: 24px; font-weight: 800; color: #101828; letter-spacing: -0.02em; }
+  .bc-sub { font-size: 17px; font-weight: 600; color: #667085; margin-top: 2px; }
+  .bc-row {
+    display: flex; align-items: center; gap: 11px; margin-top: 13px;
+    font-size: 19px; font-weight: 600; color: #344054; line-height: 1.25;
+  }
+  .bc-row .ic { flex: 0 0 22px; color: var(--fb-blue); }
+
+  /* Messenger composer (at rest — never typed into). */
   .composer {
-    flex: 0 0 72px; display: flex; align-items: center; gap: 11px;
-    padding: 0 14px; border-top: 1px solid #efefef; background: #fff;
+    flex: 0 0 72px; display: flex; align-items: center; gap: 12px;
+    padding: 0 14px; border-top: 1px solid #ededed; background: #fff;
   }
-  .cam {
-    flex: 0 0 42px; width: 42px; height: 42px; border-radius: 50%;
-    background: linear-gradient(135deg, #4F5BD5, #8A3AB9);
-    display: flex; align-items: center; justify-content: center; color: #fff;
-  }
+  .composer .cic { color: var(--fb-blue); display: inline-flex; }
   .cbar {
-    flex: 1 1 auto; height: 46px; border: 1.5px solid #dbdbdb; border-radius: 9999px;
+    flex: 1 1 auto; height: 44px; background: var(--fb-input); border-radius: 9999px;
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 16px;
   }
-  .cbar .ph { font-size: 16px; font-weight: 400; color: #8e8e8e; }
-  .cbar .cicons { display: flex; align-items: center; gap: 14px; color: #262626; }
-
-  /* Photo beat — a media bubble on the bot/received side: a rounded image
-     (the succulent the bot sends with its care answer). No caption: the bot's
-     text bubble already frames it ("una de nuestras favoritas"). */
-  .msg-photo { display: flex; flex-direction: column; max-width: 80%; }
-  .ph-img {
-    width: 212px; max-width: 100%; border-radius: 18px; overflow: hidden;
-    background: #e7f3ea; box-shadow: 0 9px 22px -12px rgba(16,24,40,0.45);
-  }
-  .ph-img img { display: block; width: 100%; height: 212px; object-fit: cover; }
-
-  /* Feed dissolve on loop reset. */
-  .feed.dissolving { opacity: 0; transition: opacity 0.5s ease; }
+  .cbar .ph { font-size: 18px; font-weight: 500; color: #8a8d91; }
+  .cbar .emoji { color: var(--fb-blue); display: inline-flex; }
+  .composer .like { color: var(--fb-blue); display: inline-flex; }
 
   /* ============================================================
      REDUCED MOTION — compose a full static frame (whole exchange).
      ============================================================ */
   @media (prefers-reduced-motion: reduce) {
     .msg.typing span { animation: none !important; }
-    .row, .feed { transition: none !important; }
+    .row, .feed, .slot-chip { transition: none !important; }
   }
 </style>
 
@@ -273,27 +306,27 @@
 
 <body class="font-urbanist">
   <!-- Fixed 1440x880 canvas so it drops into the landing hero iframe unchanged. -->
-  <div id="stage" aria-label="Ilustración: ReadyChatAI responde automáticamente los mensajes directos de Instagram de Verde Vivo, vivero y tienda de plantas">
+  <div id="stage" aria-label="Ilustración: ReadyChatAI agenda automáticamente las citas de Studio Bella por Facebook Messenger">
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
 
-    <!-- Brand headline / AI-speed story (lives on the stage, not inside Instagram). -->
+    <!-- Brand headline / AI-speed story (lives on the stage, not inside Messenger). -->
     <div class="headline">
       <span class="eyebrow">
         <span class="ic bolt"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#f5a623" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></span>
-        <span class="ic ig-mark" data-icon="ig-logo" data-size="22"></span>
-        Instagram DM · Verde Vivo
+        <span class="ic fb-mark" data-icon="messenger-logo" data-size="22"></span>
+        Agenda por Messenger
       </span>
-      <h1>Contesta como lo harías tú<br><span class="accent">en segundos</span></h1>
-      <p>Tu bot conoce tus envíos, horarios y cuidados de memoria, y responde cada mensaje al instante, 24/7.</p>
+      <h1>Tu agenda se llena sola.<br><span class="accent">Adiós Calendly.</span></h1>
+      <p>Studio Bella responde en Messenger en segundos: muestra los horarios libres, la clienta elige y queda agendada al instante. Sin llamadas, sin "déjame reviso y te confirmo".</p>
       <div class="ticks">
-        <div class="tick"><span class="ic tick-ic" data-icon="check" data-size="20" data-stroke="2.6"></span> Sabe tus envíos, horarios y cuidados de memoria</div>
-        <div class="tick"><span class="ic tick-ic" data-icon="check" data-size="20" data-stroke="2.6"></span> Responde en segundos, no en horas</div>
-        <div class="tick"><span class="ic tick-ic" data-icon="check" data-size="20" data-stroke="2.6"></span> Contesta con tu tono, hasta mientras duermes</div>
+        <div class="tick"><span class="ic tick-ic" data-icon="check" data-size="20" data-stroke="2.6"></span> Ofrece tus horarios reales, no un "te aviso luego"</div>
+        <div class="tick"><span class="ic tick-ic" data-icon="check" data-size="20" data-stroke="2.6"></span> La clienta elige y su cita queda confirmada sola</div>
+        <div class="tick"><span class="ic tick-ic" data-icon="check" data-size="20" data-stroke="2.6"></span> Recordatorio automático = menos citas perdidas</div>
       </div>
     </div>
 
-    <!-- The phone (dominant). Inside it: an authentic Instagram DM thread. -->
+    <!-- The phone (dominant). Inside it: an authentic Facebook Messenger thread. -->
     <div id="phone">
       <div class="screen">
         <div class="island"></div>
@@ -307,15 +340,19 @@
           </span>
         </div>
 
-        <div class="ig-header">
-          <span class="ic back" data-icon="chevron-left" data-size="26" data-stroke="2.2"></span>
-          <div class="ig-avatar"><img src="assets/gen/verdevivo-avatar.webp" alt="Verde Vivo · plantas" decoding="async" /></div>
-          <div class="ig-id">
-            <div class="ig-name">verdevivo.plantas</div>
-            <div class="ig-status">Activo(a) ahora</div>
+        <div class="fb-header">
+          <span class="ic back" data-icon="chevron-left" data-size="27" data-stroke="2.4"></span>
+          <div class="fb-avatar">
+            <img src="assets/gen/studiobella-avatar.webp" alt="Studio Bella" decoding="async" />
+            <span class="dot"></span>
+          </div>
+          <div class="fb-id">
+            <div class="fb-name">Studio Bella</div>
+            <div class="fb-status">Activo(a) ahora</div>
           </div>
           <span class="ic hdr-ic call" data-icon="phone" data-size="22" data-stroke="2"></span>
-          <span class="ic hdr-ic" data-icon="video" data-size="24" data-stroke="2"></span>
+          <span class="ic hdr-ic video" data-icon="video" data-size="24" data-stroke="2"></span>
+          <span class="ic hdr-ic" data-icon="info" data-size="23" data-stroke="2"></span>
         </div>
 
         <div class="thread">
@@ -323,15 +360,15 @@
         </div>
 
         <div class="composer">
-          <div class="cam"><span class="ic" data-icon="camera" data-size="22" data-color="#ffffff"></span></div>
+          <span class="ic cic" data-icon="plus" data-size="25" data-stroke="2.4"></span>
+          <span class="ic cic" data-icon="camera" data-size="23" data-stroke="2"></span>
+          <span class="ic cic" data-icon="image" data-size="22" data-stroke="2"></span>
+          <span class="ic cic" data-icon="mic" data-size="22" data-stroke="2"></span>
           <div class="cbar">
-            <span class="ph">Mensaje...</span>
-            <span class="cicons">
-              <span class="ic" data-icon="mic" data-size="21" data-stroke="2"></span>
-              <span class="ic" data-icon="image" data-size="21" data-stroke="2"></span>
-              <span class="ic" data-icon="ig-heart" data-size="21" data-stroke="2"></span>
-            </span>
+            <span class="ph">Aa</span>
+            <span class="ic emoji" data-icon="emoji" data-size="21" data-stroke="2"></span>
           </div>
+          <span class="ic like" data-icon="ig-heart" data-size="24" data-stroke="2"></span>
         </div>
       </div>
     </div>
@@ -360,27 +397,48 @@
       var feed = document.getElementById('feed');
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      // Verde Vivo · plant shop DM thread that showcases MEMORY Q&A only — NO
-      // sale, no payment, no appointment. Three unrelated questions (shipping,
-      // succulent care + photo, Saturday hours) answered instantly + exactly
-      // from the business's own knowledge. The payoff is that the bot just KNOWS.
+      // Authentic Studio Bella (peluquería & spa) Messenger thread that books an
+      // appointment — the "Adiós Calendly" flow: the bot OFFERS real free slots
+      // (slotPicker), the client picks, and the bot CLOSES with a confirmed
+      // appointment card (bookingConfirmed). Pure agenda, no payment.
       var M = {
-        cust1: 'holaa 🌿 hacen envíos a domicilio?',
-        bot1:  '¡Hola! 🌿 Sí, enviamos a toda la ciudad. Envío gratis desde $40.000; debajo de eso, $5.000. Llega en 24–48h y va en empaque ecológico para que tu planta llegue feliz 📦',
-        cust2: 'buenísimo 🙌 oye y cómo cuido una suculenta? las mías siempre se me secan 😭',
-        bot2:  'Te entiendo, le pasa a medio mundo 😅 El error #1 es regarlas de más. La suculenta quiere mucha luz indirecta y riego solo cada 10–15 días, cuando la tierra esté totalmente seca. Mejor que le falte a que le sobre 🌵 Te dejo una de nuestras favoritas para empezar:',
-        cust3: 'ahhh con razón 🤦‍♀️ una última: a qué hora abren los sábados?',
-        bot3:  'Los sábados abrimos de 9:00 a 14:00 en Calle Las Palmas 123 🌱 Entre semana, de 9:00 a 18:00, por si quieres pasar a escoger en persona. Y si te animas, te paso una mini guía de cuidados para principiantes 💚'
+        cust1:     'Holaa 👋 atienden este finde? me quiero hacer un balayage 💕',
+        bot1:      '¡Holaa, bienvenida a Studio Bella! 😍 Sí atendemos sábado y domingo. El balayage dura aprox 2h30 e incluye lavado, tono y secado. Te dejo los horarios libres este finde, elige el que más te acomode 👇',
+        cust2:     'El sábado a las 10 me queda perfecto 🙌 a nombre de Daniela',
+        bot2intro: '¡Lista, Daniela! 💖 Te aparté tu cita 👇',
+        bot3:      'Te mando un recordatorio el viernes 😉 ¿Necesitas mover la hora? Escríbeme por aquí.',
+        cust3:     'Perfecto, mil gracias!! nos vemos el sábado 🥰'
       };
 
-      var AV = '<div class="av-sm"><img src="assets/gen/verdevivo-avatar.webp" alt="" loading="lazy" decoding="async" /></div>';
+      var AV   = '<div class="av-sm"><img src="assets/gen/studiobella-avatar.webp" alt="" loading="lazy" decoding="async" /></div>';
       var DOTS = '<span></span><span></span><span></span>';
+
+      // slotPicker markup — weekend balayage slots; first one is the picked one.
+      var SLOTS_HTML =
+        '<div class="slots">' +
+          '<span class="slot-chip" data-slot="1"><span class="ic" data-icon="calendar" data-size="17" data-stroke="2"></span>Sáb 10:00</span>' +
+          '<span class="slot-chip"><span class="ic" data-icon="calendar" data-size="17" data-stroke="2"></span>Sáb 15:30</span>' +
+          '<span class="slot-chip"><span class="ic" data-icon="calendar" data-size="17" data-stroke="2"></span>Dom 11:00</span>' +
+        '</div>';
+
+      // bookingConfirmed markup — THE CLOSE.
+      var CARD_HTML =
+        '<div class="booking-card">' +
+          '<div class="bc-head"><span class="ic" data-icon="check-circle" data-size="22" data-stroke="2.4"></span>Cita confirmada</div>' +
+          '<div class="bc-body">' +
+            '<div class="bc-title">Balayage</div>' +
+            '<div class="bc-sub">2h 30min · con Caro</div>' +
+            '<div class="bc-row"><span class="ic" data-icon="calendar" data-size="22" data-stroke="2"></span>Sábado · 10:00 a.m.</div>' +
+            '<div class="bc-row"><span class="ic" data-icon="map-pin" data-size="22" data-stroke="2"></span>Studio Bella · Av. Las Palmas 240</div>' +
+          '</div>' +
+        '</div>';
 
       function el(cls, html) {
         var d = document.createElement('div');
         d.className = cls;
         d.innerHTML = html;
         feed.appendChild(d);
+        paintIcons(d);
         return d;
       }
       function reveal(node) {
@@ -388,34 +446,41 @@
           requestAnimationFrame(function () { node.classList.add('shown'); });
         });
       }
-      function addDate()      { return el('row date-row', '<div class="datestamp">HOY 14:32</div>'); }
+      function addDate()      { return el('row date-row', '<div class="datestamp">HOY 10:18</div>'); }
       function addCustomer(t) { return el('row out', '<div class="msg msg-out">' + t + '</div>'); }
       function addBot(t)      { return el('row in', AV + '<div class="msg msg-in">' + t + '</div>'); }
       function addTyping()    { return el('row in typing-row', AV + '<div class="msg msg-in typing">' + DOTS + '</div>'); }
-      // Photo beat — the succulent the bot sends with its care answer (received side).
-      function addPhoto()     { return el('row in', AV + '<div class="msg-photo"><div class="ph-img"><img src="assets/gen/verdevivo-plant.webp" alt="Suculenta que el bot recomienda para empezar" loading="lazy" decoding="async" /></div></div>'); }
+      function addSlots()     { return el('row in beat', SLOTS_HTML); }
+      function addCard()      { return el('row in beat', CARD_HTML); }
 
-      // ---- Reduced motion: compose the full static exchange. ------------------
+      // Mark the chosen slot (Sáb 10:00) as picked — mirrors the client's choice.
+      var slotsNode = null;
+      function pickSlot() {
+        if (!slotsNode) return;
+        var chip = slotsNode.querySelector('[data-slot="1"]');
+        if (chip) chip.classList.add('picked');
+      }
+
+      // ---- Reduced motion: compose the full static exchange (with beats). -----
       if (reduce) {
         addDate().classList.add('shown');
         addCustomer(M.cust1).classList.add('shown');
         addBot(M.bot1).classList.add('shown');
+        slotsNode = addSlots(); slotsNode.classList.add('shown'); pickSlot();
         addCustomer(M.cust2).classList.add('shown');
-        addBot(M.bot2).classList.add('shown');
-        addPhoto().classList.add('shown');
-        addCustomer(M.cust3).classList.add('shown');
+        addBot(M.bot2intro).classList.add('shown');
+        addCard().classList.add('shown');
         addBot(M.bot3).classList.add('shown');
+        addCustomer(M.cust3).classList.add('shown');
         return;
       }
 
       // ---- Animated timeline --------------------------------------------------
-      // Calm, readable cadence (Diego's review): the typing indicator shows ~1.45s
-      // before every bot reply and exchanges are spaced ~2.2s apart. Three
-      // UNRELATED questions (shipping, succulent care + photo, Saturday hours) are
-      // each answered instantly + exactly from the business's memory — pure FAQ
-      // Q&A, no sale. Exchange 2's care answer is followed by the succulent photo
-      // (~11.2s). The final hours reply lands ~16.3s and the feed HOLDS ~5s on it
-      // (bottom-anchored thread) so the end frame catches the instant answer.
+      // Calm, readable cadence (Diego's review): a typing indicator shows ~1.45s
+      // before every bot reply and exchanges are spaced ~2.2s apart. The bot
+      // offers the slot chips, the client picks, and the bot CLOSES with the
+      // confirmed appointment card (~10s). The feed then HOLDS ~5s on the closed
+      // booking — reminder + thank-you sit below but keep the card fully visible.
       var timers = [];
       function after(ms, fn) { timers.push(setTimeout(fn, ms)); }
       function clearTimers() { timers.forEach(clearTimeout); timers = []; }
@@ -424,6 +489,7 @@
         clearTimers();
         feed.classList.remove('dissolving');
         feed.innerHTML = '';
+        slotsNode = null;
 
         var t = 0;
         var typingNode = null;
@@ -435,24 +501,24 @@
         // Date header.
         after((t += 150), function () { reveal(addDate()); });
 
-        // Q1 — shipping. Customer asks, bot is typing (~1.45s), bot answers from memory.
+        // Exchange 1 — client asks; bot types (~1.45s); bot replies + offers slots.
         after((t += 650),  function () { reveal(addCustomer(M.cust1)); });
         after((t += 1450), function () { typingNode = addTyping(); reveal(typingNode); });
         after((t += 1450), function () { clearTyping(); reveal(addBot(M.bot1)); });
+        after((t += 600),  function () { slotsNode = addSlots(); reveal(slotsNode); });
 
-        // Q2 — succulent care. Bot answers (care text), then sends a succulent photo.
-        after((t += 2200), function () { reveal(addCustomer(M.cust2)); });
+        // Exchange 2 — client picks Sáb 10:00 (chip highlights); bot CLOSES.
+        after((t += 2300), function () { reveal(addCustomer(M.cust2)); pickSlot(); });
         after((t += 1450), function () { typingNode = addTyping(); reveal(typingNode); });
-        after((t += 1450), function () { clearTyping(); reveal(addBot(M.bot2)); });
-        after((t += 1100), function () { typingNode = addTyping(); reveal(typingNode); });
-        after((t += 1300), function () { clearTyping(); reveal(addPhoto()); });
+        after((t += 1450), function () { clearTyping(); reveal(addBot(M.bot2intro)); });
+        after((t += 600),  function () { reveal(addCard()); });
 
-        // Q3 — Saturday hours. Bot answers instantly from memory (~16.3s). THE PAYOFF.
-        after((t += 2200), function () { reveal(addCustomer(M.cust3)); });
-        after((t += 1450), function () { typingNode = addTyping(); reveal(typingNode); });
+        // Bot's follow-up reminder, then the client's warm thank-you.
+        after((t += 2100), function () { typingNode = addTyping(); reveal(typingNode); });
         after((t += 1450), function () { clearTyping(); reveal(addBot(M.bot3)); });
+        after((t += 2050), function () { reveal(addCustomer(M.cust3)); });
 
-        // ~5s readable end-hold on the final instant answer, then dissolve + loop.
+        // ~5s readable end-hold on the CLOSED booking, then dissolve + loop.
         after((t += 5000), function () { feed.classList.add('dissolving'); });
         after((t += 560),  function () { runCycle(); });
       }
