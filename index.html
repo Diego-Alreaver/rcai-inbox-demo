@@ -318,7 +318,7 @@
             <!-- Demo image block: image intentionally NOT rendered. #demo-slot left empty
                  for live demo injection. Original sizing frame preserved. -->
             <div class="relative z-20 mt-16 w-full md:mt-20">
-              <div class="w-full max-w-[min(75vw,72rem)] mx-auto">
+              <div class="w-full max-w-[94vw] md:max-w-[min(75vw,72rem)] mx-auto">
                 <div id="demo-slot" class="w-full">
                   <!-- Live demo variant tabs (over the purple hero) -->
                   <div id="demo-tabs" class="mb-5 flex flex-wrap items-center justify-center gap-2 sm:gap-3"></div>
@@ -335,7 +335,7 @@
                     </div>
                     <div id="demo-viewport" class="relative overflow-hidden bg-gray-100">
                       <div id="demo-scaler" style="width:1440px;height:880px;transform-origin:top left;">
-                        <iframe id="demo-frame" src="variant-realtime.html" title="ReadyChatAI inbox demo" loading="eager" style="width:1440px;height:880px;border:0;display:block;"></iframe>
+                        <iframe id="demo-frame" src="variant-instagram-a.html" title="ReadyChatAI inbox demo" loading="eager" style="width:1440px;height:880px;border:0;display:block;"></iframe>
                       </div>
                     </div>
                   </div>
@@ -1107,20 +1107,48 @@
     </main>
   <script>
     (function () {
+      // Each variant renders a 1440x880 LANDSCAPE stage on desktop. The two Instagram
+      // variants additionally ship a PORTRAIT 430x900 sibling used on mobile, so the demo
+      // fills a narrow phone column legibly instead of shrinking a wide layout to ~0.2x.
       var VARIANTS = [
+        { id: 'instagram-a', label: 'Instagram',      icon: 'ri-instagram-line', src: 'variant-instagram-a.html', mobileSrc: 'variant-instagram-a-mobile.html', mW: 430, mH: 900, chrome: false, url: '' },
+        { id: 'instagram-b', label: 'IG Comentarios', icon: 'ri-chat-3-line',    src: 'variant-instagram-b.html', mobileSrc: 'variant-instagram-b-mobile.html', mW: 430, mH: 900, chrome: false, url: '' },
         { id: 'realtime',  label: 'Realtime',   icon: 'ri-flashlight-fill', src: 'variant-realtime.html',  chrome: true,  url: 'app.readychatai.com/dashboard/messages' },
         { id: 'cinematic', label: 'Cinemático', icon: 'ri-film-fill',       src: 'variant-cinematic.html', chrome: true,  url: 'app.readychatai.com/dashboard/messages' },
         { id: 'concept',   label: 'Concepto',   icon: 'ri-broadcast-line',  src: 'variant-concept.html',   chrome: false, url: '' },
       ];
-      var cur = 'realtime';
+      var cur = 'instagram-a';
       var tabsEl = document.getElementById('demo-tabs');
       var frame = document.getElementById('demo-frame');
+      var scalerEl = document.getElementById('demo-scaler');
       var chromeEl = document.getElementById('demo-chrome');
       var urlEl = document.getElementById('demo-url');
+      var mq = window.matchMedia('(max-width: 767px)');
+      var curW = 1440, curH = 880;          // active design dims
+      var mobileMode = mq.matches;          // last applied breakpoint mode
+
+      function curVariant() { return VARIANTS.find(function (x) { return x.id === cur; }) || VARIANTS[0]; }
+
+      // Pick src + design dims for the current variant and breakpoint.
+      function spec(v) {
+        if (mq.matches && v.mobileSrc) return { src: v.mobileSrc, w: v.mW || 430, h: v.mH || 900 };
+        return { src: v.src, w: 1440, h: 880 };
+      }
 
       function applyChrome(v) {
         if (chromeEl) chromeEl.style.display = v.chrome ? '' : 'none';
         if (urlEl && v.url) urlEl.textContent = v.url;
+      }
+
+      // Set the iframe + scaler to the active design size, (re)load the right src, then fit.
+      function applyFrame(bust) {
+        var s = spec(curVariant());
+        curW = s.w; curH = s.h;
+        if (scalerEl) { scalerEl.style.width = curW + 'px'; scalerEl.style.height = curH + 'px'; }
+        frame.style.width = curW + 'px';
+        frame.style.height = curH + 'px';
+        frame.src = s.src + (bust ? ('?r=' + Date.now()) : '');
+        fit();
       }
 
       function render() {
@@ -1137,26 +1165,32 @@
         });
       }
       function select(id) {
-        if (id === cur) { frame.src = frame.src.split('?')[0] + '?r=' + Date.now(); return; }
+        if (id === cur) { applyFrame(true); return; }
         cur = id;
-        var v = VARIANTS.find(function (x) { return x.id === id; });
-        applyChrome(v);
-        frame.src = v.src + '?r=' + Date.now();
+        applyChrome(curVariant());
+        applyFrame(true);
         render();
       }
       function fit() {
         var vp = document.getElementById('demo-viewport');
-        var sc = document.getElementById('demo-scaler');
-        if (!vp || !sc) return;
-        var scale = vp.clientWidth / 1440;
-        sc.style.transform = 'scale(' + scale + ')';
-        vp.style.height = (880 * scale) + 'px';
+        if (!vp || !scalerEl) return;
+        var scale = vp.clientWidth / curW;
+        scalerEl.style.transform = 'scale(' + scale + ')';
+        vp.style.height = (curH * scale) + 'px';
+      }
+      // On resize: if we crossed the mobile<->desktop breakpoint, swap the variant src +
+      // design dims (portrait <-> landscape); otherwise just re-fit the scale.
+      function onResize() {
+        var nowMobile = mq.matches;
+        if (nowMobile !== mobileMode) { mobileMode = nowMobile; applyFrame(true); }
+        else { fit(); }
       }
 
+      applyChrome(curVariant());
       render();
-      window.addEventListener('resize', fit);
-      window.addEventListener('load', fit);
-      fit();
+      applyFrame(false);
+      window.addEventListener('resize', onResize);
+      window.addEventListener('load', onResize);
     })();
   </script>
   </body>

@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ReadyChatAI · Comentarios + DMs de Instagram en automático</title>
+<!-- Inline favicon so the demo emits zero 404s (no external favicon request). -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%237354EF'/%3E%3Ccircle%20cx='12'%20cy='16'%20r='2.6'%20fill='white'/%3E%3Ccircle%20cx='20'%20cy='16'%20r='2.6'%20fill='white'/%3E%3C/svg%3E" />
+
+<!-- Google Fonts: Urbanist (the real app wires next/font Urbanist to --font-urbanist) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- RemixIcon 4.x (substitute for @remixicon/react) -->
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4/fonts/remixicon.css" rel="stylesheet">
+
+<!-- Tailwind v3 Play CDN (matches the repo's Tailwind 3.4) -->
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+
+<style>
+  :root {
+    /* Brand Colors (globals.css :root, verbatim) */
+    --brand-secondary: #7f56d9;
+    --brand-700: #7354ef;
+    --brand-500: #9e77ed;
+    --gray-50: #f9fafb;
+    --gray-300: #d0d5dd;
+    --font-urbanist: 'Urbanist', sans-serif;
+
+    /* Instagram-authentic tokens */
+    --ig-text: #262626;
+    --ig-gray: #8e8e8e;
+    --ig-border: #dbdbdb;
+    --ig-incoming: #efefef;
+    --ig-heart: #ed4956;
+  }
+  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+
+  i[class*="ri-"] { display: inline-flex; vertical-align: middle; line-height: 1; }
+
+  /* ============================================================
+     STAGE — fixed 1440x880 canvas (matches the landing iframe).
+     Light brand backdrop so the piece reads as a clean hero.
+     ============================================================ */
+  #stage {
+    position: relative;
+    width: 1440px;
+    height: 880px;
+    margin: 0 auto;
+    overflow: hidden;
+    background:
+      radial-gradient(1200px 700px at 50% 38%, #ffffff 0%, #faf8ff 46%, #f3effc 100%),
+      linear-gradient(180deg, #ffffff, #f6f3fe);
+    font-family: var(--font-urbanist);
+    color: #1d2939;
+  }
+  #stage::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(115,84,239,0.06) 1.4px, transparent 1.4px);
+    background-size: 30px 30px;
+    pointer-events: none;
+  }
+  .orb { position: absolute; border-radius: 9999px; filter: blur(60px); pointer-events: none; opacity: 0.5; }
+  .orb-1 { width: 420px; height: 420px; left: -120px; top: -90px;  background: radial-gradient(circle, rgba(158,119,237,0.45), transparent 70%); }
+  .orb-2 { width: 480px; height: 480px; right: -140px; bottom: -120px; background: radial-gradient(circle, rgba(115,84,239,0.40), transparent 70%); }
+
+  /* ---- Header (brand layer — carries the "AI, instant" story) ---- */
+  .stage-head { position: absolute; top: 24px; left: 0; right: 0; text-align: center; z-index: 6; }
+  .stage-eyebrow {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-size: 16px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: #7354ef;
+    background: rgba(115,84,239,0.08);
+    padding: 8px 18px; border-radius: 9999px;
+  }
+  .stage-title { margin: 11px 0 0; font-size: 36px; font-weight: 800; letter-spacing: -0.02em; color: #101828; }
+  .stage-title .accent { color: #7354ef; }
+  .stage-sub { margin: 7px 0 0; font-size: 18px; font-weight: 500; color: #667085; }
+
+  /* ============================================================
+     INSTAGRAM POST CARD — the dominant element (left).
+     Authentic IG chrome: header, media, actions, likes, caption,
+     comments. The customer comment + public bot reply live here.
+     ============================================================ */
+  .post-card {
+    position: absolute; left: 92px; top: 168px; z-index: 4;
+    width: 604px; height: 694px;
+    background: #ffffff;
+    border-radius: 22px;
+    border: 1px solid var(--ig-border);
+    box-shadow: 0 40px 80px -30px rgba(16,24,40,0.30), 0 0 0 1px rgba(16,24,40,0.02);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    color: var(--ig-text);
+  }
+  /* Post header */
+  .pc-header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; }
+  .ig-avatar {
+    flex: none; border-radius: 9999px; display: flex; align-items: center; justify-content: center;
+    color: #fff; position: relative;
+    background: linear-gradient(135deg, #b794f6 0%, #7354ef 55%, #6d28d9 100%);
+    box-shadow: 0 4px 12px -4px rgba(115,84,239,0.5);
+  }
+  .ig-avatar.ring { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #d62976, 0 4px 12px -4px rgba(115,84,239,0.5); }
+  .pc-header .ig-avatar { width: 50px; height: 50px; }
+  .pc-header .ig-avatar i { font-size: 26px; }
+  .pc-handle { font-size: 23px; font-weight: 700; color: var(--ig-text); line-height: 1.05; }
+  .pc-sub { font-size: 16px; font-weight: 500; color: var(--ig-gray); margin-top: 2px; }
+  .pc-more { margin-left: auto; color: var(--ig-text); font-size: 26px; }
+
+  /* Post media — warm bakery gradient + cake motif + wordmark (no external image) */
+  .pc-media {
+    position: relative; height: 198px; flex: none;
+    background:
+      radial-gradient(120% 120% at 18% 12%, rgba(255,255,255,0.55), transparent 45%),
+      linear-gradient(135deg, #ffd7a8 0%, #ff9ec0 48%, #f47ea7 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #fff; overflow: hidden;
+  }
+  .pc-media::after {
+    content: ""; position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.18) 1.5px, transparent 1.5px);
+    background-size: 22px 22px; opacity: 0.5;
+  }
+  .pcm-glyph { font-size: 74px; line-height: 1; filter: drop-shadow(0 6px 12px rgba(150,40,90,0.30)); position: relative; }
+  .pcm-mark {
+    position: relative; margin-top: 6px; font-size: 37px; font-weight: 800; letter-spacing: 0.01em;
+    text-shadow: 0 3px 10px rgba(150,40,90,0.32);
+  }
+  .pcm-eyebrow {
+    position: relative; margin-top: 2px; font-size: 15px; font-weight: 700; letter-spacing: 0.34em;
+    text-transform: uppercase; color: rgba(255,255,255,0.92);
+  }
+
+  /* Action row */
+  .pc-actions { display: flex; align-items: center; gap: 20px; padding: 13px 20px 6px; font-size: 30px; color: var(--ig-text); }
+  .pc-actions .ri-heart-3-line { color: var(--ig-heart); }
+  .pc-actions .spacer { margin-left: auto; }
+  .pc-likes { padding: 0 20px; font-size: 20px; font-weight: 700; color: var(--ig-text); }
+  .pc-caption { padding: 4px 20px 10px; font-size: 19px; font-weight: 500; color: var(--ig-text); line-height: 1.35; }
+  .pc-caption b { font-weight: 700; }
+
+  /* Comments area */
+  .pc-comments { padding: 6px 20px 0; border-top: 1px solid #f1f1f1; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+
+  .comment { display: flex; align-items: flex-start; gap: 14px; padding: 7px 0; }
+  .comment.reply { margin-left: 40px; }
+  .comment .c-av { flex: none; border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; }
+  .comment .c-av.cust { width: 52px; height: 52px; font-size: 22px; background: linear-gradient(135deg, #fbc2eb 0%, #f78fb3 100%); }
+  .comment.reply .c-av { width: 44px; height: 44px; font-size: 20px; background: linear-gradient(135deg, #b794f6 0%, #7354ef 60%, #6d28d9 100%); }
+  .comment.reply .c-av i { font-size: 22px; }
+  .c-body { flex: 1; min-width: 0; }
+  .c-text { font-size: 30px; line-height: 1.32; color: var(--ig-text); }
+  .c-text b { font-weight: 700; }
+  .comment.reply .c-text b { color: var(--ig-text); }
+  .c-meta { margin-top: 5px; font-size: 17px; font-weight: 600; color: var(--ig-gray); display: flex; gap: 16px; }
+  .c-meta .strong { font-weight: 700; }
+  .c-like { flex: none; color: var(--ig-gray); font-size: 22px; padding-top: 6px; }
+
+  /* Reveal animation for the two comments */
+  .reveal { opacity: 0; transform: translateY(18px); }
+  .reveal.show {
+    opacity: 1; transform: none;
+    transition: opacity 520ms ease, transform 640ms cubic-bezier(0.22,1,0.36,1);
+  }
+  /* The public reply gets a brief brand glow as it lands (speed cue) */
+  .comment.reply.show .c-av { animation: avPop 620ms cubic-bezier(0.22,1,0.36,1) both; }
+  @keyframes avPop { 0% { transform: scale(0.6); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
+
+  /* ============================================================
+     CONNECTOR — brand-layer cue (NOT fake IG UI) that narrates the
+     comment -> DM jump. Lives in the gap between card and phone.
+     ============================================================ */
+  .connector {
+    position: absolute; z-index: 5; left: 710px; top: 466px; width: 200px;
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    opacity: 0; transform: translateY(10px);
+  }
+  .connector.show { opacity: 1; transform: none; transition: opacity 520ms ease 120ms, transform 600ms cubic-bezier(0.22,1,0.36,1) 120ms; }
+  .conn-pill {
+    display: inline-flex; align-items: center; gap: 9px;
+    background: linear-gradient(150deg, #8b5cf6, #7354ef); color: #fff;
+    font-size: 17px; font-weight: 700; padding: 11px 18px; border-radius: 9999px;
+    box-shadow: 0 16px 30px -12px rgba(115,84,239,0.6); white-space: nowrap;
+  }
+  .conn-pill i { font-size: 20px; }
+  .conn-arrow { margin-top: 10px; color: #9e77ed; font-size: 30px; }
+  .conn-arrow i { animation: arrowNudge 1.6s ease-in-out infinite; }
+  @keyframes arrowNudge { 0%,100% { transform: translateX(0); } 50% { transform: translateX(7px); } }
+
+  /* ============================================================
+     PHONE / DM PANEL — secondary element (right). Slides in.
+     Authentic IG DM: gray incoming bot bubble + IG-gradient
+     outgoing customer bubble.
+     ============================================================ */
+  .phone {
+    position: absolute; z-index: 4; right: 84px; top: 190px;
+    width: 432px; height: 648px;
+    background: #0e1016;
+    border-radius: 46px;
+    padding: 13px;
+    box-shadow: 0 50px 90px -34px rgba(16,24,40,0.55), 0 0 0 1px rgba(16,24,40,0.06);
+    opacity: 0; transform: translateX(80px) scale(0.98);
+  }
+  .phone.show { opacity: 1; transform: none; transition: opacity 560ms ease, transform 720ms cubic-bezier(0.22,1,0.36,1); }
+  .ph-screen {
+    width: 100%; height: 100%; background: #fff; border-radius: 34px; overflow: hidden;
+    display: flex; flex-direction: column; position: relative;
+  }
+  .ph-notch { position: absolute; top: 9px; left: 50%; transform: translateX(-50%); width: 116px; height: 26px; background: #0e1016; border-radius: 9999px; z-index: 3; }
+  .ph-status { display: flex; align-items: center; justify-content: space-between; padding: 12px 22px 4px; font-size: 16px; font-weight: 700; color: var(--ig-text); }
+  .ph-status .ph-icons { display: flex; gap: 7px; font-size: 16px; }
+
+  /* DM header */
+  .dm-header { display: flex; align-items: center; gap: 12px; padding: 8px 16px 12px; border-bottom: 1px solid #f0f0f0; }
+  .dm-header .ri-arrow-left-s-line { font-size: 30px; color: var(--ig-text); }
+  .dm-header .ig-avatar { width: 44px; height: 44px; }
+  .dm-header .ig-avatar i { font-size: 22px; }
+  .dm-id { line-height: 1.1; }
+  .dm-id .dm-handle { font-size: 20px; font-weight: 700; color: var(--ig-text); }
+  .dm-id .dm-active { font-size: 15px; font-weight: 500; color: var(--ig-gray); margin-top: 1px; }
+  .dm-header .dm-call { margin-left: auto; display: flex; gap: 14px; font-size: 24px; color: var(--ig-text); }
+
+  /* DM thread */
+  .dm-thread { flex: 1; padding: 14px 16px 8px; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+  .dm-row { display: flex; align-items: flex-end; gap: 9px; max-width: 100%; }
+  .dm-row.in { justify-content: flex-start; }
+  .dm-row.out { justify-content: flex-end; }
+  .dm-row .ig-avatar { width: 32px; height: 32px; flex: none; }
+  .dm-row .ig-avatar i { font-size: 16px; }
+  .dm-bubble {
+    max-width: 312px; padding: 13px 17px; font-size: 30px; line-height: 1.3; font-weight: 500;
+    border-radius: 24px;
+  }
+  .dm-bubble.incoming { background: var(--ig-incoming); color: var(--ig-text); border-bottom-left-radius: 7px; }
+  .dm-bubble.outgoing {
+    color: #fff; border-bottom-right-radius: 7px;
+    background: linear-gradient(120deg, #3797F0 0%, #5B51D8 46%, #8A3AB9 100%);
+  }
+
+  /* DM reveal */
+  .dm-row.reveal { opacity: 0; transform: translateY(16px); }
+  .dm-row.reveal.show { opacity: 1; transform: none; transition: opacity 460ms ease, transform 560ms cubic-bezier(0.22,1,0.36,1); }
+
+  /* Typing dots (authentic IG: gray bubble with 3 dots) */
+  .dm-typing { display: none; align-items: flex-end; gap: 9px; }
+  .dm-typing.show { display: flex; }
+  .typing-bubble { background: var(--ig-incoming); border-radius: 24px; border-bottom-left-radius: 7px; padding: 17px 19px; display: flex; gap: 8px; }
+  .typing-bubble span { width: 11px; height: 11px; border-radius: 9999px; background: #b0b0b0; animation: typing 1.1s infinite ease-in-out; }
+  .typing-bubble span:nth-child(2) { animation-delay: 0.16s; }
+  .typing-bubble span:nth-child(3) { animation-delay: 0.32s; }
+  @keyframes typing { 0%,80%,100% { transform: translateY(0); opacity: 0.45; } 40% { transform: translateY(-6px); opacity: 1; } }
+
+  /* DM composer (our side, at rest) */
+  .dm-composer { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-top: 1px solid #f0f0f0; }
+  .dm-composer .comp-field {
+    flex: 1; height: 46px; border-radius: 9999px; border: 1.5px solid var(--ig-border);
+    display: flex; align-items: center; padding: 0 18px; color: var(--ig-gray); font-size: 18px; font-weight: 500;
+  }
+  .dm-composer .comp-ic { font-size: 24px; color: var(--ig-text); }
+
+  /* ============================================================
+     LEAVING / RESTART — clean dissolve before loop.
+     ============================================================ */
+  .dissolving .reveal.show,
+  .dissolving .connector.show,
+  .dissolving .phone.show {
+    opacity: 0 !important;
+    transition: opacity 460ms ease !important;
+  }
+  .dissolving .phone.show { transform: translateX(34px) scale(0.99) !important; transition: opacity 460ms ease, transform 460ms ease !important; }
+
+  /* ============================================================
+     REDUCED MOTION — static composed frame: BOTH the public reply
+     AND the DM answer are visible (the full comment->DM story).
+     ============================================================ */
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .connector, .phone, .dm-row.reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+    .typing-bubble span, .conn-arrow i, .comment.reply.show .c-av { animation: none !important; }
+    .dm-typing { display: none !important; }
+  }
+</style>
+
+<script>
+  tailwind.config = { theme: { extend: { fontFamily: {
+    urbanist: ['var(--font-urbanist)', 'sans-serif'],
+    sans:     ['var(--font-urbanist)', 'sans-serif'],
+  } } } };
+</script>
+</head>
+
+<body class="font-urbanist">
+  <!-- Stage is a fixed 1440x880 canvas so it drops into the landing hero iframe unchanged. -->
+  <div id="stage" aria-label="Ilustración: ReadyChatAI responde un comentario de Instagram en público y continúa la conversación por mensaje directo">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <header class="stage-head">
+      <span class="stage-eyebrow"><i class="ri-flashlight-fill"></i> Comentarios + DMs automáticos</span>
+      <h1 class="stage-title">Responde comentarios y DMs de Instagram <span class="accent">solo</span>.</h1>
+      <p class="stage-sub">El bot contesta el comentario en público y sigue la conversación por DM.</p>
+    </header>
+
+    <!-- ===== Instagram POST card (dominant element, left) ===== -->
+    <section class="post-card">
+      <div class="pc-header">
+        <div class="ig-avatar ring"><i class="ri-cake-3-fill"></i></div>
+        <div>
+          <div class="pc-handle">dulcelina.reposteria</div>
+          <div class="pc-sub">Repostería artesanal</div>
+        </div>
+        <i class="ri-more-fill pc-more"></i>
+      </div>
+
+      <div class="pc-media">
+        <i class="ri-cake-3-fill pcm-glyph"></i>
+        <div class="pcm-mark">Dulce Lina</div>
+        <div class="pcm-eyebrow">Repostería</div>
+      </div>
+
+      <div class="pc-actions">
+        <i class="ri-heart-3-line"></i>
+        <i class="ri-chat-3-line"></i>
+        <i class="ri-send-plane-line"></i>
+        <i class="ri-bookmark-line spacer"></i>
+      </div>
+      <div class="pc-likes">342 Me gusta</div>
+      <div class="pc-caption"><b>dulcelina.reposteria</b> Nuevos pasteles de temporada 🎂✨</div>
+
+      <div class="pc-comments">
+        <!-- Customer comment -->
+        <div class="comment reveal" id="comment-customer">
+          <div class="c-av cust">S</div>
+          <div class="c-body">
+            <div class="c-text"><b>sofia.delgado</b> ¿Tienen para este sábado? 😍</div>
+            <div class="c-meta"><span>2 h</span><span class="strong">Me gusta</span><span class="strong">Responder</span></div>
+          </div>
+          <i class="ri-heart-3-line c-like"></i>
+        </div>
+
+        <!-- Public bot reply (as the business) -->
+        <div class="comment reply reveal" id="comment-reply">
+          <div class="c-av"><i class="ri-cake-3-fill"></i></div>
+          <div class="c-body">
+            <div class="c-text"><b>dulcelina.reposteria</b> ¡Hola Sofía! 🎉 Te escribimos por DM 💜</div>
+            <div class="c-meta"><span>Ahora</span><span class="strong">Me gusta</span><span class="strong">Responder</span></div>
+          </div>
+          <i class="ri-heart-3-fill c-like" style="color:var(--ig-heart)"></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Brand connector (comment -> DM cue) ===== -->
+    <div class="connector" id="connector">
+      <div class="conn-pill"><i class="ri-send-plane-fill"></i> y sigue en DM</div>
+      <div class="conn-arrow"><i class="ri-arrow-right-line"></i></div>
+    </div>
+
+    <!-- ===== Phone / DM panel (secondary, slides in, right) ===== -->
+    <div class="phone" id="phone">
+      <div class="ph-screen">
+        <div class="ph-notch"></div>
+        <div class="ph-status">
+          <span>9:41</span>
+          <span class="ph-icons"><i class="ri-signal-wifi-fill"></i><i class="ri-battery-fill"></i></span>
+        </div>
+
+        <div class="dm-header">
+          <i class="ri-arrow-left-s-line"></i>
+          <div class="ig-avatar ring"><i class="ri-cake-3-fill"></i></div>
+          <div class="dm-id">
+            <div class="dm-handle">dulcelina.reposteria</div>
+            <div class="dm-active">Activa ahora</div>
+          </div>
+          <div class="dm-call"><i class="ri-phone-line"></i><i class="ri-vidicon-line"></i></div>
+        </div>
+
+        <div class="dm-thread">
+          <!-- typing indicator -->
+          <div class="dm-typing" id="dm-typing">
+            <div class="ig-avatar"><i class="ri-cake-3-fill"></i></div>
+            <div class="typing-bubble"><span></span><span></span><span></span></div>
+          </div>
+
+          <!-- bot full answer (gray incoming) -->
+          <div class="dm-row in reveal" id="dm-answer">
+            <div class="ig-avatar"><i class="ri-cake-3-fill"></i></div>
+            <div class="dm-bubble incoming">¡Hola Sofía! 🎉 Sí tenemos para el sábado. ¿De qué sabor lo quieres? 🎂</div>
+          </div>
+
+          <!-- customer reply (IG gradient outgoing) -->
+          <div class="dm-row out reveal" id="dm-reply">
+            <div class="dm-bubble outgoing">¡Genial! Uno de chocolate 🍫</div>
+          </div>
+
+          <!-- bot confirm -->
+          <div class="dm-row in reveal" id="dm-confirm">
+            <div class="ig-avatar"><i class="ri-cake-3-fill"></i></div>
+            <div class="dm-bubble incoming">¡Anotado! Te paso el precio 💜</div>
+          </div>
+        </div>
+
+        <div class="dm-composer">
+          <i class="ri-camera-line comp-ic"></i>
+          <div class="comp-field">Mensaje...</div>
+          <i class="ri-mic-line comp-ic"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+      var stage = document.getElementById('stage');
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      var elCommentCustomer = document.getElementById('comment-customer');
+      var elCommentReply    = document.getElementById('comment-reply');
+      var elConnector       = document.getElementById('connector');
+      var elPhone           = document.getElementById('phone');
+      var elTyping          = document.getElementById('dm-typing');
+      var elAnswer          = document.getElementById('dm-answer');
+      var elReply           = document.getElementById('dm-reply');
+      var elConfirm         = document.getElementById('dm-confirm');
+
+      var SEQUENCE = [elCommentCustomer, elCommentReply, elConnector, elPhone, elAnswer, elReply, elConfirm];
+
+      var timers = [];
+      function after(ms, fn) { var id = setTimeout(fn, ms); timers.push(id); return id; }
+      function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+      function show(el) { if (el) el.classList.add('show'); }
+      function hide(el) { if (el) el.classList.remove('show'); }
+
+      // ---- Reduced motion: compose the full static frame (comment + public
+      //      reply + phone + complete DM), no timers, no typing. -------------
+      if (reduce) {
+        SEQUENCE.forEach(show);
+        return;
+      }
+
+      function runCycle() {
+        // 1) Customer comment lands on the post.
+        after(250,  function () { show(elCommentCustomer); });
+        // 2) Bot auto-replies PUBLICLY beneath it (fast = the "instant" story).
+        after(900,  function () { show(elCommentReply); });
+        // 3) Brand cue + DM panel slide in from the right.
+        after(1400, function () { show(elConnector); show(elPhone); });
+        // 4) Bot is composing the DM (authentic IG typing dots).
+        after(1900, function () { elTyping.classList.add('show'); });
+        // 5) Full answer lands in the DM; typing dots clear.
+        after(3050, function () { elTyping.classList.remove('show'); show(elAnswer); });
+        // 6) Customer replies in the DM (IG-gradient bubble).
+        after(4050, function () { show(elReply); });
+        // 7) Bot confirms.
+        after(4850, function () { show(elConfirm); });
+
+        // 8) Long, readable end-hold, then a clean dissolve + loop.
+        after(4850 + 5800, function () {
+          stage.classList.add('dissolving');
+          after(620, function () {
+            SEQUENCE.forEach(hide);
+            elTyping.classList.remove('show');
+            stage.classList.remove('dissolving');
+            after(700, runCycle);
+          });
+        });
+      }
+
+      function start() { after(200, runCycle); }
+      if (document.readyState === 'complete') { start(); }
+      else { window.addEventListener('load', start, { once: true }); }
+    })();
+  </script>
+</body>
+</html>

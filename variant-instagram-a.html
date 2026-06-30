@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ReadyChatAI · Tu Instagram responde solo</title>
+<!-- Inline favicon so the demo emits zero 404s (no external favicon request). -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%237354EF'/%3E%3Ccircle%20cx='12'%20cy='16'%20r='2.6'%20fill='white'/%3E%3Ccircle%20cx='20'%20cy='16'%20r='2.6'%20fill='white'/%3E%3C/svg%3E" />
+
+<!-- Google Fonts: Urbanist (the real app wires next/font Urbanist to --font-urbanist) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- RemixIcon 4.x (substitute for @remixicon/react) -->
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4/fonts/remixicon.css" rel="stylesheet">
+
+<!-- Tailwind v3 Play CDN (matches the repo's Tailwind 3.4) -->
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+
+<style>
+  :root {
+    /* Brand Colors (globals.css :root, verbatim) */
+    --brand-secondary: #7f56d9;
+    --brand-700: #7354ef;
+    --brand-500: #9e77ed;
+    --gray-50: #f9fafb;
+    --gray-300: #d0d5dd;
+    --font-urbanist: 'Urbanist', sans-serif;
+
+    /* Instagram DM sent-bubble gradient (authentic: blue -> purple). */
+    --ig-sent: linear-gradient(135deg, #3A7BDE 0%, #4F5BD5 34%, #6D3DC4 72%, #8A3AB9 100%);
+    --ig-gray: #efefef;
+  }
+  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+
+  i[class*="ri-"] { display: inline-flex; vertical-align: middle; line-height: 1; }
+
+  /* ============================================================
+     STAGE — fixed 1440x880 canvas (matches the landing iframe).
+     Light brand backdrop so the piece reads as an on-theme hero.
+     ============================================================ */
+  #stage {
+    position: relative;
+    width: 1440px;
+    height: 880px;
+    margin: 0 auto;
+    overflow: hidden;
+    background:
+      radial-gradient(1200px 700px at 50% 38%, #ffffff 0%, #faf8ff 46%, #f3effc 100%),
+      linear-gradient(180deg, #ffffff, #f6f3fe);
+    font-family: var(--font-urbanist);
+    color: #1d2939;
+  }
+  #stage::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(115,84,239,0.06) 1.4px, transparent 1.4px);
+    background-size: 30px 30px;
+    pointer-events: none;
+  }
+  .orb { position: absolute; border-radius: 9999px; filter: blur(60px); pointer-events: none; opacity: 0.5; }
+  .orb-1 { width: 420px; height: 420px; left: -120px; top: -90px;  background: radial-gradient(circle, rgba(158,119,237,0.45), transparent 70%); }
+  .orb-2 { width: 480px; height: 480px; right: -150px; bottom: -130px; background: radial-gradient(circle, rgba(115,84,239,0.40), transparent 70%); }
+
+  /* ============================================================
+     HEADLINE — brand + "instant AI" story lives AROUND the phone,
+     NEVER inside the Instagram UI (honesty requirement).
+     ============================================================ */
+  .headline { position: absolute; left: 90px; top: 196px; width: 590px; z-index: 6; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 21px; font-weight: 800; letter-spacing: 0.04em;
+    color: #7354ef;
+    background: rgba(115,84,239,0.09);
+    padding: 9px 18px; border-radius: 9999px;
+  }
+  .eyebrow .ig-glyph {
+    font-size: 22px;
+    background: linear-gradient(135deg, #feda75, #fa7e1e 26%, #d62976 52%, #962fbf 76%, #4f5bd5 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .eyebrow .bolt { color: #f5a623; font-size: 20px; }
+  .headline h1 {
+    margin: 22px 0 0; font-size: 52px; font-weight: 800; line-height: 1.06;
+    letter-spacing: -0.025em; color: #101828;
+  }
+  .headline h1 .accent { color: #7354ef; }
+  .headline p {
+    margin: 18px 0 0; font-size: 30px; font-weight: 500; line-height: 1.36; color: #667085;
+    max-width: 548px;
+  }
+  .ticks { margin: 28px 0 0; display: flex; flex-direction: column; gap: 15px; }
+  .tick { display: flex; align-items: center; gap: 13px; font-size: 30px; font-weight: 600; color: #344054; }
+  .tick i { font-size: 32px; color: #7354ef; }
+
+  /* ============================================================
+     PHONE — the dominant element. ~500x818 (>= 80% of 880 tall).
+     ============================================================ */
+  #phone {
+    position: absolute; left: 745px; top: 31px; z-index: 5;
+    width: 500px; height: 818px;
+    background: linear-gradient(160deg, #15151c, #050507);
+    border-radius: 52px;
+    padding: 12px;
+    box-shadow:
+      0 50px 90px -30px rgba(16,24,40,0.50),
+      0 14px 40px -16px rgba(115,84,239,0.30),
+      0 0 0 1px rgba(16,24,40,0.04);
+  }
+  .screen {
+    position: relative;
+    width: 100%; height: 100%;
+    background: #ffffff;
+    border-radius: 41px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  /* Dynamic-island hint. */
+  .island {
+    position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
+    width: 116px; height: 28px; background: #000; border-radius: 16px; z-index: 30;
+  }
+
+  /* iOS status bar. */
+  .statusbar {
+    flex: 0 0 40px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px; color: #111827;
+  }
+  .sb-time { font-size: 19px; font-weight: 700; letter-spacing: 0.01em; }
+  .sb-icons { display: flex; align-items: center; gap: 8px; }
+  .sb-icons i { font-size: 18px; }
+
+  /* Instagram DM header. */
+  .ig-header {
+    flex: 0 0 76px; display: flex; align-items: center; gap: 0;
+    padding: 0 14px; border-bottom: 1px solid #e9e9e9; background: #fff;
+  }
+  .ig-header .back { font-size: 30px; color: #111; margin-right: 4px; }
+  .ig-avatar {
+    flex: 0 0 50px; width: 50px; height: 50px; border-radius: 50%;
+    background: linear-gradient(140deg, #9e77ed 0%, #7354ef 55%, #6d28d9 100%);
+    display: flex; align-items: center; justify-content: center; color: #fff;
+    box-shadow: 0 4px 12px -4px rgba(115,84,239,0.55);
+    margin-right: 12px;
+  }
+  .ig-avatar i { font-size: 26px; }
+  .ig-id { flex: 1 1 auto; min-width: 0; }
+  .ig-name {
+    font-size: 30px; font-weight: 700; color: #0a0a0a; letter-spacing: -0.02em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.05;
+  }
+  .ig-status { font-size: 20px; font-weight: 500; color: #8e8e8e; margin-top: 1px; }
+  .ig-header .hdr-ic { font-size: 28px; color: #111; }
+  .ig-header .hdr-ic.phone { margin-left: 8px; margin-right: 18px; }
+
+  /* Thread — clips overflow; feed sticks to the bottom (chat fills up). */
+  .thread {
+    flex: 1 1 auto; overflow: hidden;
+    display: flex; flex-direction: column;
+    padding: 10px 16px 12px;
+    background: #fff;
+  }
+  .feed { margin-top: auto; }
+
+  .row {
+    display: flex; margin-top: 14px;
+    opacity: 0; transform: translateY(16px);
+    transition: opacity 0.4s ease, transform 0.46s cubic-bezier(0.22,1,0.36,1);
+  }
+  .row.shown { opacity: 1; transform: none; }
+  .row.out { justify-content: flex-end; }
+  .row.in  { justify-content: flex-start; align-items: flex-end; gap: 9px; }
+  .row.date-row { justify-content: center; margin-top: 4px; }
+
+  .datestamp { font-size: 20px; font-weight: 600; color: #9aa0a6; letter-spacing: 0.02em; }
+
+  .msg {
+    max-width: 80%;
+    padding: 15px 20px;
+    font-size: 31px; line-height: 1.30; font-weight: 500;
+    border-radius: 27px;
+    word-wrap: break-word;
+  }
+  .msg-out {
+    background: var(--ig-sent); color: #fff;
+    border-bottom-right-radius: 9px;
+    box-shadow: 0 10px 22px -12px rgba(106,49,185,0.55);
+  }
+  .msg-in {
+    background: var(--ig-gray); color: #1a1a1a;
+    border-bottom-left-radius: 9px;
+  }
+
+  /* Small business avatar beside bot (received) bubbles. */
+  .av-sm {
+    flex: 0 0 40px; width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(140deg, #9e77ed 0%, #7354ef 55%, #6d28d9 100%);
+    display: flex; align-items: center; justify-content: center; color: #fff;
+    margin-bottom: 2px;
+  }
+  .av-sm i { font-size: 21px; }
+
+  /* Instagram typing-dots indicator (gray bubble). */
+  .msg.typing { display: flex; align-items: center; gap: 10px; padding: 21px 22px; }
+  .msg.typing span {
+    width: 13px; height: 13px; border-radius: 50%; background: #9aa0a6;
+    animation: igdot 1.2s infinite ease-in-out;
+  }
+  .msg.typing span:nth-child(2) { animation-delay: 0.18s; }
+  .msg.typing span:nth-child(3) { animation-delay: 0.36s; }
+  @keyframes igdot {
+    0%, 80%, 100% { transform: translateY(0);   opacity: 0.45; }
+    40%           { transform: translateY(-8px); opacity: 1; }
+  }
+
+  /* Instagram composer (at rest — never typed into). */
+  .composer {
+    flex: 0 0 88px; display: flex; align-items: center; gap: 12px;
+    padding: 0 16px; border-top: 1px solid #efefef; background: #fff;
+  }
+  .cam {
+    flex: 0 0 48px; width: 48px; height: 48px; border-radius: 50%;
+    background: linear-gradient(135deg, #4F5BD5, #8A3AB9);
+    display: flex; align-items: center; justify-content: center; color: #fff;
+  }
+  .cam i { font-size: 24px; }
+  .cbar {
+    flex: 1 1 auto; height: 54px; border: 1.5px solid #dbdbdb; border-radius: 9999px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 18px;
+  }
+  .cbar .ph { font-size: 23px; font-weight: 500; color: #9aa0a6; }
+  .cbar .cicons { display: flex; align-items: center; gap: 16px; color: #4a4a4a; }
+  .cbar .cicons i { font-size: 25px; }
+
+  /* Feed dissolve on loop reset. */
+  .feed.dissolving { opacity: 0; transition: opacity 0.5s ease; }
+
+  /* ============================================================
+     REDUCED MOTION — compose a full static frame (whole exchange).
+     ============================================================ */
+  @media (prefers-reduced-motion: reduce) {
+    .msg.typing span { animation: none !important; }
+    .row, .feed { transition: none !important; }
+  }
+</style>
+
+<script>
+  tailwind.config = {
+    theme: { extend: { fontFamily: {
+      urbanist: ['var(--font-urbanist)', 'sans-serif'],
+      sans:     ['var(--font-urbanist)', 'sans-serif'],
+    } } },
+  };
+</script>
+</head>
+
+<body class="font-urbanist">
+  <!-- Fixed 1440x880 canvas so it drops into the landing hero iframe unchanged. -->
+  <div id="stage" aria-label="Ilustración: ReadyChatAI responde automáticamente los mensajes directos de Instagram de Dulce Lina Repostería">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <!-- Brand headline / AI-speed story (lives on the stage, not inside Instagram). -->
+    <div class="headline">
+      <span class="eyebrow"><i class="ri-flashlight-fill bolt"></i><i class="ri-instagram-fill ig-glyph"></i> Instagram · al instante</span>
+      <h1>Tu Instagram<br><span class="accent">responde solo.</span></h1>
+      <p>El bot contesta los DMs de tus clientes al instante, 24/7 — sin que muevas un dedo.</p>
+      <div class="ticks">
+        <div class="tick"><i class="ri-flashlight-fill"></i> Respuestas en segundos</div>
+        <div class="tick"><i class="ri-time-fill"></i> Atiende de día y de noche</div>
+        <div class="tick"><i class="ri-shopping-bag-3-fill"></i> Cero clientes perdidos</div>
+      </div>
+    </div>
+
+    <!-- The phone (dominant). Inside it: an authentic Instagram DM thread. -->
+    <div id="phone">
+      <div class="screen">
+        <div class="island"></div>
+
+        <div class="statusbar">
+          <span class="sb-time">9:41</span>
+          <span class="sb-icons">
+            <i class="ri-signal-tower-fill"></i>
+            <i class="ri-wifi-fill"></i>
+            <i class="ri-battery-fill"></i>
+          </span>
+        </div>
+
+        <div class="ig-header">
+          <i class="ri-arrow-left-s-line back"></i>
+          <div class="ig-avatar"><i class="ri-cake-3-fill"></i></div>
+          <div class="ig-id">
+            <div class="ig-name">dulcelina.reposteria</div>
+            <div class="ig-status">Activo(a) ahora</div>
+          </div>
+          <i class="ri-phone-line hdr-ic phone"></i>
+          <i class="ri-vidicon-line hdr-ic"></i>
+        </div>
+
+        <div class="thread">
+          <div class="feed" id="feed"></div>
+        </div>
+
+        <div class="composer">
+          <div class="cam"><i class="ri-camera-fill"></i></div>
+          <div class="cbar">
+            <span class="ph">Mensaje...</span>
+            <span class="cicons">
+              <i class="ri-mic-line"></i>
+              <i class="ri-image-line"></i>
+              <i class="ri-emotion-line"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var feed = document.getElementById('feed');
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Authentic, short, legible bakery DM thread (Dulce Lina · Repostería).
+      var M = {
+        cust1: '¡Hola! ¿Hacen pasteles a pedido? 🎂',
+        bot1:  '¡Hola Emma! 💜 ¡Claro que sí! ¿Para qué fecha?',
+        cust2: 'Para el sábado, de chocolate 🎉',
+        bot2:  '¡Perfecto! ¿Para cuántas personas?'
+      };
+
+      var CAKE = '<div class="av-sm"><i class="ri-cake-3-fill"></i></div>';
+      var DOTS = '<span></span><span></span><span></span>';
+
+      function el(cls, html) {
+        var d = document.createElement('div');
+        d.className = cls;
+        d.innerHTML = html;
+        feed.appendChild(d);
+        return d;
+      }
+      function reveal(node) {
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { node.classList.add('shown'); });
+        });
+      }
+      function addDate()        { return el('row date-row', '<div class="datestamp">HOY 14:32</div>'); }
+      function addCustomer(t)   { return el('row out', '<div class="msg msg-out">' + t + '</div>'); }
+      function addBot(t)        { return el('row in', CAKE + '<div class="msg msg-in">' + t + '</div>'); }
+      function addTyping()      { return el('row in typing-row', CAKE + '<div class="msg msg-in typing">' + DOTS + '</div>'); }
+
+      // ---- Reduced motion: compose the full static exchange. ------------------
+      if (reduce) {
+        addDate().classList.add('shown');
+        addCustomer(M.cust1).classList.add('shown');
+        addBot(M.bot1).classList.add('shown');
+        addCustomer(M.cust2).classList.add('shown');
+        addBot(M.bot2).classList.add('shown');
+        return;
+      }
+
+      // ---- Animated timeline --------------------------------------------------
+      var timers = [];
+      function after(ms, fn) { timers.push(setTimeout(fn, ms)); }
+      function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+
+      function runCycle() {
+        clearTimers();
+        feed.classList.remove('dissolving');
+        feed.innerHTML = '';
+
+        var t = 0;
+        var typingNode = null;
+
+        // Date header.
+        after((t += 200), function () { reveal(addDate()); });
+
+        // Exchange 1 — customer asks, bot is typing, bot replies fast.
+        after((t += 380), function () { reveal(addCustomer(M.cust1)); });
+        after((t += 1050), function () { typingNode = addTyping(); reveal(typingNode); });
+        after((t += 1180), function () {
+          if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
+          reveal(addBot(M.bot1));
+        });
+
+        // Exchange 2 — second quick Q&A.
+        after((t += 2050), function () { reveal(addCustomer(M.cust2)); });
+        after((t += 1020), function () { typingNode = addTyping(); reveal(typingNode); });
+        after((t += 1150), function () {
+          if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
+          reveal(addBot(M.bot2));
+        });
+
+        // Long readable end-hold, then dissolve + loop.
+        after((t += 5400), function () {
+          feed.classList.add('dissolving');
+        });
+        after((t += 560), function () { runCycle(); });
+      }
+
+      function start() { after(500, runCycle); }
+      if (document.readyState === 'complete') start();
+      else window.addEventListener('load', start, { once: true });
+    })();
+  </script>
+</body>
+</html>
