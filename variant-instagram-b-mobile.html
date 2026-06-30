@@ -195,7 +195,13 @@
   .ti-meta { margin-top: 2px; font-size: 15px; font-weight: 400; color: var(--ig-gray); }
   .ti-date { margin-top: 6px; font-size: 14px; font-weight: 600; color: var(--ig-gray); letter-spacing: 0.01em; }
 
-  .dm-thread { flex: 1; padding: 14px 16px 10px; display: flex; flex-direction: column; justify-content: flex-start; overflow: hidden; }
+  /* Bottom-anchored, real-chat scroll: flex-start keeps the profile mini-card at
+     the TOP, then we programmatically scroll to the newest message as each lands
+     so the intro + oldest bubbles slide up off the top (Diego's "¿está scrolleando?").
+     min-height:0 is load-bearing — a flex:1 item defaults to min-height:auto and
+     would expand to content (scrollHeight==clientHeight) and silently NOT scroll. */
+  .dm-thread { flex: 1; min-height: 0; padding: 14px 16px 10px; display: flex; flex-direction: column; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; -ms-overflow-style: none; scrollbar-width: none; }
+  .dm-thread::-webkit-scrollbar { width: 0; height: 0; display: none; }
   .dm-feed { display: flex; flex-direction: column; }
   .dm-row { display: flex; align-items: flex-end; gap: 9px; max-width: 100%; margin-top: 10px; }
   .dm-row.in { justify-content: flex-start; }
@@ -231,8 +237,19 @@
     .ph-views { overflow: visible; }
     .view { position: static; inset: auto; transform: none !important; opacity: 1 !important; transition: none !important; }
     .pc-header, .pc-media, .pc-actions, .pc-likes, .pc-caption, .dm-composer, .dm-header .dm-call, .c-meta, .thread-intro { display: none !important; }
-    .pc-comments { flex: none; border-top: none; padding-top: 12px; }
-    .dm-thread { flex: none; justify-content: flex-start; padding-top: 10px; }
+    .pc-comments { flex: none; border-top: none; padding-top: 10px; padding-bottom: 2px; }
+    .dm-thread { flex: none; min-height: 0; justify-content: flex-start; padding-top: 6px; overflow: visible; }
+    /* The static frame has no scroll, so the full comment->close story (2 comments
+       + 5 DM bubbles) must fit above the fold. Shrink the type in THIS frame only;
+       the animated path keeps the full 27px and relies on the live scroll instead. */
+    .dm-bubble { font-size: 19px; padding: 8px 13px; border-radius: 19px; }
+    .dm-row { margin-top: 6px; }
+    .av-sm { width: 26px; height: 26px; }
+    .c-text { font-size: 20px; margin-top: 2px; }
+    .c-name { font-size: 17px; }
+    .comment { padding: 2px 0; }
+    .comment .c-av.cust { width: 38px; height: 38px; font-size: 17px; }
+    .reply-block .comment.reply .c-av { width: 30px; height: 30px; }
     .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
     .reply-block.show .c-av, .typing-bubble span { animation: none !important; }
     .rm-cue {
@@ -398,14 +415,23 @@
       var elCust  = document.getElementById('comment-customer');
       var elReply = document.getElementById('comment-reply');
       var feed    = document.getElementById('dm-feed');
+      var thread  = feed.parentNode;   // .dm-thread — the bottom-anchored scroll container
+
+      // Scroll the DM thread so the newest message sits at the bottom; with
+      // scroll-behavior:smooth on .dm-thread this animates, so the intro card +
+      // oldest bubbles visibly slide up off the top as each message lands.
+      function scrollDmDown() { if (thread) thread.scrollTop = thread.scrollHeight; }
 
       var AV   = '<img class="av-sm" src="assets/gen/bakery-avatar.webp" alt="" loading="lazy" decoding="async" />';
       var DOTS = '<span></span><span></span><span></span>';
 
       // Bot talks about the SAME chocolate cake shown in the post (text-only, cleaner).
-      var BOT1 = '¡Hola Sofía! 🍫 El pastel de chocolate y frutos rojos está disponible para el sábado.';
-      var CUST = '¡Genial! ¿Cuánto cuesta? 😍';
-      var BOT2 = 'Cuesta $45.000 con entrega 🚚 ¿Te lo aparto?';
+      var BOT1  = '¡Hola Sofía! 🍫 El pastel de chocolate y frutos rojos está disponible para el sábado.';
+      var CUST  = '¡Genial! ¿Cuánto cuesta? 😍';
+      var BOT2  = 'Cuesta $45.000 con entrega 🚚 ¿Te lo aparto?';
+      // Closing exchange — the bot CLOSES the sale (matches the IG DM "a" variant).
+      var CUST2 = '¡Sí, porfa! 🙌';
+      var BOT3  = '¡Listo! Confirmado para el sábado ✅';
 
       function el(cls, html) {
         var d = document.createElement('div');
@@ -426,6 +452,8 @@
         botText(BOT1).classList.add('show');
         custText(CUST).classList.add('show');
         botText(BOT2).classList.add('show');
+        custText(CUST2).classList.add('show');
+        botText(BOT3).classList.add('show');
         return;
       }
 
@@ -439,6 +467,7 @@
         elCust.classList.remove('show');
         elReply.classList.remove('show');
         feed.innerHTML = '';
+        if (thread) thread.scrollTop = 0;  // next cycle starts from the top (intro visible)
         void elViews.offsetWidth;          // force reflow so the snap is instant
         elViews.classList.remove('no-trans');
       }
@@ -449,24 +478,31 @@
 
         // POST VIEW: customer comment, then a calm public auto-reply.
         after(400,  function () { elCust.classList.add('show'); });
-        after(3300, function () { elReply.classList.add('show'); });
+        after(2600, function () { elReply.classList.add('show'); });
 
         // SLIDE TO DM.
-        after(5600, function () { elViews.classList.add('to-dm'); });
+        after(4300, function () { elViews.classList.add('to-dm'); });
 
-        // DM: typing -> bot answers about the SAME chocolate cake.
-        after(6450, function () { typingNode = typing(); reveal(typingNode); });
-        after(7900, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
-                                  reveal(botText(BOT1)); });
+        // DM exchange 1: typing -> bot answers about the SAME chocolate cake.
+        after(5050, function () { typingNode = typing(); reveal(typingNode); scrollDmDown(); });
+        after(6400, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
+                                  reveal(botText(BOT1)); scrollDmDown(); });
 
-        // Customer asks the price; bot quotes it and offers to reserve.
-        after(10900, function () { reveal(custText(CUST)); });
-        after(12250, function () { typingNode = typing(); reveal(typingNode); });
-        after(13700, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
-                                   reveal(botText(BOT2)); });
+        // DM exchange 2: customer asks the price; bot quotes it and offers to reserve.
+        after(8900,  function () { reveal(custText(CUST)); scrollDmDown(); });
+        after(10050, function () { typingNode = typing(); reveal(typingNode); scrollDmDown(); });
+        after(11400, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
+                                   reveal(botText(BOT2)); scrollDmDown(); });
 
-        // END HOLD + clean dissolve + loop.
-        after(13700 + 6000, function () {
+        // DM exchange 3: customer confirms; bot CLOSES the sale. By now the thread
+        // has scrolled past the intro card so the close sits at the bottom on screen.
+        after(13300, function () { reveal(custText(CUST2)); scrollDmDown(); });
+        after(14400, function () { typingNode = typing(); reveal(typingNode); scrollDmDown(); });
+        after(15750, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
+                                   reveal(botText(BOT3)); scrollDmDown(); });
+
+        // END HOLD on the CLOSED sale + clean dissolve + loop.
+        after(15750 + 6500, function () {
           elViews.classList.add('dissolving');
           after(500, function () {
             resetViews();

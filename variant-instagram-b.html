@@ -214,9 +214,12 @@
   .dm-id .dm-active { font-size: 13px; font-weight: 400; color: var(--ig-gray); margin-top: 1px; }
   .dm-header .dm-call { margin-left: auto; display: flex; gap: 14px; color: var(--ig-text); }
 
-  /* DM thread — top-anchored with an authentic IG new-thread intro so the
-     big screen reads as a real (short) conversation, never an empty void. */
-  .dm-thread { flex: 1; padding: 14px 16px 10px; display: flex; flex-direction: column; justify-content: flex-start; overflow: hidden; }
+  /* DM thread — a REAL scroll container. Starts with an authentic IG new-thread
+     intro at the top; as the conversation grows past the screen it scrolls so the
+     newest bubble bottom-anchors (intro + oldest messages scroll up off the top),
+     exactly like a live chat. Scrollbar hidden for a clean device look. */
+  .dm-thread { flex: 1; padding: 14px 16px 10px; display: flex; flex-direction: column; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; -ms-overflow-style: none; scrollbar-width: none; overscroll-behavior: contain; }
+  .dm-thread::-webkit-scrollbar { width: 0; height: 0; display: none; }
 
   /* Native IG thread-top: centered profile mini-card + "Hoy" date separator. */
   .thread-intro { flex: none; display: flex; flex-direction: column; align-items: center; padding: 6px 0 8px; }
@@ -264,6 +267,7 @@
     .reveal, .connector, .phone, .dm-row.reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
     .typing-bubble span, .conn-arrow, .reply-block.show .c-av { animation: none !important; }
     #dm-typing { display: none !important; }
+    .dm-thread { scroll-behavior: auto !important; }
   }
 </style>
 
@@ -424,14 +428,28 @@
       var elPhone     = document.getElementById('phone');
       var stage       = document.getElementById('stage');
       var feed        = document.getElementById('dm-feed');
+      var thread      = document.querySelector('.dm-thread');
 
       var AV   = '<img class="av-sm" src="assets/gen/bakery-avatar.webp" alt="" loading="lazy" decoding="async" />';
       var DOTS = '<span></span><span></span><span></span>';
 
       // Bot talks about the SAME chocolate cake shown in the post (text-only, cleaner).
-      var BOT1 = '¡Hola Sofía! 🍫 El pastel de chocolate y frutos rojos está disponible para el sábado.';
-      var CUST = '¡Genial! ¿Cuánto cuesta? 😍';
-      var BOT2 = 'Cuesta $45.000 con entrega 🚚 ¿Te lo aparto?';
+      var BOT1  = '¡Hola Sofía! 🍫 El pastel de chocolate y frutos rojos está disponible para el sábado.';
+      var CUST  = '¡Genial! ¿Cuánto cuesta? 😍';
+      var BOT2  = 'Cuesta $45.000 con entrega 🚚 ¿Te lo aparto?';
+      // Closing exchange — the bot actually CLOSES the sale by DM (stage copy: "cierra la venta por DM").
+      var CUST2 = '¡Sí, porfa! 🙌';
+      var BOT3  = '¡Listo! Confirmado para el sábado ✅';
+
+      // Keep the newest bubble bottom-anchored: scroll the thread to its end as
+      // each message/typing-indicator lands, so the close is always on screen.
+      function scrollDown(smooth) {
+        if (!thread) return;
+        requestAnimationFrame(function () {
+          try { thread.scrollTo({ top: thread.scrollHeight, behavior: smooth ? 'smooth' : 'auto' }); }
+          catch (e) { thread.scrollTop = thread.scrollHeight; }
+        });
+      }
 
       function el(cls, html) {
         var d = document.createElement('div');
@@ -439,7 +457,7 @@
         feed.appendChild(d); return d;
       }
       function reveal(node) {
-        requestAnimationFrame(function () { requestAnimationFrame(function () { node.classList.add('show'); }); });
+        requestAnimationFrame(function () { requestAnimationFrame(function () { node.classList.add('show'); scrollDown(true); }); });
       }
       function botText(t)  { return el('dm-row in reveal',  AV + '<div class="dm-bubble incoming">' + t + '</div>'); }
       function custText(t) { return el('dm-row out reveal', '<div class="dm-bubble outgoing">' + t + '</div>'); }
@@ -449,6 +467,8 @@
         botText(BOT1).classList.add('show');
         custText(CUST).classList.add('show');
         botText(BOT2).classList.add('show');
+        custText(CUST2).classList.add('show');
+        botText(BOT3).classList.add('show');
       }
 
       // ---- Reduced motion: compose the full static frame (public reply + full DM).
@@ -458,6 +478,7 @@
         elConnector.classList.add('show');
         elPhone.classList.add('show');
         showStatic();
+        scrollDown(false);   // bottom-anchor the static frame so the close ("¡Listo!…") is on screen
         return;
       }
 
@@ -468,6 +489,7 @@
       function runCycle() {
         clearTimers();
         feed.innerHTML = '';
+        if (thread) thread.scrollTop = 0;   // reset to the thread-intro top for each loop
         var typingNode = null;
 
         // POST: customer comment, then a calm public auto-reply.
@@ -488,8 +510,15 @@
         after(12350, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
                                    reveal(botText(BOT2)); });
 
-        // Long readable end-hold, then a clean dissolve + loop.
-        after(12350 + 6000, function () {
+        // Customer says yes; bot CLOSES the sale. The thread now overflows, so each
+        // of these lands with a visible auto-scroll — the close sits at the bottom.
+        after(14200, function () { reveal(custText(CUST2)); });
+        after(15400, function () { typingNode = typing(); reveal(typingNode); });
+        after(16850, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
+                                   reveal(botText(BOT3)); });
+
+        // Long readable end-hold (close fully on screen), then a clean dissolve + loop.
+        after(16850 + 6000, function () {
           stage.classList.add('dissolving');
           after(640, function () {
             elCust.classList.remove('show');
