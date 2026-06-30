@@ -71,7 +71,7 @@
      HEADLINE — brand + "instant AI" story lives AROUND the phone,
      NEVER inside the WhatsApp UI (honesty requirement).
      ============================================================ */
-  .headline { position: absolute; left: 84px; top: 198px; width: 600px; z-index: 6; }
+  .headline { position: absolute; left: 116px; top: 198px; width: 600px; z-index: 6; }
   .eyebrow {
     display: inline-flex; align-items: center; gap: 10px;
     font-size: 19px; font-weight: 800; letter-spacing: 0.03em;
@@ -98,13 +98,14 @@
   .tick .ic { width: 28px; height: 28px; color: #075E54; }
 
   /* ============================================================
-     PHONE — the dominant hero element. 640x858 (~97% of 880 tall).
+     PHONE — the dominant hero element. A real smartphone: tall + narrow
+     (406x860, ~9:19.5, ~98% of the 880 stage height).
      ============================================================ */
   #phone {
-    position: absolute; left: 752px; top: 11px; z-index: 5;
-    width: 640px; height: 858px;
+    position: absolute; left: 900px; top: 10px; z-index: 5;
+    width: 406px; height: 860px;
     background: linear-gradient(160deg, #15151c, #050507);
-    border-radius: 56px; padding: 13px;
+    border-radius: 50px; padding: 12px;
     box-shadow:
       0 50px 90px -30px rgba(16,24,40,0.50),
       0 14px 40px -16px rgba(7,94,84,0.28),
@@ -113,55 +114,55 @@
   .screen {
     position: relative; width: 100%; height: 100%;
     background: var(--wa-paper);
-    border-radius: 44px; overflow: hidden;
+    border-radius: 40px; overflow: hidden;
     display: flex; flex-direction: column;
     font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
   .island {
-    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
-    width: 128px; height: 30px; background: #000; border-radius: 16px; z-index: 30;
+    position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
+    width: 104px; height: 26px; background: #000; border-radius: 14px; z-index: 30;
   }
 
   /* Status bar — modern light safe-area: white surface, dark glyphs. */
   .statusbar {
-    flex: 0 0 44px; display: flex; align-items: center; justify-content: space-between;
-    padding: 0 28px; background: var(--wa-surface); color: #0b141a;
+    flex: 0 0 40px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; background: var(--wa-surface); color: #0b141a;
   }
-  .sb-time { font-size: 19px; font-weight: 600; letter-spacing: 0.01em; }
-  .sb-icons { display: flex; align-items: center; gap: 7px; }
-  .sb-icons .ic { width: 21px; height: 21px; }
+  .sb-time { font-size: 16px; font-weight: 600; letter-spacing: 0.01em; }
+  .sb-icons { display: flex; align-items: center; gap: 6px; }
+  .sb-icons .ic { width: 18px; height: 18px; }
 
   /* WhatsApp conversation header (modern light: white surface, green accents). */
   .wa-header {
-    flex: 0 0 80px; display: flex; align-items: center;
-    padding: 0 16px 0 10px; background: var(--wa-surface); color: var(--wa-ink);
+    flex: 0 0 64px; display: flex; align-items: center;
+    padding: 0 12px 0 8px; background: var(--wa-surface); color: var(--wa-ink);
     box-shadow: 0 0.5px 0 var(--wa-hairline);
     position: relative; z-index: 2;
   }
-  .wa-header .back { width: 28px; height: 30px; margin-right: 4px; color: var(--wa-accent); }
+  .wa-header .back { width: 22px; height: 26px; margin-right: 3px; color: var(--wa-accent); }
   .wa-avatar {
-    flex: 0 0 46px; width: 46px; height: 46px; border-radius: 50%;
-    overflow: hidden; margin-right: 12px; background: #d9d2c5;
+    flex: 0 0 40px; width: 40px; height: 40px; border-radius: 50%;
+    overflow: hidden; margin-right: 9px; background: #d9d2c5;
     box-shadow: 0 0 0 1px rgba(11,20,26,0.08);
   }
   .wa-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .wa-id { flex: 1 1 auto; min-width: 0; }
   .wa-name {
-    font-size: 22px; font-weight: 600; color: var(--wa-ink); letter-spacing: -0.01em;
+    font-size: 19px; font-weight: 600; color: var(--wa-ink); letter-spacing: -0.01em;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1;
   }
-  .wa-presence { font-size: 16px; font-weight: 400; color: var(--wa-meta); margin-top: 2px; }
+  .wa-presence { font-size: 14px; font-weight: 400; color: var(--wa-meta); margin-top: 1px; }
   .wa-presence.typing { color: var(--wa-accent); font-weight: 500; }
-  .wa-actions { display: flex; align-items: center; gap: 20px; margin-left: 8px; }
-  .wa-actions .ic { width: 27px; height: 27px; color: var(--wa-accent); }
-  .wa-actions .ic.menu { width: 24px; }
+  .wa-actions { display: flex; align-items: center; gap: 13px; margin-left: 6px; }
+  .wa-actions .ic { width: 23px; height: 23px; color: var(--wa-accent); }
+  .wa-actions .ic.menu { width: 20px; }
 
   /* Thread — WhatsApp wallpaper; bottom-anchored so the newest is always visible
      and older messages clip at the TOP (realistic scrolled-to-newest view). */
   .thread {
     flex: 1 1 auto; overflow: hidden;
     display: flex; flex-direction: column; justify-content: flex-end;
-    padding: 12px 18px 14px;
+    padding: 10px 13px 12px;
     background-color: var(--wa-paper);
     background-repeat: repeat;
   }
@@ -171,17 +172,17 @@
   /* Centered set-dressing pills (date + encryption). */
   .center-pill {
     align-self: center; text-align: center;
-    border-radius: 9px; padding: 6px 14px; margin: 4px 0 2px;
-    font-size: 18px; font-weight: 500; color: #54656f;
+    border-radius: 8px; padding: 5px 12px; margin: 4px 0 2px;
+    font-size: 14px; font-weight: 500; color: #54656f;
     box-shadow: 0 1px 1px rgba(0,0,0,0.05);
   }
   .pill-date { background: rgba(255,255,255,0.92); letter-spacing: 0.04em; }
   .pill-enc {
-    background: #FDF4C5; color: #5b6b4f; max-width: 86%;
-    display: flex; align-items: center; gap: 8px; justify-content: center;
-    line-height: 1.28; font-size: 17px; padding: 9px 16px;
+    background: #FDF4C5; color: #5b6b4f; max-width: 88%;
+    display: flex; align-items: center; gap: 7px; justify-content: center;
+    line-height: 1.28; font-size: 13px; padding: 7px 12px;
   }
-  .pill-enc .ic { width: 16px; height: 16px; color: #b39b2e; flex: 0 0 16px; }
+  .pill-enc .ic { width: 14px; height: 14px; color: #b39b2e; flex: 0 0 14px; }
 
   .row {
     display: flex; margin-top: 8px;
@@ -198,38 +199,38 @@
   .bubble {
     position: relative; max-width: 80%;
     display: flex; flex-direction: column;
-    padding: 9px 12px 8px 13px;
-    border-radius: 10px;
+    padding: 8px 11px 7px 12px;
+    border-radius: 9px;
     box-shadow: 0 1px 1px rgba(0,0,0,0.13), 0 1px 0.5px rgba(0,0,0,0.06);
   }
   .b-in  { background: #fff; border-top-left-radius: 1px; }
   .b-out { background: var(--wa-out); border-top-right-radius: 1px; }
   /* WhatsApp tail flags. */
   .b-in::before {
-    content: ""; position: absolute; top: 0; left: -9px; width: 13px; height: 14px;
+    content: ""; position: absolute; top: 0; left: -8px; width: 11px; height: 12px;
     background: #fff; clip-path: polygon(100% 0, 100% 100%, 0 0);
   }
   .b-out::before {
-    content: ""; position: absolute; top: 0; right: -9px; width: 13px; height: 14px;
+    content: ""; position: absolute; top: 0; right: -8px; width: 11px; height: 12px;
     background: var(--wa-out); clip-path: polygon(0 0, 0 100%, 100% 0);
   }
   /* A continuation bubble (same sender, stacked) drops its tail + sharp corner. */
   .b-cont::before { display: none; }
-  .b-cont.b-in  { border-top-left-radius: 10px; margin-top: -2px; }
+  .b-cont.b-in  { border-top-left-radius: 9px; margin-top: -2px; }
 
   .btext { font-size: 24px; line-height: 1.3; font-weight: 400; color: #111b21; word-wrap: break-word; }
-  .meta { align-self: flex-end; display: flex; align-items: center; gap: 5px; margin-top: 2px; }
-  .meta .t { font-size: 15px; font-weight: 400; color: var(--wa-meta); }
-  .meta .ic { width: 19px; height: 19px; margin-left: -1px; }
+  .meta { align-self: flex-end; display: flex; align-items: center; gap: 4px; margin-top: 1px; }
+  .meta .t { font-size: 13px; font-weight: 400; color: var(--wa-meta); }
+  .meta .ic { width: 16px; height: 16px; margin-left: -1px; }
 
   /* Photo message. */
-  .b-photo { padding: 5px 5px 7px; }
+  .b-photo { padding: 4px 4px 6px; }
   .ph-img {
-    width: 326px; max-width: 100%; height: 274px; border-radius: 8px;
+    width: 250px; max-width: 100%; height: 210px; border-radius: 7px;
     overflow: hidden; background: #e6e0d7;
   }
   .ph-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .ph-cap { padding: 7px 8px 0; }
+  .ph-cap { padding: 6px 7px 0; }
   .ph-cap .btext { font-size: 24px; }
   .b-photo .meta { padding-right: 4px; }
 
@@ -278,23 +279,23 @@
         <div class="statusbar">
           <span class="sb-time">9:41</span>
           <span class="sb-icons">
-            <span class="ic" data-ic="signal" data-sz="20"></span>
-            <span class="ic" data-ic="wifi" data-sz="21"></span>
-            <span class="ic" data-ic="battery" data-sz="22"></span>
+            <span class="ic" data-ic="signal" data-sz="17"></span>
+            <span class="ic" data-ic="wifi" data-sz="18"></span>
+            <span class="ic" data-ic="battery" data-sz="19"></span>
           </span>
         </div>
 
         <div class="wa-header">
-          <span class="ic back" data-ic="chevron-left" data-sz="30" data-st="2.4"></span>
+          <span class="ic back" data-ic="chevron-left" data-sz="24" data-st="2.4"></span>
           <div class="wa-avatar"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina" decoding="async" /></div>
           <div class="wa-id">
             <div class="wa-name">Dulce Lina</div>
             <div class="wa-presence" id="presence">en línea</div>
           </div>
           <div class="wa-actions">
-            <span class="ic" data-ic="wa-video" data-sz="27"></span>
-            <span class="ic" data-ic="wa-call" data-sz="25"></span>
-            <span class="ic menu" data-ic="more-v" data-sz="24"></span>
+            <span class="ic" data-ic="wa-video" data-sz="23"></span>
+            <span class="ic" data-ic="wa-call" data-sz="21"></span>
+            <span class="ic menu" data-ic="more-v" data-sz="20"></span>
           </div>
         </div>
 
@@ -311,35 +312,35 @@
   <template id="composer-tpl">
     <div class="cwrap">
       <div class="cpill">
-        <span class="ic emoji" data-ic="wa-emoji" data-sz="26"></span>
+        <span class="ic emoji" data-ic="wa-emoji" data-sz="22"></span>
         <span class="cph">Mensaje</span>
         <span class="cright">
-          <span class="ic" data-ic="wa-attach" data-sz="24"></span>
-          <span class="ic" data-ic="wa-camera" data-sz="24"></span>
+          <span class="ic" data-ic="wa-attach" data-sz="21"></span>
+          <span class="ic" data-ic="wa-camera" data-sz="21"></span>
         </span>
       </div>
-      <div class="csend"><span class="ic" data-ic="wa-send" data-sz="26"></span></div>
+      <div class="csend"><span class="ic" data-ic="wa-send" data-sz="23"></span></div>
     </div>
   </template>
 
   <style>
-    .composer { flex: 0 0 86px; display: flex; align-items: center; gap: 10px; padding: 0 14px; background: var(--wa-paper); }
-    .cwrap { display: flex; align-items: center; gap: 10px; width: 100%; }
+    .composer { flex: 0 0 72px; display: flex; align-items: center; gap: 9px; padding: 0 11px; background: var(--wa-paper); }
+    .cwrap { display: flex; align-items: center; gap: 9px; width: 100%; }
     .cpill {
-      flex: 1 1 auto; height: 56px; background: #fff; border-radius: 9999px;
-      display: flex; align-items: center; gap: 12px; padding: 0 14px 0 16px;
+      flex: 1 1 auto; height: 48px; background: #fff; border-radius: 9999px;
+      display: flex; align-items: center; gap: 10px; padding: 0 12px 0 13px;
       box-shadow: 0 1px 1px rgba(0,0,0,0.07);
     }
     .cpill .emoji { color: #54656f; }
-    .cpill .cph { flex: 1 1 auto; font-size: 23px; color: #8696a0; font-weight: 400; }
-    .cpill .cright { display: flex; align-items: center; gap: 16px; color: #54656f; }
-    .cpill .ic { width: 26px; height: 26px; }
+    .cpill .cph { flex: 1 1 auto; font-size: 18px; color: #8696a0; font-weight: 400; }
+    .cpill .cright { display: flex; align-items: center; gap: 13px; color: #54656f; }
+    .cpill .ic { width: 22px; height: 22px; }
     .csend {
-      flex: 0 0 56px; width: 56px; height: 56px; border-radius: 50%;
+      flex: 0 0 48px; width: 48px; height: 48px; border-radius: 50%;
       background: var(--wa-send); display: flex; align-items: center; justify-content: center;
       box-shadow: 0 4px 12px -4px rgba(0,168,132,0.6);
     }
-    .csend .ic { width: 27px; height: 27px; color: #fff; }
+    .csend .ic { width: 23px; height: 23px; color: #fff; }
   </style>
 
   <script>
@@ -390,7 +391,7 @@
 
       // Authentic, short, legible bakery WhatsApp thread (Dulce Lina · Repostería).
       var TIME = '14:32';
-      var TICKS = '<span class="ic" data-ic="check-double" data-sz="22" data-col="' + getComputedStyle(document.documentElement).getPropertyValue('--wa-tick').trim() + '"></span>';
+      var TICKS = '<span class="ic" data-ic="check-double" data-sz="18" data-col="' + getComputedStyle(document.documentElement).getPropertyValue('--wa-tick').trim() + '"></span>';
 
       function metaOut() { return '<div class="meta"><span class="t">' + TIME + '</span>' + TICKS + '</div>'; }
       function metaIn()  { return '<div class="meta"><span class="t">' + TIME + '</span></div>'; }

@@ -134,7 +134,7 @@
 
   /* flex-grows to absorb slack so the two comments below are ALWAYS fully
      visible; the real photo fills whatever vertical space remains. */
-  .pc-media { position: relative; flex: 1 1 auto; min-height: 180px; overflow: hidden; background: #f0e9f6; }
+  .pc-media { position: relative; flex: 1 1 auto; min-height: 178px; overflow: hidden; background: #f0e9f6; }
   .pc-media img { width: 100%; height: 100%; object-fit: cover; object-position: center 46%; display: block; }
 
   .pc-actions { display: flex; align-items: center; gap: 18px; padding: 11px 16px 5px; flex: none; color: var(--ig-text); }
@@ -144,24 +144,33 @@
   .pc-caption { padding: 3px 16px 8px; font-size: 19px; font-weight: 400; color: var(--ig-text); line-height: 1.34; flex: none; }
   .pc-caption b { font-weight: 600; }
 
-  .pc-comments { padding: 8px 16px 4px; border-top: 1px solid #f1f1f1; display: flex; flex-direction: column; gap: 2px; flex: none; }
+  .pc-comments { padding: 6px 16px 10px; border-top: 1px solid #f1f1f1; display: flex; flex-direction: column; gap: 2px; flex: none; }
 
-  .comment { display: flex; align-items: flex-start; gap: 12px; padding: 6px 0; }
-  .comment.reply { margin-left: 14px; }
+  .comment { display: flex; align-items: flex-start; gap: 12px; padding: 4px 0; }
   .comment .c-av { flex: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; overflow: hidden; }
   .comment .c-av.cust { width: 50px; height: 50px; font-size: 22px; background: linear-gradient(135deg, #fbc2eb 0%, #f78fb3 100%); }
-  .comment.reply .c-av { width: 44px; height: 44px; }
-  .comment.reply .c-av img { width: 100%; height: 100%; object-fit: cover; }
   .c-body { flex: 1; min-width: 0; }
   /* Username = label; the message body is the protected, proportionate size. */
   .c-name { font-size: 22px; font-weight: 600; color: var(--ig-text); line-height: 1.12; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .c-text { font-size: 27px; line-height: 1.3; color: var(--ig-text); margin-top: 3px; }
-  .c-meta { margin-top: 6px; font-size: 17px; font-weight: 600; color: var(--ig-gray); display: flex; gap: 16px; }
+  .c-meta { margin-top: 5px; font-size: 17px; font-weight: 600; color: var(--ig-gray); display: flex; gap: 16px; white-space: nowrap; }
   .c-like { flex: none; padding-top: 8px; }
+
+  /* Nested reply thread — the business auto-reply is indented UNDER Sofía's
+     comment with the authentic IG "⎯ Ver respuestas (1)" affordance + a clearly
+     smaller business avatar, so it reads as a REPLY, not a second comment. */
+  .reply-block { position: relative; margin-left: 25px; padding-left: 16px; display: flex; flex-direction: column; }
+  /* Thin IG-style thread guide in the gutter so the reply clearly hangs off
+     Sofía's comment (zero vertical cost vs a text affordance). */
+  .reply-block::before { content: ""; position: absolute; left: 1px; top: 2px; bottom: 16px; width: 2px; border-radius: 2px; background: #e6e6e6; }
+  .reply-block .comment.reply { padding: 2px 0 0; gap: 10px; }
+  .reply-block .comment.reply .c-meta { gap: 13px; }
+  .reply-block .comment.reply .c-av { width: 38px; height: 38px; }
+  .reply-block .comment.reply .c-av img { width: 100%; height: 100%; object-fit: cover; }
 
   .reveal { opacity: 0; transform: translateY(16px); }
   .reveal.show { opacity: 1; transform: none; transition: opacity 500ms ease, transform 620ms cubic-bezier(0.22,1,0.36,1); }
-  .comment.reply.show .c-av { animation: avPop 620ms cubic-bezier(0.22,1,0.36,1) both; }
+  .reply-block.show .c-av { animation: avPop 620ms cubic-bezier(0.22,1,0.36,1) both; }
   @keyframes avPop { 0% { transform: scale(0.6); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
 
   /* ============================================================
@@ -225,7 +234,7 @@
     .pc-comments { flex: none; border-top: none; padding-top: 12px; }
     .dm-thread { flex: none; justify-content: flex-start; padding-top: 10px; }
     .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
-    .comment.reply.show .c-av, .typing-bubble span { animation: none !important; }
+    .reply-block.show .c-av, .typing-bubble span { animation: none !important; }
     .rm-cue {
       display: flex; align-items: center; justify-content: center; gap: 8px;
       margin: 2px 16px 0; padding: 9px 0; color: #7354ef; font-size: 18px; font-weight: 700;
@@ -306,15 +315,19 @@
                 <span class="ico c-like" data-icon="ig-like" data-size="21"></span>
               </div>
 
-              <!-- Public bot reply (as the business) -->
-              <div class="comment reply reveal" id="comment-reply">
-                <div class="c-av"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></div>
-                <div class="c-body">
-                  <div class="c-name">dulcelina.reposteria</div>
-                  <div class="c-text">¡Hola Sofía! 🎉 Sí 💜 Te escribimos por DM con los detalles</div>
-                  <div class="c-meta"><span>Ahora</span><span>Me gusta</span><span>Responder</span></div>
+              <!-- Nested reply: the public bot auto-reply, indented UNDER Sofía.
+                   Mobile uses an indent + thread-guide + smaller avatar (instead of
+                   the desktop "Ver respuestas" affordance) so the photo keeps an
+                   authentic aspect in the shorter phone. -->
+              <div class="reply-block reveal" id="comment-reply">
+                <div class="comment reply">
+                  <div class="c-av"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></div>
+                  <div class="c-body">
+                    <div class="c-name">dulcelina.reposteria</div>
+                    <div class="c-text">¡Hola Sofía! 🎉 Sí 💜 Te escribimos por DM con los detalles</div>
+                    <div class="c-meta"><span>Ahora</span><span>Me gusta</span><span>Responder</span></div>
+                  </div>
                 </div>
-                <span class="ico c-like" data-icon="ig-heart" data-size="21" data-color="#8e8e8e"></span>
               </div>
             </div>
           </section>

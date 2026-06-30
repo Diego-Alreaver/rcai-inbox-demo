@@ -75,7 +75,7 @@
      place we spend boldness: one signature chip + headline. Stays
      Urbanist; never bleeds into the Instagram UI (honesty rule).
      ============================================================ */
-  .brand { position: absolute; left: 48px; top: 286px; width: 300px; z-index: 6; }
+  .brand { position: absolute; left: 85px; top: 290px; width: 340px; z-index: 6; }
   .brand-chip {
     display: inline-flex; align-items: center; gap: 9px; white-space: nowrap;
     font-size: 15px; font-weight: 800; letter-spacing: 0.01em;
@@ -98,7 +98,7 @@
      the phone so the device reads as the hero. System font.
      ============================================================ */
   .post-card {
-    position: absolute; left: 374px; top: 60px; z-index: 4;
+    position: absolute; left: 495px; top: 60px; z-index: 4;
     width: 360px; height: 760px;
     background: #ffffff;
     border-radius: 16px;
@@ -138,21 +138,29 @@
   .pc-comments { padding: 7px 14px 4px; border-top: 1px solid #f1f1f1; display: flex; flex-direction: column; gap: 2px; flex: none; }
 
   .comment { display: flex; align-items: flex-start; gap: 12px; padding: 6px 0; }
-  .comment.reply { margin-left: 30px; }
   .comment .c-av { flex: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; overflow: hidden; }
   .comment .c-av.cust { width: 44px; height: 44px; font-size: 18px; background: linear-gradient(135deg, #fbc2eb 0%, #f78fb3 100%); }
-  .comment.reply .c-av { width: 36px; height: 36px; }
-  .comment.reply .c-av img { width: 100%; height: 100%; object-fit: cover; }
   .c-body { flex: 1; min-width: 0; }
   .c-name { font-size: 17px; font-weight: 600; color: var(--ig-text); line-height: 1.12; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .c-text { font-size: 22px; line-height: 1.3; color: var(--ig-text); margin-top: 3px; }
   .c-meta { margin-top: 5px; font-size: 14px; font-weight: 600; color: var(--ig-gray); display: flex; gap: 16px; }
   .c-like { flex: none; padding-top: 6px; }
 
-  /* Reveal animation for the two comments */
+  /* Nested reply thread — the business auto-reply is indented UNDER Sofía's
+     comment with the authentic IG "⎯ Ver respuestas (1)" affordance + a smaller
+     business avatar, so it clearly reads as a REPLY, not a second top-level
+     comment. */
+  .reply-block { margin-left: 44px; display: flex; flex-direction: column; }
+  .reply-toggle { display: flex; align-items: center; gap: 11px; font-size: 13px; font-weight: 600; color: var(--ig-gray); padding: 4px 0 2px; }
+  .reply-toggle .rt-dash { width: 26px; height: 1px; background: #c7c7c7; flex: none; }
+  .reply-block .comment.reply { padding: 4px 0 2px; }
+  .reply-block .comment.reply .c-av { width: 32px; height: 32px; }
+  .reply-block .comment.reply .c-av img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* Reveal animation for the comment + nested reply */
   .reveal { opacity: 0; transform: translateY(18px); }
   .reveal.show { opacity: 1; transform: none; transition: opacity 520ms ease, transform 640ms cubic-bezier(0.22,1,0.36,1); }
-  .comment.reply.show .c-av { animation: avPop 620ms cubic-bezier(0.22,1,0.36,1) both; }
+  .reply-block.show .c-av { animation: avPop 620ms cubic-bezier(0.22,1,0.36,1) both; }
   @keyframes avPop { 0% { transform: scale(0.6); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
 
   /* ============================================================
@@ -162,7 +170,7 @@
      no heavy shadow: just a flipped chevron + a two-word label.
      ============================================================ */
   .connector {
-    position: absolute; z-index: 7; left: 734px; top: 404px; width: 64px;
+    position: absolute; z-index: 7; left: 871px; top: 415px; width: 64px;
     display: flex; flex-direction: column; align-items: center; text-align: center; gap: 7px;
     opacity: 0; transform: translateY(8px); font-family: var(--font-urbanist);
   }
@@ -179,51 +187,51 @@
      SAME chocolate cake shown in the post.
      ============================================================ */
   .phone {
-    position: absolute; z-index: 4; left: 798px; top: 14px;
-    width: 600px; height: 854px;
+    position: absolute; z-index: 4; left: 951px; top: 12px;
+    width: 404px; height: 858px;
     background: #0e1016;
-    border-radius: 56px;
-    padding: 16px;
+    border-radius: 48px;
+    padding: 14px;
     box-shadow: 0 54px 100px -34px rgba(16,24,40,0.55), 0 0 0 1px rgba(16,24,40,0.06);
     opacity: 0; transform: translateX(78px) scale(0.985);
   }
   .phone.show { opacity: 1; transform: none; transition: opacity 560ms ease, transform 720ms cubic-bezier(0.22,1,0.36,1); }
   .screen {
-    width: 100%; height: 100%; background: #fff; border-radius: 42px; overflow: hidden;
+    width: 100%; height: 100%; background: #fff; border-radius: 36px; overflow: hidden;
     display: flex; flex-direction: column; position: relative;
     font-family: var(--ig-sys);
   }
-  .ph-notch { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 132px; height: 30px; background: #0e1016; border-radius: 9999px; z-index: 3; }
-  .ph-status { display: flex; align-items: center; justify-content: space-between; padding: 14px 30px 6px; height: 48px; flex: none; font-size: 18px; font-weight: 600; color: var(--ig-text); }
-  .ph-status .ph-icons { display: flex; align-items: center; gap: 8px; color: var(--ig-text); }
+  .ph-notch { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 110px; height: 26px; background: #0e1016; border-radius: 9999px; z-index: 3; }
+  .ph-status { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 5px; height: 42px; flex: none; font-size: 16px; font-weight: 600; color: var(--ig-text); }
+  .ph-status .ph-icons { display: flex; align-items: center; gap: 7px; color: var(--ig-text); }
 
   /* DM header */
-  .dm-header { display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 74px; flex: none; border-bottom: 1px solid #f0f0f0; }
+  .dm-header { display: flex; align-items: center; gap: 10px; padding: 0 14px; height: 64px; flex: none; border-bottom: 1px solid #f0f0f0; }
   .dm-header .dm-back { color: var(--ig-text); }
-  .dm-header .ig-ring img { width: 54px; height: 54px; }
+  .dm-header .ig-ring img { width: 44px; height: 44px; }
   .dm-id { line-height: 1.12; min-width: 0; }
-  .dm-id .dm-handle { font-size: 22px; font-weight: 600; color: var(--ig-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .dm-id .dm-active { font-size: 15px; font-weight: 400; color: var(--ig-gray); margin-top: 1px; }
-  .dm-header .dm-call { margin-left: auto; display: flex; gap: 18px; color: var(--ig-text); }
+  .dm-id .dm-handle { font-size: 18px; font-weight: 600; color: var(--ig-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dm-id .dm-active { font-size: 13px; font-weight: 400; color: var(--ig-gray); margin-top: 1px; }
+  .dm-header .dm-call { margin-left: auto; display: flex; gap: 14px; color: var(--ig-text); }
 
   /* DM thread — top-anchored with an authentic IG new-thread intro so the
      big screen reads as a real (short) conversation, never an empty void. */
-  .dm-thread { flex: 1; padding: 16px 20px 12px; display: flex; flex-direction: column; justify-content: flex-start; overflow: hidden; }
+  .dm-thread { flex: 1; padding: 14px 16px 10px; display: flex; flex-direction: column; justify-content: flex-start; overflow: hidden; }
 
   /* Native IG thread-top: centered profile mini-card + "Hoy" date separator. */
-  .thread-intro { flex: none; display: flex; flex-direction: column; align-items: center; padding: 6px 0 10px; }
+  .thread-intro { flex: none; display: flex; flex-direction: column; align-items: center; padding: 6px 0 8px; }
   .thread-intro .ig-ring { padding: 3px; }
-  .thread-intro .ig-ring img { width: 64px; height: 64px; }
-  .ti-name { margin-top: 8px; font-size: 23px; font-weight: 700; color: var(--ig-text); }
-  .ti-meta { margin-top: 3px; font-size: 16px; font-weight: 400; color: var(--ig-gray); }
-  .ti-date { margin-top: 12px; font-size: 15px; font-weight: 600; color: var(--ig-gray); letter-spacing: 0.01em; }
+  .thread-intro .ig-ring img { width: 54px; height: 54px; }
+  .ti-name { margin-top: 8px; font-size: 20px; font-weight: 700; color: var(--ig-text); }
+  .ti-meta { margin-top: 3px; font-size: 14px; font-weight: 400; color: var(--ig-gray); }
+  .ti-date { margin-top: 12px; font-size: 13px; font-weight: 600; color: var(--ig-gray); letter-spacing: 0.01em; }
 
   .dm-feed { display: flex; flex-direction: column; }
-  .dm-row { display: flex; align-items: flex-end; gap: 10px; max-width: 100%; margin-top: 14px; }
+  .dm-row { display: flex; align-items: flex-end; gap: 8px; max-width: 100%; margin-top: 12px; }
   .dm-row.in { justify-content: flex-start; }
   .dm-row.out { justify-content: flex-end; }
-  .av-sm { width: 38px; height: 38px; border-radius: 50%; flex: none; object-fit: cover; background: #f3e3ef; }
-  .dm-bubble { max-width: 360px; padding: 13px 19px; font-size: 24px; line-height: 1.32; font-weight: 400; border-radius: 26px; }
+  .av-sm { width: 32px; height: 32px; border-radius: 50%; flex: none; object-fit: cover; background: #f3e3ef; }
+  .dm-bubble { max-width: 285px; padding: 12px 17px; font-size: 24px; line-height: 1.32; font-weight: 400; border-radius: 24px; }
   .dm-bubble.incoming { background: var(--ig-incoming); color: var(--ig-text); border-bottom-left-radius: 7px; }
   .dm-bubble.outgoing { color: #fff; border-bottom-right-radius: 7px; background: linear-gradient(120deg, #3797F0 0%, #5B51D8 46%, #8A3AB9 100%); }
 
@@ -231,16 +239,16 @@
   .dm-row.reveal.show { opacity: 1; transform: none; transition: opacity 460ms ease, transform 560ms cubic-bezier(0.22,1,0.36,1); }
 
   /* Typing dots (authentic IG: gray bubble with 3 dots) */
-  .typing-bubble { background: var(--ig-incoming); border-radius: 26px; border-bottom-left-radius: 7px; padding: 17px 20px; display: flex; gap: 8px; }
-  .typing-bubble span { width: 12px; height: 12px; border-radius: 50%; background: #b0b0b0; animation: typing 1.1s infinite ease-in-out; }
+  .typing-bubble { background: var(--ig-incoming); border-radius: 24px; border-bottom-left-radius: 7px; padding: 15px 18px; display: flex; gap: 8px; }
+  .typing-bubble span { width: 11px; height: 11px; border-radius: 50%; background: #b0b0b0; animation: typing 1.1s infinite ease-in-out; }
   .typing-bubble span:nth-child(2) { animation-delay: 0.16s; }
   .typing-bubble span:nth-child(3) { animation-delay: 0.32s; }
   @keyframes typing { 0%,80%,100% { transform: translateY(0); opacity: 0.45; } 40% { transform: translateY(-6px); opacity: 1; } }
 
   /* DM composer (our side, at rest) */
-  .dm-composer { display: flex; align-items: center; gap: 13px; padding: 0 18px; height: 78px; flex: none; border-top: 1px solid #f0f0f0; }
+  .dm-composer { display: flex; align-items: center; gap: 11px; padding: 0 15px; height: 66px; flex: none; border-top: 1px solid #f0f0f0; }
   .dm-composer .comp-ic { color: var(--ig-text); }
-  .dm-composer .comp-field { flex: 1; height: 50px; border-radius: 9999px; border: 1.5px solid var(--ig-border); display: flex; align-items: center; padding: 0 20px; color: var(--ig-gray); font-size: 19px; font-weight: 400; }
+  .dm-composer .comp-field { flex: 1; height: 44px; border-radius: 9999px; border: 1.5px solid var(--ig-border); display: flex; align-items: center; padding: 0 18px; color: var(--ig-gray); font-size: 17px; font-weight: 400; }
 
   /* Leaving / restart — clean dissolve before the loop. */
   .dissolving .reveal.show,
@@ -254,7 +262,7 @@
      ============================================================ */
   @media (prefers-reduced-motion: reduce) {
     .reveal, .connector, .phone, .dm-row.reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
-    .typing-bubble span, .conn-arrow, .comment.reply.show .c-av { animation: none !important; }
+    .typing-bubble span, .conn-arrow, .reply-block.show .c-av { animation: none !important; }
     #dm-typing { display: none !important; }
   }
 </style>
@@ -321,15 +329,18 @@
           <span class="ico c-like" data-icon="ig-like" data-size="20"></span>
         </div>
 
-        <!-- Public bot reply (as the business) -->
-        <div class="comment reply reveal" id="comment-reply">
-          <div class="c-av"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></div>
-          <div class="c-body">
-            <div class="c-name">dulcelina.reposteria</div>
-            <div class="c-text">¡Hola Sofía! 🎉 Sí 💜 Te escribimos por DM con los detalles</div>
-            <div class="c-meta"><span>Ahora</span><span>Me gusta</span><span>Responder</span></div>
+        <!-- Nested reply: the public bot auto-reply, indented UNDER Sofía -->
+        <div class="reply-block reveal" id="comment-reply">
+          <div class="reply-toggle"><span class="rt-dash"></span>Ver respuestas (1)</div>
+          <div class="comment reply">
+            <div class="c-av"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></div>
+            <div class="c-body">
+              <div class="c-name">dulcelina.reposteria</div>
+              <div class="c-text">¡Hola Sofía! 🎉 Sí 💜 Te escribimos por DM con los detalles</div>
+              <div class="c-meta"><span>Ahora</span><span>Me gusta</span><span>Responder</span></div>
+            </div>
+            <span class="ico c-like" data-icon="ig-heart" data-size="18" data-color="#8e8e8e"></span>
           </div>
-          <span class="ico c-like" data-icon="ig-heart" data-size="20" data-color="#8e8e8e"></span>
         </div>
       </div>
     </section>
@@ -347,22 +358,22 @@
         <div class="ph-status">
           <span>9:41</span>
           <span class="ph-icons">
-            <span class="ico" data-icon="signal" data-size="18"></span>
-            <span class="ico" data-icon="wifi" data-size="18"></span>
-            <span class="ico" data-icon="battery" data-size="22"></span>
+            <span class="ico" data-icon="signal" data-size="16"></span>
+            <span class="ico" data-icon="wifi" data-size="16"></span>
+            <span class="ico" data-icon="battery" data-size="20"></span>
           </span>
         </div>
 
         <div class="dm-header">
-          <span class="ico dm-back" data-icon="chevron-left" data-size="32" data-stroke="2.4"></span>
+          <span class="ico dm-back" data-icon="chevron-left" data-size="26" data-stroke="2.4"></span>
           <span class="ig-ring"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></span>
           <div class="dm-id">
             <div class="dm-handle">dulcelina.reposteria</div>
             <div class="dm-active">Activa ahora</div>
           </div>
           <div class="dm-call">
-            <span class="ico" data-icon="phone" data-size="26"></span>
-            <span class="ico" data-icon="video" data-size="27"></span>
+            <span class="ico" data-icon="phone" data-size="22"></span>
+            <span class="ico" data-icon="video" data-size="23"></span>
           </div>
         </div>
 
@@ -378,9 +389,9 @@
         </div>
 
         <div class="dm-composer">
-          <span class="ico comp-ic" data-icon="camera" data-size="26"></span>
+          <span class="ico comp-ic" data-icon="camera" data-size="22"></span>
           <div class="comp-field">Mensaje...</div>
-          <span class="ico comp-ic" data-icon="mic" data-size="25"></span>
+          <span class="ico comp-ic" data-icon="mic" data-size="22"></span>
         </div>
       </div>
     </div>
