@@ -72,13 +72,13 @@
   .brand-chip {
     position: absolute; top: 16px; left: 50%; transform: translateX(-50%); z-index: 6;
     display: inline-flex; align-items: center; gap: 9px; white-space: nowrap;
-    font-size: 18px; font-weight: 800; letter-spacing: 0.01em;
+    font-size: 16px; font-weight: 800; letter-spacing: 0.01em;
     color: #7354ef;
     background: rgba(115,84,239,0.10);
     padding: 7px 16px 7px 9px; border-radius: 9999px;
     box-shadow: 0 6px 16px -8px rgba(115,84,239,0.35);
   }
-  .rcai-mark { width: 23px; height: 23px; display: inline-flex; }
+  .rcai-mark { width: 22px; height: 22px; display: inline-flex; }
 
   /* ============================================================
      PHONE — the star. ~398x818. A single device that first shows
@@ -101,7 +101,7 @@
   .ph-status { display: flex; align-items: center; justify-content: space-between; padding: 14px 26px 8px; font-size: 17px; font-weight: 600; color: var(--ig-text); flex: none; }
   .ph-status .ph-icons { display: flex; align-items: center; gap: 8px; color: var(--ig-text); }
 
-  /* ---- IG story-ring avatar wrapping the real cupcake photo ---- */
+  /* ---- IG story-ring avatar wrapping the real bakery photo ---- */
   .ig-ring {
     flex: none; border-radius: 50%; padding: 2.5px;
     background: conic-gradient(from 220deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5, #feda75);
@@ -124,7 +124,7 @@
   .ph-views.dissolving { opacity: 0; transition: opacity 440ms ease; }
 
   /* ============================================================
-     IG POST VIEW — real bakery photo media.
+     IG POST VIEW — real chocolate-cake photo media.
      ============================================================ */
   .pc-header { display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 74px; flex: none; }
   .pc-header .ig-ring img { width: 50px; height: 50px; }
@@ -153,9 +153,9 @@
   .comment.reply .c-av { width: 44px; height: 44px; }
   .comment.reply .c-av img { width: 100%; height: 100%; object-fit: cover; }
   .c-body { flex: 1; min-width: 0; }
-  /* Username = label (sub-30px is fine; the protected >=30px is the message body). */
+  /* Username = label; the message body is the protected, proportionate size. */
   .c-name { font-size: 22px; font-weight: 600; color: var(--ig-text); line-height: 1.12; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .c-text { font-size: 30px; line-height: 1.3; color: var(--ig-text); margin-top: 3px; }
+  .c-text { font-size: 27px; line-height: 1.3; color: var(--ig-text); margin-top: 3px; }
   .c-meta { margin-top: 6px; font-size: 17px; font-weight: 600; color: var(--ig-gray); display: flex; gap: 16px; }
   .c-like { flex: none; padding-top: 8px; }
 
@@ -165,8 +165,8 @@
   @keyframes avPop { 0% { transform: scale(0.6); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
 
   /* ============================================================
-     IG DM VIEW — gray bot bubbles + IG-gradient customer bubble +
-     a REAL cake photo the bot sends.
+     IG DM VIEW — gray bot bubbles + IG-gradient customer bubble.
+     Text-only thread about the SAME chocolate cake from the post.
      ============================================================ */
   .dm-header { display: flex; align-items: center; gap: 11px; padding: 0 16px; height: 66px; flex: none; border-bottom: 1px solid #f0f0f0; }
   .dm-header .dm-back { color: var(--ig-text); }
@@ -188,16 +188,13 @@
 
   .dm-thread { flex: 1; padding: 14px 16px 10px; display: flex; flex-direction: column; justify-content: flex-start; overflow: hidden; }
   .dm-feed { display: flex; flex-direction: column; }
-  .dm-row { display: flex; align-items: flex-end; gap: 9px; max-width: 100%; margin-top: 8px; }
+  .dm-row { display: flex; align-items: flex-end; gap: 9px; max-width: 100%; margin-top: 10px; }
   .dm-row.in { justify-content: flex-start; }
   .dm-row.out { justify-content: flex-end; }
   .av-sm { width: 34px; height: 34px; border-radius: 50%; flex: none; object-fit: cover; background: #f3e3ef; }
-  .dm-bubble { max-width: 286px; padding: 12px 18px; font-size: 30px; line-height: 1.28; font-weight: 400; border-radius: 25px; }
+  .dm-bubble { max-width: 290px; padding: 12px 18px; font-size: 27px; line-height: 1.3; font-weight: 400; border-radius: 25px; }
   .dm-bubble.incoming { background: var(--ig-incoming); color: var(--ig-text); border-bottom-left-radius: 7px; }
   .dm-bubble.outgoing { color: #fff; border-bottom-right-radius: 7px; background: linear-gradient(120deg, #3797F0 0%, #5B51D8 46%, #8A3AB9 100%); }
-
-  .dm-photo { width: 264px; height: 138px; border-radius: 24px; border-bottom-left-radius: 7px; overflow: hidden; background: #efefef; }
-  .dm-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 36%; display: block; }
 
   .dm-row.reveal { opacity: 0; transform: translateY(16px); }
   .dm-row.reveal.show { opacity: 1; transform: none; transition: opacity 460ms ease, transform 560ms cubic-bezier(0.22,1,0.36,1); }
@@ -218,19 +215,15 @@
   /* ============================================================
      REDUCED MOTION — compose the FULL static story in one column:
      stack the trimmed POST view (comment + public reply) ABOVE the
-     DM thread (bot answer + real cake photo) — the complete
-     comment -> DM handoff.
+     DM thread (bot answer + reaction + price) — the complete
+     comment -> DM handoff, all about the same chocolate cake.
      ============================================================ */
   @media (prefers-reduced-motion: reduce) {
     .ph-views { overflow: visible; }
     .view { position: static; inset: auto; transform: none !important; opacity: 1 !important; transition: none !important; }
     .pc-header, .pc-media, .pc-actions, .pc-likes, .pc-caption, .dm-composer, .dm-header .dm-call, .c-meta, .thread-intro { display: none !important; }
-    .pc-comments { flex: none; border-top: none; padding-top: 4px; }
+    .pc-comments { flex: none; border-top: none; padding-top: 12px; }
     .dm-thread { flex: none; justify-content: flex-start; padding-top: 10px; }
-    /* Cap the cake photo so the full stacked story (2 comments + answer + photo)
-       fits the 794px screen without clipping at the bottom. */
-    .dm-photo { width: 220px; height: 150px; }
-    .pc-comments { padding-top: 12px; }
     .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
     .comment.reply.show .c-av, .typing-bubble span { animation: none !important; }
     .rm-cue {
@@ -251,15 +244,15 @@
 
 <body class="font-urbanist">
   <!-- Portrait stage: a fixed 430x900 column. The landing scales this ~0.85x into a phone-width slot. -->
-  <div id="stage" aria-label="Ilustración: ReadyChatAI responde un comentario de Instagram en público y continúa la venta por mensaje directo">
+  <div id="stage" aria-label="Ilustración: ReadyChatAI responde un comentario de Instagram en público y continúa la venta por mensaje directo, sobre el mismo pastel de chocolate del post">
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
 
     <span class="brand-chip">
       <span class="rcai-mark">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="23" height="23"><rect width="32" height="32" rx="9" fill="#7354EF"/><circle cx="12" cy="16" r="2.7" fill="#fff"/><circle cx="20" cy="16" r="2.7" fill="#fff"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="9" fill="#7354EF"/><circle cx="12" cy="16" r="2.7" fill="#fff"/><circle cx="20" cy="16" r="2.7" fill="#fff"/></svg>
       </span>
-      Responde solo con IA
+      Comentarios + DMs automáticos
     </span>
 
     <!-- ===== The phone: the star ===== -->
@@ -280,7 +273,7 @@
           <!-- ---------- IG POST VIEW ---------- -->
           <section class="view view-post">
             <div class="pc-header">
-              <span class="ig-ring"><img src="assets/gen/bakery-avatar.png" alt="Dulce Lina Repostería" /></span>
+              <span class="ig-ring"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></span>
               <div>
                 <div class="pc-handle">dulcelina.reposteria</div>
                 <div class="pc-sub">Repostería artesanal</div>
@@ -289,7 +282,7 @@
             </div>
 
             <div class="pc-media">
-              <img src="assets/gen/bakery-post.png" alt="Pastel de chocolate con frutos rojos" />
+              <img src="assets/gen/bakery-post.webp" alt="Pastel de chocolate y frutos rojos" decoding="async" />
             </div>
 
             <div class="pc-actions">
@@ -299,15 +292,15 @@
               <span class="ico spacer" data-icon="ig-bookmark" data-size="29"></span>
             </div>
             <div class="pc-likes">342 Me gusta</div>
-            <div class="pc-caption"><b>dulcelina.reposteria</b> Pasteles de chocolate y frutos rojos 🍫🍓</div>
+            <div class="pc-caption"><b>dulcelina.reposteria</b> Pastel de chocolate y frutos rojos 🍫🍓</div>
 
             <div class="pc-comments">
-              <!-- Customer comment (the business has liked it -> solid red heart) -->
+              <!-- Customer comment (asks about THE cake in the photo) -->
               <div class="comment reveal" id="comment-customer">
                 <div class="c-av cust">S</div>
                 <div class="c-body">
                   <div class="c-name">sofia.delgado</div>
-                  <div class="c-text">¿Tienen pastel para el sábado? 😍</div>
+                  <div class="c-text">¿Este pastel está disponible para el sábado? 😍</div>
                   <div class="c-meta"><span>2 h</span><span>Me gusta</span><span>Responder</span></div>
                 </div>
                 <span class="ico c-like" data-icon="ig-like" data-size="21"></span>
@@ -315,10 +308,10 @@
 
               <!-- Public bot reply (as the business) -->
               <div class="comment reply reveal" id="comment-reply">
-                <div class="c-av"><img src="assets/gen/bakery-avatar.png" alt="Dulce Lina Repostería" /></div>
+                <div class="c-av"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></div>
                 <div class="c-body">
                   <div class="c-name">dulcelina.reposteria</div>
-                  <div class="c-text">¡Hola Sofía! 🎉 Te escribimos por DM 💜</div>
+                  <div class="c-text">¡Hola Sofía! 🎉 Sí 💜 Te escribimos por DM con los detalles</div>
                   <div class="c-meta"><span>Ahora</span><span>Me gusta</span><span>Responder</span></div>
                 </div>
                 <span class="ico c-like" data-icon="ig-heart" data-size="21" data-color="#8e8e8e"></span>
@@ -333,7 +326,7 @@
           <section class="view view-dm">
             <div class="dm-header">
               <span class="ico dm-back" data-icon="chevron-left" data-size="30" data-stroke="2.4"></span>
-              <span class="ig-ring"><img src="assets/gen/bakery-avatar.png" alt="Dulce Lina Repostería" /></span>
+              <span class="ig-ring"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></span>
               <div class="dm-id">
                 <div class="dm-handle">dulcelina.reposteria</div>
                 <div class="dm-active">Activa ahora</div>
@@ -347,7 +340,7 @@
             <div class="dm-thread">
               <!-- Native IG thread-top: profile mini-card + "Hoy" date separator. -->
               <div class="thread-intro" id="thread-intro">
-                <span class="ig-ring"><img src="assets/gen/bakery-avatar.png" alt="Dulce Lina Repostería" /></span>
+                <span class="ig-ring"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></span>
                 <div class="ti-name">dulcelina.reposteria</div>
                 <div class="ti-meta">Instagram · 12,4 mil seguidores</div>
                 <div class="ti-date">Hoy</div>
@@ -393,8 +386,13 @@
       var elReply = document.getElementById('comment-reply');
       var feed    = document.getElementById('dm-feed');
 
-      var AV   = '<img class="av-sm" src="assets/gen/bakery-avatar.png" alt="" />';
+      var AV   = '<img class="av-sm" src="assets/gen/bakery-avatar.webp" alt="" loading="lazy" decoding="async" />';
       var DOTS = '<span></span><span></span><span></span>';
+
+      // Bot talks about the SAME chocolate cake shown in the post (text-only, cleaner).
+      var BOT1 = '¡Hola Sofía! 🍫 El pastel de chocolate y frutos rojos está disponible para el sábado.';
+      var CUST = '¡Genial! ¿Cuánto cuesta? 😍';
+      var BOT2 = 'Cuesta $45.000 con entrega 🚚 ¿Te lo aparto?';
 
       function el(cls, html) {
         var d = document.createElement('div');
@@ -405,16 +403,16 @@
         requestAnimationFrame(function () { requestAnimationFrame(function () { node.classList.add('show'); }); });
       }
       function botText(t)  { return el('dm-row in reveal',  AV + '<div class="dm-bubble incoming">' + t + '</div>'); }
-      function botPhoto()  { return el('dm-row in reveal',  AV + '<div class="dm-photo"><img src="assets/gen/bakery-product.png" alt="Pastel decorado con flores" /></div>'); }
       function custText(t) { return el('dm-row out reveal', '<div class="dm-bubble outgoing">' + t + '</div>'); }
       function typing()    { return el('dm-row in typing-row', AV + '<div class="typing-bubble" id="dm-typing">' + DOTS + '</div>'); }
 
-      // ---- Reduced motion: stacked static story (comment + reply, then bot answer + real photo).
+      // ---- Reduced motion: stacked static story (comment + reply, then full DM).
       if (reduce) {
         elCust.classList.add('show');
         elReply.classList.add('show');
-        botText('¡Hola Sofía! 🎂 Mira este diseño:').classList.add('show');
-        botPhoto().classList.add('show');
+        botText(BOT1).classList.add('show');
+        custText(CUST).classList.add('show');
+        botText(BOT2).classList.add('show');
         return;
       }
 
@@ -436,27 +434,26 @@
         clearTimers();
         var typingNode = null;
 
-        // POST VIEW: customer comment, then the fast public auto-reply.
-        after(300,  function () { elCust.classList.add('show'); });
-        after(1100, function () { elReply.classList.add('show'); });
+        // POST VIEW: customer comment, then a calm public auto-reply.
+        after(400,  function () { elCust.classList.add('show'); });
+        after(3300, function () { elReply.classList.add('show'); });
 
         // SLIDE TO DM.
-        after(2900, function () { elViews.classList.add('to-dm'); });
+        after(5600, function () { elViews.classList.add('to-dm'); });
 
-        // DM: typing -> answer -> the real cake photo.
-        after(3650, function () { typingNode = typing(); reveal(typingNode); });
-        after(4750, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
-                                  reveal(botText('¡Hola Sofía! 🎂 Mira este diseño:')); });
-        after(5450, function () { reveal(botPhoto()); });
+        // DM: typing -> bot answers about the SAME chocolate cake.
+        after(6450, function () { typingNode = typing(); reveal(typingNode); });
+        after(7900, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
+                                  reveal(botText(BOT1)); });
 
-        // Customer reacts; bot quotes the price.
-        after(6550, function () { reveal(custText('¡Me encanta! 😍')); });
-        after(7350, function () { typingNode = typing(); reveal(typingNode); });
-        after(8250, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
-                                  reveal(botText('Cuesta $45.000 con entrega 💜')); });
+        // Customer asks the price; bot quotes it and offers to reserve.
+        after(10900, function () { reveal(custText(CUST)); });
+        after(12250, function () { typingNode = typing(); reveal(typingNode); });
+        after(13700, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
+                                   reveal(botText(BOT2)); });
 
         // END HOLD + clean dissolve + loop.
-        after(8250 + 5600, function () {
+        after(13700 + 6000, function () {
           elViews.classList.add('dissolving');
           after(500, function () {
             resetViews();

@@ -75,78 +75,79 @@
      place we spend boldness: one signature chip + headline. Stays
      Urbanist; never bleeds into the Instagram UI (honesty rule).
      ============================================================ */
-  .brand { position: absolute; left: 60px; top: 300px; width: 300px; z-index: 6; }
+  .brand { position: absolute; left: 48px; top: 286px; width: 300px; z-index: 6; }
   .brand-chip {
-    display: inline-flex; align-items: center; gap: 11px;
-    font-size: 19px; font-weight: 800; letter-spacing: 0.01em;
+    display: inline-flex; align-items: center; gap: 9px; white-space: nowrap;
+    font-size: 15px; font-weight: 800; letter-spacing: 0.01em;
     color: #7354ef;
     background: rgba(115,84,239,0.09);
-    padding: 9px 17px 9px 12px; border-radius: 9999px;
+    padding: 8px 16px 8px 10px; border-radius: 9999px;
   }
-  .rcai-mark { width: 26px; height: 26px; display: inline-flex; }
+  .rcai-mark { width: 23px; height: 23px; display: inline-flex; }
   .brand h1 {
-    margin: 24px 0 0; font-size: 46px; font-weight: 800; line-height: 1.07;
+    margin: 22px 0 0; font-size: 42px; font-weight: 800; line-height: 1.08;
     letter-spacing: -0.025em; color: #101828;
   }
   .brand h1 .accent { color: #7354ef; }
-  .brand p { margin: 18px 0 0; font-size: 23px; font-weight: 500; line-height: 1.4; color: #667085; }
+  .brand p { margin: 18px 0 0; font-size: 20px; font-weight: 500; line-height: 1.42; color: #667085; }
 
   /* ============================================================
-     INSTAGRAM POST CARD (center) — authentic chrome wrapped around
-     a REAL bakery photo. The customer comment + the public bot
-     auto-reply live here. System font => reads native.
+     INSTAGRAM POST CARD (center-left) — authentic chrome wrapped
+     around a REAL bakery photo. The customer comment + the public
+     bot auto-reply live here. The supporting actor: narrower than
+     the phone so the device reads as the hero. System font.
      ============================================================ */
   .post-card {
-    position: absolute; left: 392px; top: 22px; z-index: 4;
-    width: 500px; height: 836px;
+    position: absolute; left: 374px; top: 60px; z-index: 4;
+    width: 360px; height: 760px;
     background: #ffffff;
     border-radius: 16px;
     border: 1px solid var(--ig-border);
-    box-shadow: 0 40px 80px -32px rgba(16,24,40,0.34), 0 0 0 1px rgba(16,24,40,0.02);
+    box-shadow: 0 36px 70px -34px rgba(16,24,40,0.30), 0 0 0 1px rgba(16,24,40,0.02);
     display: flex; flex-direction: column;
     overflow: hidden;
     color: var(--ig-text);
     font-family: var(--ig-sys);
   }
-  .pc-header { display: flex; align-items: center; gap: 13px; padding: 0 16px; height: 66px; flex: none; }
+  .pc-header { display: flex; align-items: center; gap: 11px; padding: 0 14px; height: 60px; flex: none; }
 
-  /* IG story-ring avatar wrapping the real cupcake photo. */
+  /* IG story-ring avatar wrapping the real bakery photo. */
   .ig-ring {
     flex: none; border-radius: 50%; padding: 2.5px;
     background: conic-gradient(from 220deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5, #feda75);
     display: inline-flex;
   }
   .ig-ring img { display: block; border-radius: 50%; border: 2px solid #fff; object-fit: cover; background: #f3e3ef; }
-  .pc-header .ig-ring img { width: 50px; height: 50px; }
-  .pc-handle { font-size: 23px; font-weight: 600; color: var(--ig-text); line-height: 1.05; }
-  .pc-sub { font-size: 16px; font-weight: 400; color: var(--ig-gray); margin-top: 2px; }
+  .pc-header .ig-ring img { width: 44px; height: 44px; }
+  .pc-handle { font-size: 18px; font-weight: 600; color: var(--ig-text); line-height: 1.05; }
+  .pc-sub { font-size: 13px; font-weight: 400; color: var(--ig-gray); margin-top: 2px; }
   .pc-more { margin-left: auto; color: var(--ig-text); }
 
-  /* Post media — the REAL bakery photo. flex-grows to absorb slack so the two
-     comments below are ALWAYS fully visible; the photo fills whatever remains. */
-  .pc-media { position: relative; flex: 1 1 auto; min-height: 240px; overflow: hidden; background: #f0e9f6; }
-  .pc-media img { width: 100%; height: 100%; object-fit: cover; object-position: center 46%; display: block; }
+  /* Post media — the REAL chocolate cake. flex-grows to absorb slack so the
+     two comments below are ALWAYS fully visible; the photo fills the rest. */
+  .pc-media { position: relative; flex: 1 1 auto; min-height: 200px; overflow: hidden; background: #f0e9f6; }
+  .pc-media img { width: 100%; height: 100%; object-fit: cover; object-position: center 45%; display: block; }
 
-  .pc-actions { display: flex; align-items: center; gap: 18px; padding: 11px 16px 5px; flex: none; color: var(--ig-text); }
+  .pc-actions { display: flex; align-items: center; gap: 16px; padding: 10px 14px 4px; flex: none; color: var(--ig-text); }
   .pc-actions .ico { color: var(--ig-text); }
   .pc-actions .spacer { margin-left: auto; }
-  .pc-likes { padding: 1px 16px 0; font-size: 20px; font-weight: 600; color: var(--ig-text); flex: none; }
-  .pc-caption { padding: 3px 16px 8px; font-size: 19px; font-weight: 400; color: var(--ig-text); line-height: 1.34; flex: none; }
+  .pc-likes { padding: 1px 14px 0; font-size: 16px; font-weight: 600; color: var(--ig-text); flex: none; }
+  .pc-caption { padding: 3px 14px 6px; font-size: 15px; font-weight: 400; color: var(--ig-text); line-height: 1.34; flex: none; }
   .pc-caption b { font-weight: 600; }
 
-  .pc-comments { padding: 8px 16px 4px; border-top: 1px solid #f1f1f1; display: flex; flex-direction: column; gap: 2px; flex: none; }
+  .pc-comments { padding: 7px 14px 4px; border-top: 1px solid #f1f1f1; display: flex; flex-direction: column; gap: 2px; flex: none; }
 
-  .comment { display: flex; align-items: flex-start; gap: 13px; padding: 7px 0; }
-  .comment.reply { margin-left: 36px; }
+  .comment { display: flex; align-items: flex-start; gap: 12px; padding: 6px 0; }
+  .comment.reply { margin-left: 30px; }
   .comment .c-av { flex: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; overflow: hidden; }
-  .comment .c-av.cust { width: 52px; height: 52px; font-size: 23px; background: linear-gradient(135deg, #fbc2eb 0%, #f78fb3 100%); }
-  .comment.reply .c-av { width: 44px; height: 44px; }
+  .comment .c-av.cust { width: 44px; height: 44px; font-size: 18px; background: linear-gradient(135deg, #fbc2eb 0%, #f78fb3 100%); }
+  .comment.reply .c-av { width: 36px; height: 36px; }
   .comment.reply .c-av img { width: 100%; height: 100%; object-fit: cover; }
   .c-body { flex: 1; min-width: 0; }
-  .c-name { font-size: 22px; font-weight: 600; color: var(--ig-text); line-height: 1.12; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .c-text { font-size: 30px; line-height: 1.3; color: var(--ig-text); margin-top: 3px; }
-  .c-meta { margin-top: 6px; font-size: 17px; font-weight: 600; color: var(--ig-gray); display: flex; gap: 18px; }
-  .c-like { flex: none; padding-top: 7px; }
+  .c-name { font-size: 17px; font-weight: 600; color: var(--ig-text); line-height: 1.12; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .c-text { font-size: 22px; line-height: 1.3; color: var(--ig-text); margin-top: 3px; }
+  .c-meta { margin-top: 5px; font-size: 14px; font-weight: 600; color: var(--ig-gray); display: flex; gap: 16px; }
+  .c-like { flex: none; padding-top: 6px; }
 
   /* Reveal animation for the two comments */
   .reveal { opacity: 0; transform: translateY(18px); }
@@ -155,90 +156,91 @@
   @keyframes avPop { 0% { transform: scale(0.6); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
 
   /* ============================================================
-     CONNECTOR — brand-layer cue (NOT fake IG UI) narrating the
-     comment -> DM jump. Lives in the gap; stays Urbanist.
+     CONNECTOR — slim brand-layer flow cue (NOT fake IG UI) that
+     narrates the comment -> DM jump. Sits in the gutter between the
+     post and the phone, at the post's mid-height. No filled circle,
+     no heavy shadow: just a flipped chevron + a two-word label.
      ============================================================ */
-  /* Sits in the empty gutter BETWEEN the post card (right edge 892px) and the
-     phone (left edge 992px). Centered ~926px so it bridges the gap with clear
-     separation from the phone bezel — never floating on top of the device. */
   .connector {
-    position: absolute; z-index: 7; left: 866px; top: 374px; width: 120px;
-    display: flex; flex-direction: column; align-items: center; text-align: center;
-    opacity: 0; transform: translateY(10px); font-family: var(--font-urbanist);
+    position: absolute; z-index: 7; left: 734px; top: 404px; width: 64px;
+    display: flex; flex-direction: column; align-items: center; text-align: center; gap: 7px;
+    opacity: 0; transform: translateY(8px); font-family: var(--font-urbanist);
   }
   .connector.show { opacity: 1; transform: none; transition: opacity 520ms ease 100ms, transform 600ms cubic-bezier(0.22,1,0.36,1) 100ms; }
-  .conn-badge {
-    width: 63px; height: 63px; border-radius: 50%;
-    background: linear-gradient(150deg, #8b5cf6, #7354ef); color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 16px 30px -12px rgba(115,84,239,0.6);
-  }
-  .conn-badge .ico { animation: arrowNudge 1.7s ease-in-out infinite; }
+  .conn-arrow { color: #7354ef; animation: arrowNudge 1.8s ease-in-out infinite; }
+  .conn-arrow svg { transform: scaleX(-1); }   /* flip chevron-left so it points toward the DM */
   @keyframes arrowNudge { 0%,100% { transform: translateX(-2px); } 50% { transform: translateX(4px); } }
-  .conn-label { margin-top: 11px; max-width: 96px; font-size: 16px; font-weight: 700; color: #7354ef; line-height: 1.18; }
+  .conn-label { font-size: 14px; font-weight: 800; color: #7354ef; line-height: 1.16; letter-spacing: 0.01em; }
 
   /* ============================================================
-     PHONE / DM PANEL (right) — slides in. Authentic IG DM:
-     gray incoming bot bubble + IG-gradient outgoing customer bubble,
-     plus a REAL cake photo the bot sends. System font inside.
+     PHONE / DM PANEL (right) — the dominant hero device. Slides in.
+     Authentic IG DM: gray incoming bot bubble + IG-gradient outgoing
+     customer bubble. System font inside. Text-only thread about the
+     SAME chocolate cake shown in the post.
      ============================================================ */
   .phone {
-    position: absolute; z-index: 4; left: 992px; top: 64px;
-    width: 402px; height: 712px;
+    position: absolute; z-index: 4; left: 798px; top: 14px;
+    width: 600px; height: 854px;
     background: #0e1016;
-    border-radius: 48px;
-    padding: 13px;
-    box-shadow: 0 50px 92px -34px rgba(16,24,40,0.55), 0 0 0 1px rgba(16,24,40,0.06);
+    border-radius: 56px;
+    padding: 16px;
+    box-shadow: 0 54px 100px -34px rgba(16,24,40,0.55), 0 0 0 1px rgba(16,24,40,0.06);
     opacity: 0; transform: translateX(78px) scale(0.985);
   }
   .phone.show { opacity: 1; transform: none; transition: opacity 560ms ease, transform 720ms cubic-bezier(0.22,1,0.36,1); }
   .screen {
-    width: 100%; height: 100%; background: #fff; border-radius: 36px; overflow: hidden;
+    width: 100%; height: 100%; background: #fff; border-radius: 42px; overflow: hidden;
     display: flex; flex-direction: column; position: relative;
     font-family: var(--ig-sys);
   }
-  .ph-notch { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 116px; height: 26px; background: #0e1016; border-radius: 9999px; z-index: 3; }
-  .ph-status { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 4px; height: 40px; flex: none; font-size: 17px; font-weight: 600; color: var(--ig-text); }
-  .ph-status .ph-icons { display: flex; align-items: center; gap: 7px; color: var(--ig-text); }
+  .ph-notch { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 132px; height: 30px; background: #0e1016; border-radius: 9999px; z-index: 3; }
+  .ph-status { display: flex; align-items: center; justify-content: space-between; padding: 14px 30px 6px; height: 48px; flex: none; font-size: 18px; font-weight: 600; color: var(--ig-text); }
+  .ph-status .ph-icons { display: flex; align-items: center; gap: 8px; color: var(--ig-text); }
 
   /* DM header */
-  .dm-header { display: flex; align-items: center; gap: 11px; padding: 0 14px; height: 64px; flex: none; border-bottom: 1px solid #f0f0f0; }
+  .dm-header { display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 74px; flex: none; border-bottom: 1px solid #f0f0f0; }
   .dm-header .dm-back { color: var(--ig-text); }
-  .dm-header .ig-ring img { width: 46px; height: 46px; }
+  .dm-header .ig-ring img { width: 54px; height: 54px; }
   .dm-id { line-height: 1.12; min-width: 0; }
-  .dm-id .dm-handle { font-size: 21px; font-weight: 600; color: var(--ig-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dm-id .dm-handle { font-size: 22px; font-weight: 600; color: var(--ig-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .dm-id .dm-active { font-size: 15px; font-weight: 400; color: var(--ig-gray); margin-top: 1px; }
-  .dm-header .dm-call { margin-left: auto; display: flex; gap: 16px; color: var(--ig-text); }
+  .dm-header .dm-call { margin-left: auto; display: flex; gap: 18px; color: var(--ig-text); }
 
-  /* DM thread — bottom-anchored so the newest bubble is always visible. */
-  .dm-thread { flex: 1; padding: 12px 15px 8px; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; }
+  /* DM thread — top-anchored with an authentic IG new-thread intro so the
+     big screen reads as a real (short) conversation, never an empty void. */
+  .dm-thread { flex: 1; padding: 16px 20px 12px; display: flex; flex-direction: column; justify-content: flex-start; overflow: hidden; }
+
+  /* Native IG thread-top: centered profile mini-card + "Hoy" date separator. */
+  .thread-intro { flex: none; display: flex; flex-direction: column; align-items: center; padding: 6px 0 10px; }
+  .thread-intro .ig-ring { padding: 3px; }
+  .thread-intro .ig-ring img { width: 64px; height: 64px; }
+  .ti-name { margin-top: 8px; font-size: 23px; font-weight: 700; color: var(--ig-text); }
+  .ti-meta { margin-top: 3px; font-size: 16px; font-weight: 400; color: var(--ig-gray); }
+  .ti-date { margin-top: 12px; font-size: 15px; font-weight: 600; color: var(--ig-gray); letter-spacing: 0.01em; }
+
   .dm-feed { display: flex; flex-direction: column; }
-  .dm-row { display: flex; align-items: flex-end; gap: 9px; max-width: 100%; margin-top: 12px; }
+  .dm-row { display: flex; align-items: flex-end; gap: 10px; max-width: 100%; margin-top: 14px; }
   .dm-row.in { justify-content: flex-start; }
   .dm-row.out { justify-content: flex-end; }
-  .av-sm { width: 34px; height: 34px; border-radius: 50%; flex: none; object-fit: cover; background: #f3e3ef; }
-  .dm-bubble { max-width: 292px; padding: 13px 18px; font-size: 30px; line-height: 1.3; font-weight: 400; border-radius: 24px; }
+  .av-sm { width: 38px; height: 38px; border-radius: 50%; flex: none; object-fit: cover; background: #f3e3ef; }
+  .dm-bubble { max-width: 360px; padding: 13px 19px; font-size: 24px; line-height: 1.32; font-weight: 400; border-radius: 26px; }
   .dm-bubble.incoming { background: var(--ig-incoming); color: var(--ig-text); border-bottom-left-radius: 7px; }
   .dm-bubble.outgoing { color: #fff; border-bottom-right-radius: 7px; background: linear-gradient(120deg, #3797F0 0%, #5B51D8 46%, #8A3AB9 100%); }
-
-  /* In-DM photo attachment (the REAL cake the bot sends). */
-  .dm-photo { width: 264px; height: 198px; border-radius: 22px; border-bottom-left-radius: 7px; overflow: hidden; background: #efefef; }
-  .dm-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 36%; display: block; }
 
   .dm-row.reveal { opacity: 0; transform: translateY(16px); }
   .dm-row.reveal.show { opacity: 1; transform: none; transition: opacity 460ms ease, transform 560ms cubic-bezier(0.22,1,0.36,1); }
 
   /* Typing dots (authentic IG: gray bubble with 3 dots) */
-  .typing-bubble { background: var(--ig-incoming); border-radius: 24px; border-bottom-left-radius: 7px; padding: 17px 19px; display: flex; gap: 8px; }
-  .typing-bubble span { width: 11px; height: 11px; border-radius: 50%; background: #b0b0b0; animation: typing 1.1s infinite ease-in-out; }
+  .typing-bubble { background: var(--ig-incoming); border-radius: 26px; border-bottom-left-radius: 7px; padding: 17px 20px; display: flex; gap: 8px; }
+  .typing-bubble span { width: 12px; height: 12px; border-radius: 50%; background: #b0b0b0; animation: typing 1.1s infinite ease-in-out; }
   .typing-bubble span:nth-child(2) { animation-delay: 0.16s; }
   .typing-bubble span:nth-child(3) { animation-delay: 0.32s; }
   @keyframes typing { 0%,80%,100% { transform: translateY(0); opacity: 0.45; } 40% { transform: translateY(-6px); opacity: 1; } }
 
   /* DM composer (our side, at rest) */
-  .dm-composer { display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 68px; flex: none; border-top: 1px solid #f0f0f0; }
+  .dm-composer { display: flex; align-items: center; gap: 13px; padding: 0 18px; height: 78px; flex: none; border-top: 1px solid #f0f0f0; }
   .dm-composer .comp-ic { color: var(--ig-text); }
-  .dm-composer .comp-field { flex: 1; height: 46px; border-radius: 9999px; border: 1.5px solid var(--ig-border); display: flex; align-items: center; padding: 0 18px; color: var(--ig-gray); font-size: 18px; font-weight: 400; }
+  .dm-composer .comp-field { flex: 1; height: 50px; border-radius: 9999px; border: 1.5px solid var(--ig-border); display: flex; align-items: center; padding: 0 20px; color: var(--ig-gray); font-size: 19px; font-weight: 400; }
 
   /* Leaving / restart — clean dissolve before the loop. */
   .dissolving .reveal.show,
@@ -248,11 +250,11 @@
 
   /* ============================================================
      REDUCED MOTION — static composed frame: BOTH the public reply
-     AND the full DM (answer + photo + reply + price) are visible.
+     AND the full text-only DM (answer + reaction + price) visible.
      ============================================================ */
   @media (prefers-reduced-motion: reduce) {
     .reveal, .connector, .phone, .dm-row.reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
-    .typing-bubble span, .conn-badge .ico, .comment.reply.show .c-av { animation: none !important; }
+    .typing-bubble span, .conn-arrow, .comment.reply.show .c-av { animation: none !important; }
     #dm-typing { display: none !important; }
   }
 </style>
@@ -267,7 +269,7 @@
 
 <body class="font-urbanist">
   <!-- Stage is a fixed 1440x880 canvas so it drops into the landing hero iframe unchanged. -->
-  <div id="stage" aria-label="Ilustración: ReadyChatAI responde un comentario de Instagram en público y continúa la venta por mensaje directo">
+  <div id="stage" aria-label="Ilustración: ReadyChatAI responde un comentario de Instagram en público y continúa la venta por mensaje directo, sobre el mismo pastel de chocolate del post">
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
 
@@ -275,103 +277,110 @@
     <div class="brand">
       <span class="brand-chip">
         <span class="rcai-mark">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="26" height="26"><rect width="32" height="32" rx="9" fill="#7354EF"/><circle cx="12" cy="16" r="2.7" fill="#fff"/><circle cx="20" cy="16" r="2.7" fill="#fff"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="23" height="23"><rect width="32" height="32" rx="9" fill="#7354EF"/><circle cx="12" cy="16" r="2.7" fill="#fff"/><circle cx="20" cy="16" r="2.7" fill="#fff"/></svg>
         </span>
-        Responde solo con IA
+        Comentarios + DMs automáticos
       </span>
       <h1>Tu Instagram<br>responde y <span class="accent">vende solo.</span></h1>
-      <p>El bot contesta el comentario en público y cierra la venta por DM — al instante.</p>
+      <p>El bot responde el comentario en público y cierra la venta por DM — sobre el mismo pastel que viste.</p>
     </div>
 
-    <!-- ===== Instagram POST card (real bakery photo) ===== -->
+    <!-- ===== Instagram POST card (real chocolate-cake photo) ===== -->
     <section class="post-card">
       <div class="pc-header">
-        <span class="ig-ring"><img src="assets/gen/bakery-avatar.png" alt="Dulce Lina Repostería" /></span>
+        <span class="ig-ring"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></span>
         <div>
           <div class="pc-handle">dulcelina.reposteria</div>
           <div class="pc-sub">Repostería artesanal</div>
         </div>
-        <span class="ico pc-more" data-icon="more-h" data-size="26"></span>
+        <span class="ico pc-more" data-icon="more-h" data-size="22"></span>
       </div>
 
       <div class="pc-media">
-        <img src="assets/gen/bakery-post.png" alt="Pastel de chocolate con frutos rojos" />
+        <img src="assets/gen/bakery-post.webp" alt="Pastel de chocolate y frutos rojos" decoding="async" />
       </div>
 
       <div class="pc-actions">
-        <span class="ico" data-icon="ig-heart" data-size="30"></span>
-        <span class="ico" data-icon="ig-comment" data-size="30"></span>
-        <span class="ico" data-icon="ig-share" data-size="30"></span>
-        <span class="ico spacer" data-icon="ig-bookmark" data-size="30"></span>
+        <span class="ico" data-icon="ig-heart" data-size="26"></span>
+        <span class="ico" data-icon="ig-comment" data-size="26"></span>
+        <span class="ico" data-icon="ig-share" data-size="26"></span>
+        <span class="ico spacer" data-icon="ig-bookmark" data-size="26"></span>
       </div>
       <div class="pc-likes">342 Me gusta</div>
-      <div class="pc-caption"><b>dulcelina.reposteria</b> Pasteles de chocolate y frutos rojos 🍫🍓</div>
+      <div class="pc-caption"><b>dulcelina.reposteria</b> Pastel de chocolate y frutos rojos 🍫🍓</div>
 
       <div class="pc-comments">
-        <!-- Customer comment (the business has liked it -> solid red heart) -->
+        <!-- Customer comment (asks about THE cake in the photo) -->
         <div class="comment reveal" id="comment-customer">
           <div class="c-av cust">S</div>
           <div class="c-body">
             <div class="c-name">sofia.delgado</div>
-            <div class="c-text">¿Tienen pastel para el sábado? 😍</div>
+            <div class="c-text">¿Este pastel está disponible para el sábado? 😍</div>
             <div class="c-meta"><span>2 h</span><span>Me gusta</span><span>Responder</span></div>
           </div>
-          <span class="ico c-like" data-icon="ig-like" data-size="22"></span>
+          <span class="ico c-like" data-icon="ig-like" data-size="20"></span>
         </div>
 
         <!-- Public bot reply (as the business) -->
         <div class="comment reply reveal" id="comment-reply">
-          <div class="c-av"><img src="assets/gen/bakery-avatar.png" alt="Dulce Lina Repostería" /></div>
+          <div class="c-av"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></div>
           <div class="c-body">
             <div class="c-name">dulcelina.reposteria</div>
-            <div class="c-text">¡Hola Sofía! 🎉 Te escribimos por DM 💜</div>
+            <div class="c-text">¡Hola Sofía! 🎉 Sí 💜 Te escribimos por DM con los detalles</div>
             <div class="c-meta"><span>Ahora</span><span>Me gusta</span><span>Responder</span></div>
           </div>
-          <span class="ico c-like" data-icon="ig-heart" data-size="22" data-color="#8e8e8e"></span>
+          <span class="ico c-like" data-icon="ig-heart" data-size="20" data-color="#8e8e8e"></span>
         </div>
       </div>
     </section>
 
-    <!-- ===== Brand connector (comment -> DM cue) ===== -->
+    <!-- ===== Brand connector (comment -> DM flow cue) ===== -->
     <div class="connector" id="connector">
-      <div class="conn-badge"><span class="ico" data-icon="ig-share" data-size="29" data-color="#ffffff"></span></div>
-      <div class="conn-label">sigue en DM</div>
+      <span class="ico conn-arrow" data-icon="chevron-left" data-size="30" data-stroke="2.6"></span>
+      <div class="conn-label">sigue<br>en DM</div>
     </div>
 
-    <!-- ===== Phone / DM panel (slides in, right) ===== -->
+    <!-- ===== Phone / DM panel (slides in, right — the hero) ===== -->
     <div class="phone" id="phone">
       <div class="screen">
         <div class="ph-notch"></div>
         <div class="ph-status">
           <span>9:41</span>
           <span class="ph-icons">
-            <span class="ico" data-icon="signal" data-size="17"></span>
-            <span class="ico" data-icon="wifi" data-size="17"></span>
-            <span class="ico" data-icon="battery" data-size="20"></span>
+            <span class="ico" data-icon="signal" data-size="18"></span>
+            <span class="ico" data-icon="wifi" data-size="18"></span>
+            <span class="ico" data-icon="battery" data-size="22"></span>
           </span>
         </div>
 
         <div class="dm-header">
-          <span class="ico dm-back" data-icon="chevron-left" data-size="30" data-stroke="2.4"></span>
-          <span class="ig-ring"><img src="assets/gen/bakery-avatar.png" alt="Dulce Lina Repostería" /></span>
+          <span class="ico dm-back" data-icon="chevron-left" data-size="32" data-stroke="2.4"></span>
+          <span class="ig-ring"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></span>
           <div class="dm-id">
             <div class="dm-handle">dulcelina.reposteria</div>
             <div class="dm-active">Activa ahora</div>
           </div>
           <div class="dm-call">
-            <span class="ico" data-icon="phone" data-size="25"></span>
-            <span class="ico" data-icon="video" data-size="26"></span>
+            <span class="ico" data-icon="phone" data-size="26"></span>
+            <span class="ico" data-icon="video" data-size="27"></span>
           </div>
         </div>
 
         <div class="dm-thread">
+          <!-- Native IG thread-top: profile mini-card + "Hoy" date separator. -->
+          <div class="thread-intro">
+            <span class="ig-ring"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></span>
+            <div class="ti-name">dulcelina.reposteria</div>
+            <div class="ti-meta">Instagram · 12,4 mil seguidores</div>
+            <div class="ti-date">Hoy</div>
+          </div>
           <div class="dm-feed" id="dm-feed"></div>
         </div>
 
         <div class="dm-composer">
-          <span class="ico comp-ic" data-icon="camera" data-size="25"></span>
+          <span class="ico comp-ic" data-icon="camera" data-size="26"></span>
           <div class="comp-field">Mensaje...</div>
-          <span class="ico comp-ic" data-icon="mic" data-size="24"></span>
+          <span class="ico comp-ic" data-icon="mic" data-size="25"></span>
         </div>
       </div>
     </div>
@@ -405,8 +414,13 @@
       var stage       = document.getElementById('stage');
       var feed        = document.getElementById('dm-feed');
 
-      var AV   = '<img class="av-sm" src="assets/gen/bakery-avatar.png" alt="" />';
+      var AV   = '<img class="av-sm" src="assets/gen/bakery-avatar.webp" alt="" loading="lazy" decoding="async" />';
       var DOTS = '<span></span><span></span><span></span>';
+
+      // Bot talks about the SAME chocolate cake shown in the post (text-only, cleaner).
+      var BOT1 = '¡Hola Sofía! 🍫 El pastel de chocolate y frutos rojos está disponible para el sábado.';
+      var CUST = '¡Genial! ¿Cuánto cuesta? 😍';
+      var BOT2 = 'Cuesta $45.000 con entrega 🚚 ¿Te lo aparto?';
 
       function el(cls, html) {
         var d = document.createElement('div');
@@ -417,15 +431,13 @@
         requestAnimationFrame(function () { requestAnimationFrame(function () { node.classList.add('show'); }); });
       }
       function botText(t)  { return el('dm-row in reveal',  AV + '<div class="dm-bubble incoming">' + t + '</div>'); }
-      function botPhoto()  { return el('dm-row in reveal',  AV + '<div class="dm-photo"><img src="assets/gen/bakery-product.png" alt="Pastel decorado con flores" /></div>'); }
       function custText(t) { return el('dm-row out reveal', '<div class="dm-bubble outgoing">' + t + '</div>'); }
       function typing()    { return el('dm-row in typing-row', AV + '<div class="typing-bubble" id="dm-typing">' + DOTS + '</div>'); }
 
       function showStatic() {
-        botText('¡Hola Sofía! 🎂 Mira este diseño:').classList.add('show');
-        botPhoto().classList.add('show');
-        custText('¡Me encanta! 😍').classList.add('show');
-        botText('Cuesta $45.000 con entrega 💜').classList.add('show');
+        botText(BOT1).classList.add('show');
+        custText(CUST).classList.add('show');
+        botText(BOT2).classList.add('show');
       }
 
       // ---- Reduced motion: compose the full static frame (public reply + full DM).
@@ -447,27 +459,26 @@
         feed.innerHTML = '';
         var typingNode = null;
 
-        // POST: customer comment, then the fast public auto-reply.
-        after(300,  function () { elCust.classList.add('show'); });
-        after(1150, function () { elReply.classList.add('show'); });
+        // POST: customer comment, then a calm public auto-reply.
+        after(400,  function () { elCust.classList.add('show'); });
+        after(3300, function () { elReply.classList.add('show'); });
 
         // Brand cue + DM phone slide in.
-        after(1750, function () { elConnector.classList.add('show'); elPhone.classList.add('show'); });
+        after(4200, function () { elConnector.classList.add('show'); elPhone.classList.add('show'); });
 
-        // DM: typing -> answer -> the real cake photo.
-        after(2450, function () { typingNode = typing(); reveal(typingNode); });
-        after(3550, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
-                                  reveal(botText('¡Hola Sofía! 🎂 Mira este diseño:')); });
-        after(4250, function () { reveal(botPhoto()); });
+        // DM: typing -> bot answers about the SAME chocolate cake.
+        after(5100, function () { typingNode = typing(); reveal(typingNode); });
+        after(6550, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
+                                  reveal(botText(BOT1)); });
 
-        // Customer reacts; bot quotes the price.
-        after(5350, function () { reveal(custText('¡Me encanta! 😍')); });
-        after(6150, function () { typingNode = typing(); reveal(typingNode); });
-        after(7050, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
-                                  reveal(botText('Cuesta $45.000 con entrega 💜')); });
+        // Customer asks the price; bot quotes it and offers to reserve.
+        after(9550,  function () { reveal(custText(CUST)); });
+        after(10900, function () { typingNode = typing(); reveal(typingNode); });
+        after(12350, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
+                                   reveal(botText(BOT2)); });
 
         // Long readable end-hold, then a clean dissolve + loop.
-        after(7050 + 6000, function () {
+        after(12350 + 6000, function () {
           stage.classList.add('dissolving');
           after(640, function () {
             elCust.classList.remove('show');

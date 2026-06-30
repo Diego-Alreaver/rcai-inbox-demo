@@ -172,9 +172,9 @@
 
   .msg {
     max-width: 80%;
-    padding: 14px 20px;
-    font-size: 31px; line-height: 1.30; font-weight: 400;
-    border-radius: 25px;
+    padding: 13px 18px;
+    font-size: 27px; line-height: 1.32; font-weight: 400;
+    border-radius: 24px;
     word-wrap: break-word;
   }
   .msg-out {
@@ -195,9 +195,9 @@
   .av-sm img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
   /* Instagram typing-dots indicator (gray bubble). */
-  .msg.typing { display: flex; align-items: center; gap: 9px; padding: 21px 22px; }
+  .msg.typing { display: flex; align-items: center; gap: 8px; padding: 16px 19px; }
   .msg.typing span {
-    width: 13px; height: 13px; border-radius: 50%; background: #b0b0b0;
+    width: 12px; height: 12px; border-radius: 50%; background: #b0b0b0;
     animation: igdot 1.2s infinite ease-in-out;
   }
   .msg.typing span:nth-child(2) { animation-delay: 0.18s; }
@@ -257,7 +257,7 @@
     <span class="eyebrow">
       <span class="ic bolt"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="#f5a623" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></span>
       <span class="ic ig-mark" data-icon="ig-logo" data-size="20"></span>
-      Responde solo
+      Instagram · al instante
     </span>
 
     <!-- The phone (dominant). Inside it: an authentic Instagram DM thread. -->
@@ -276,7 +276,7 @@
 
         <div class="ig-header">
           <span class="ic back" data-icon="chevron-left" data-size="28" data-stroke="2.2"></span>
-          <div class="ig-avatar"><img src="assets/gen/bakery-avatar.png" alt="Dulce Lina Repostería" /></div>
+          <div class="ig-avatar"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></div>
           <div class="ig-id">
             <div class="ig-name">dulcelina.reposteria</div>
             <div class="ig-status">Activo(a) ahora</div>
@@ -331,11 +331,11 @@
       var M = {
         cust1: '¡Hola! ¿Hacen pasteles a pedido? 🎂',
         bot1:  '¡Hola Emma! 💜 ¡Claro que sí! ¿Para qué fecha?',
-        cust2: 'Para el sábado, de chocolate 🎉',
+        cust2: 'Para el sábado, de chocolate 🍫',
         bot2:  '¡Perfecto! ¿Para cuántas personas?'
       };
 
-      var AV = '<div class="av-sm"><img src="assets/gen/bakery-avatar.png" alt="" /></div>';
+      var AV = '<div class="av-sm"><img src="assets/gen/bakery-avatar.webp" alt="" loading="lazy" decoding="async" /></div>';
       var DOTS = '<span></span><span></span><span></span>';
 
       function el(cls, html) {
@@ -366,9 +366,11 @@
       }
 
       // ---- Animated timeline --------------------------------------------------
-      // Tuned so all four bubbles are revealed + settled by ~5.2s and HOLD through
-      // the fixed 6.5s verify screenshot (the "money frame" must show the full,
-      // already-answered exchange — never typing dots with the last Q unanswered).
+      // Calm, readable cadence (Diego's review): each message sits ~2.9s before
+      // the next, the typing indicator shows ~1.45s before every bot reply, and
+      // the full exchange HOLDS ~6s before dissolving + looping. Under this
+      // relaxed pace the second Q&A lands ~9.5s, so a 5s frame shows the first
+      // exchange settled and the whole thread is visible from ~9.8s through ~15.8s.
       var timers = [];
       function after(ms, fn) { timers.push(setTimeout(fn, ms)); }
       function clearTimers() { timers.forEach(clearTimeout); timers = []; }
@@ -386,20 +388,20 @@
         }
 
         // Date header.
-        after((t += 100), function () { reveal(addDate()); });
+        after((t += 150), function () { reveal(addDate()); });
 
-        // Exchange 1 — customer asks, bot is typing, bot replies fast.
-        after((t += 400), function () { reveal(addCustomer(M.cust1)); });
-        after((t += 700), function () { typingNode = addTyping(); reveal(typingNode); });
-        after((t += 900), function () { clearTyping(); reveal(addBot(M.bot1)); });
+        // Exchange 1 — customer asks, bot is typing (~1.45s), bot replies.
+        after((t += 650),  function () { reveal(addCustomer(M.cust1)); });
+        after((t += 1450), function () { typingNode = addTyping(); reveal(typingNode); });
+        after((t += 1450), function () { clearTyping(); reveal(addBot(M.bot1)); });
 
-        // Exchange 2 — second quick Q&A (fully landed by ~5.2s).
-        after((t += 1000), function () { reveal(addCustomer(M.cust2)); });
-        after((t += 800),  function () { typingNode = addTyping(); reveal(typingNode); });
-        after((t += 1000), function () { clearTyping(); reveal(addBot(M.bot2)); });
+        // Exchange 2 — second Q&A, same calm rhythm (lands ~9.5s).
+        after((t += 2900), function () { reveal(addCustomer(M.cust2)); });
+        after((t += 1450), function () { typingNode = addTyping(); reveal(typingNode); });
+        after((t += 1450), function () { clearTyping(); reveal(addBot(M.bot2)); });
 
-        // Long readable end-hold (covers the verify frame), then dissolve + loop.
-        after((t += 4800), function () { feed.classList.add('dissolving'); });
+        // ~6s readable end-hold on the full exchange, then dissolve + loop.
+        after((t += 6000), function () { feed.classList.add('dissolving'); });
         after((t += 560),  function () { runCycle(); });
       }
 

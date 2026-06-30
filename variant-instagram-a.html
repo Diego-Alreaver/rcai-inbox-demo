@@ -73,41 +73,43 @@
      HEADLINE — brand + "instant AI" story lives AROUND the phone,
      NEVER inside the Instagram UI (honesty requirement).
      ============================================================ */
-  .headline { position: absolute; left: 90px; top: 190px; width: 600px; z-index: 6; }
+  .headline { position: absolute; left: 92px; top: 206px; width: 568px; z-index: 6; }
   .eyebrow {
-    display: inline-flex; align-items: center; gap: 11px;
-    font-size: 21px; font-weight: 800; letter-spacing: 0.03em;
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 19px; font-weight: 800; letter-spacing: 0.03em;
     color: #7354ef;
     background: rgba(115,84,239,0.09);
-    padding: 9px 19px; border-radius: 9999px;
+    padding: 9px 18px; border-radius: 9999px;
   }
   .eyebrow .bolt { color: #f5a623; }
   .eyebrow .ig-mark { display: inline-flex; }
   .headline h1 {
-    margin: 24px 0 0; font-size: 53px; font-weight: 800; line-height: 1.05;
+    margin: 22px 0 0; font-size: 46px; font-weight: 800; line-height: 1.06;
     letter-spacing: -0.027em; color: #101828;
   }
   .headline h1 .accent { color: #7354ef; }
   .headline p {
-    margin: 19px 0 0; font-size: 30px; font-weight: 500; line-height: 1.36; color: #667085;
-    max-width: 548px;
+    margin: 18px 0 0; font-size: 25px; font-weight: 500; line-height: 1.38; color: #667085;
+    max-width: 520px;
   }
-  .ticks { margin: 30px 0 0; display: flex; flex-direction: column; gap: 16px; }
-  .tick { display: flex; align-items: center; gap: 14px; font-size: 30px; font-weight: 600; color: #344054; }
+  .ticks { margin: 28px 0 0; display: flex; flex-direction: column; gap: 14px; }
+  .tick { display: flex; align-items: center; gap: 13px; font-size: 24px; font-weight: 600; color: #344054; }
   .tick .tick-ic {
-    flex: 0 0 38px; width: 38px; height: 38px; border-radius: 9999px;
+    flex: 0 0 34px; width: 34px; height: 34px; border-radius: 9999px;
     background: rgba(115,84,239,0.12); color: #7354ef;
   }
 
   /* ============================================================
-     PHONE — the dominant element. 500x818 (>= 90% of 880 tall).
+     PHONE — the dominant hero element. 624x858 (~98% of 880 tall):
+     bigger + more premium so the device (not the type) carries the
+     piece; in-phone text is sized elegantly, not shouted.
      ============================================================ */
   #phone {
-    position: absolute; left: 745px; top: 31px; z-index: 5;
-    width: 500px; height: 818px;
+    position: absolute; left: 752px; top: 11px; z-index: 5;
+    width: 624px; height: 858px;
     background: linear-gradient(160deg, #15151c, #050507);
-    border-radius: 52px;
-    padding: 12px;
+    border-radius: 56px;
+    padding: 13px;
     box-shadow:
       0 50px 90px -30px rgba(16,24,40,0.50),
       0 14px 40px -16px rgba(115,84,239,0.30),
@@ -130,16 +132,16 @@
 
   /* iOS status bar. */
   .statusbar {
-    flex: 0 0 40px; display: flex; align-items: center; justify-content: space-between;
-    padding: 0 30px; color: #050505;
+    flex: 0 0 44px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 32px; color: #050505;
   }
-  .sb-time { font-size: 19px; font-weight: 700; letter-spacing: 0.02em; }
+  .sb-time { font-size: 16px; font-weight: 700; letter-spacing: 0.02em; }
   .sb-icons { display: flex; align-items: center; gap: 8px; }
 
   /* Instagram DM header. */
   .ig-header {
-    flex: 0 0 74px; display: flex; align-items: center; gap: 0;
-    padding: 0 16px; border-bottom: 1px solid #efefef; background: #fff;
+    flex: 0 0 78px; display: flex; align-items: center; gap: 0;
+    padding: 0 18px; border-bottom: 1px solid #efefef; background: #fff;
   }
   .ig-header .back { color: #111; margin-right: 6px; }
   .ig-avatar {
@@ -151,10 +153,10 @@
   .ig-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .ig-id { flex: 1 1 auto; min-width: 0; }
   .ig-name {
-    font-size: 27px; font-weight: 700; color: #0a0a0a; letter-spacing: -0.02em;
+    font-size: 22px; font-weight: 700; color: #0a0a0a; letter-spacing: -0.02em;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.08;
   }
-  .ig-status { font-size: 19px; font-weight: 400; color: #8e8e8e; margin-top: 2px; }
+  .ig-status { font-size: 15px; font-weight: 400; color: #8e8e8e; margin-top: 3px; }
   .ig-header .hdr-ic { color: #111; }
   .ig-header .hdr-ic.call { margin-left: 8px; margin-right: 20px; }
 
@@ -179,13 +181,13 @@
   .row.in  { justify-content: flex-start; align-items: flex-end; gap: 9px; }
   .row.date-row { justify-content: center; margin: 6px 0 2px; }
 
-  .datestamp { font-size: 19px; font-weight: 600; color: #b0b0b0; letter-spacing: 0.03em; }
+  .datestamp { font-size: 15px; font-weight: 600; color: #b0b0b0; letter-spacing: 0.03em; }
 
   .msg {
     max-width: 78%;
-    padding: 15px 21px;
-    font-size: 31px; line-height: 1.30; font-weight: 400;
-    border-radius: 26px;
+    padding: 13px 19px;
+    font-size: 24px; line-height: 1.32; font-weight: 400;
+    border-radius: 24px;
     word-wrap: break-word;
   }
   .msg-out {
@@ -206,9 +208,9 @@
   .av-sm img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
   /* Instagram typing-dots indicator (gray bubble). */
-  .msg.typing { display: flex; align-items: center; gap: 10px; padding: 22px 23px; }
+  .msg.typing { display: flex; align-items: center; gap: 9px; padding: 17px 20px; }
   .msg.typing span {
-    width: 13px; height: 13px; border-radius: 50%; background: #b0b0b0;
+    width: 12px; height: 12px; border-radius: 50%; background: #b0b0b0;
     animation: igdot 1.2s infinite ease-in-out;
   }
   .msg.typing span:nth-child(2) { animation-delay: 0.18s; }
@@ -220,8 +222,8 @@
 
   /* Instagram composer (at rest — never typed into). */
   .composer {
-    flex: 0 0 86px; display: flex; align-items: center; gap: 13px;
-    padding: 0 17px; border-top: 1px solid #efefef; background: #fff;
+    flex: 0 0 88px; display: flex; align-items: center; gap: 13px;
+    padding: 0 18px; border-top: 1px solid #efefef; background: #fff;
   }
   .cam {
     flex: 0 0 48px; width: 48px; height: 48px; border-radius: 50%;
@@ -233,7 +235,7 @@
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 19px;
   }
-  .cbar .ph { font-size: 23px; font-weight: 400; color: #8e8e8e; }
+  .cbar .ph { font-size: 19px; font-weight: 400; color: #8e8e8e; }
   .cbar .cicons { display: flex; align-items: center; gap: 17px; color: #262626; }
 
   /* Feed dissolve on loop reset. */
@@ -274,9 +276,9 @@
       <h1>Tu Instagram<br><span class="accent">responde solo.</span></h1>
       <p>El bot contesta los DMs de tus clientes al instante, 24/7 — sin que muevas un dedo.</p>
       <div class="ticks">
-        <div class="tick"><span class="ic tick-ic" data-icon="check" data-size="22" data-stroke="2.6"></span> Respuestas en segundos</div>
-        <div class="tick"><span class="ic tick-ic" data-icon="check" data-size="22" data-stroke="2.6"></span> Atiende de día y de noche</div>
-        <div class="tick"><span class="ic tick-ic" data-icon="check" data-size="22" data-stroke="2.6"></span> Cero clientes perdidos</div>
+        <div class="tick"><span class="ic tick-ic" data-icon="check" data-size="20" data-stroke="2.6"></span> Responde en segundos</div>
+        <div class="tick"><span class="ic tick-ic" data-icon="check" data-size="20" data-stroke="2.6"></span> Atiende día y noche</div>
+        <div class="tick"><span class="ic tick-ic" data-icon="check" data-size="20" data-stroke="2.6"></span> Cero clientes perdidos</div>
       </div>
     </div>
 
@@ -296,7 +298,7 @@
 
         <div class="ig-header">
           <span class="ic back" data-icon="chevron-left" data-size="30" data-stroke="2.2"></span>
-          <div class="ig-avatar"><img src="assets/gen/bakery-avatar.png" alt="Dulce Lina Repostería" /></div>
+          <div class="ig-avatar"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina Repostería" decoding="async" /></div>
           <div class="ig-id">
             <div class="ig-name">dulcelina.reposteria</div>
             <div class="ig-status">Activo(a) ahora</div>
@@ -351,11 +353,11 @@
       var M = {
         cust1: '¡Hola! ¿Hacen pasteles a pedido? 🎂',
         bot1:  '¡Hola Emma! 💜 ¡Claro que sí! ¿Para qué fecha?',
-        cust2: 'Para el sábado, de chocolate 🎉',
+        cust2: 'Para el sábado, de chocolate 🍫',
         bot2:  '¡Perfecto! ¿Para cuántas personas?'
       };
 
-      var AV = '<div class="av-sm"><img src="assets/gen/bakery-avatar.png" alt="" /></div>';
+      var AV = '<div class="av-sm"><img src="assets/gen/bakery-avatar.webp" alt="" loading="lazy" decoding="async" /></div>';
       var DOTS = '<span></span><span></span><span></span>';
 
       function el(cls, html) {
@@ -386,9 +388,11 @@
       }
 
       // ---- Animated timeline --------------------------------------------------
-      // Tuned so all four bubbles are revealed + settled by ~5.2s and HOLD through
-      // the fixed 6.5s verify screenshot (the "money frame" must show the full,
-      // already-answered exchange — never typing dots with the last Q unanswered).
+      // Calm, readable cadence (Diego's review): each message sits ~2.9s before
+      // the next, the typing indicator shows ~1.45s before every bot reply, and
+      // the full exchange HOLDS ~6s before dissolving + looping. Under this
+      // relaxed pace the second Q&A lands ~9.5s, so a 5s frame shows the first
+      // exchange settled and the whole thread is visible from ~9.8s through ~15.8s.
       var timers = [];
       function after(ms, fn) { timers.push(setTimeout(fn, ms)); }
       function clearTimers() { timers.forEach(clearTimeout); timers = []; }
@@ -406,20 +410,20 @@
         }
 
         // Date header.
-        after((t += 100), function () { reveal(addDate()); });
+        after((t += 150), function () { reveal(addDate()); });
 
-        // Exchange 1 — customer asks, bot is typing, bot replies fast.
-        after((t += 400), function () { reveal(addCustomer(M.cust1)); });
-        after((t += 700), function () { typingNode = addTyping(); reveal(typingNode); });
-        after((t += 900), function () { clearTyping(); reveal(addBot(M.bot1)); });
+        // Exchange 1 — customer asks, bot is typing (~1.45s), bot replies.
+        after((t += 650),  function () { reveal(addCustomer(M.cust1)); });
+        after((t += 1450), function () { typingNode = addTyping(); reveal(typingNode); });
+        after((t += 1450), function () { clearTyping(); reveal(addBot(M.bot1)); });
 
-        // Exchange 2 — second quick Q&A (fully landed by ~5.2s).
-        after((t += 1000), function () { reveal(addCustomer(M.cust2)); });
-        after((t += 800),  function () { typingNode = addTyping(); reveal(typingNode); });
-        after((t += 1000), function () { clearTyping(); reveal(addBot(M.bot2)); });
+        // Exchange 2 — second Q&A, same calm rhythm (lands ~9.5s).
+        after((t += 2900), function () { reveal(addCustomer(M.cust2)); });
+        after((t += 1450), function () { typingNode = addTyping(); reveal(typingNode); });
+        after((t += 1450), function () { clearTyping(); reveal(addBot(M.bot2)); });
 
-        // Long readable end-hold (covers the verify frame), then dissolve + loop.
-        after((t += 4800), function () { feed.classList.add('dissolving'); });
+        // ~6s readable end-hold on the full exchange, then dissolve + loop.
+        after((t += 6000), function () { feed.classList.add('dissolving'); });
         after((t += 560),  function () { runCycle(); });
       }
 
