@@ -1123,6 +1123,7 @@
         { id: 'realtime',  label: 'Dashboard',      icon: 'ri-flashlight-fill',   src: 'variant-realtime.html',           chrome: true,  url: 'app.readychatai.com/dashboard/messages' },
       ];
       var cur = 'whatsapp';
+      var lang = 'es';
       var tabsEl = document.getElementById('demo-tabs');
       var frame = document.getElementById('demo-frame');
       var scalerEl = document.getElementById('demo-scaler');
@@ -1152,7 +1153,7 @@
         if (scalerEl) { scalerEl.style.width = curW + 'px'; scalerEl.style.height = curH + 'px'; }
         frame.style.width = curW + 'px';
         frame.style.height = curH + 'px';
-        frame.src = s.src + (bust ? ('?r=' + Date.now()) : '');
+        frame.src = s.src + '?lang=' + lang + (bust ? ('&r=' + Date.now()) : '');
         fit();
       }
 
@@ -1168,6 +1169,19 @@
           b.onclick = function () { select(v.id); };
           tabsEl.appendChild(b);
         });
+        // ES | EN language toggle — drives ?lang on the iframe for every tab (bilingual demo).
+        var langWrap = document.createElement('div');
+        langWrap.className = 'ml-1 inline-flex items-center rounded-full bg-white/15 p-1';
+        ['es', 'en'].forEach(function (lg) {
+          var lb = document.createElement('button');
+          var on = lg === lang;
+          lb.className = 'rounded-full px-3 py-1 text-xs font-bold uppercase transition ' +
+            (on ? 'bg-white text-brand-secondary shadow' : 'text-white/80 hover:text-white');
+          lb.textContent = lg;
+          lb.onclick = function () { if (lg !== lang) { lang = lg; applyFrame(true); render(); } };
+          langWrap.appendChild(lb);
+        });
+        tabsEl.appendChild(langWrap);
       }
       function select(id) {
         if (id === cur) { applyFrame(true); return; }

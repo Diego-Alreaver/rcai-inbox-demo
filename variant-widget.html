@@ -4,653 +4,76 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>ReadyChatAI · Tu sitio web atiende y agenda solo</title>
-<!-- Inline favicon so the demo emits zero 404s (no external favicon request). -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%237354EF'/%3E%3Ccircle%20cx='12'%20cy='16'%20r='2.6'%20fill='white'/%3E%3Ccircle%20cx='20'%20cy='16'%20r='2.6'%20fill='white'/%3E%3C/svg%3E" />
-
-<!-- Preload the website hero image (optimized WebP) so the page paints instantly. -->
-<link rel="preload" as="image" href="assets/gen/sonrisa-hero.webp" />
-
-<!-- Google Fonts: Urbanist (the real app wires next/font Urbanist to --font-urbanist) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-<!-- Tailwind v3 Play CDN (matches the repo's Tailwind 3.4) -->
-<script src="https://cdn.tailwindcss.com/3.4.16"></script>
-
-<!-- RCAI chat-kit: real-SVG icon kit (Lucide + Simple Icons). NO webfont glyphs. -->
 <script src="assets/chat-kit.js"></script>
-
-<style>
-  :root {
-    /* Brand Colors (globals.css :root, verbatim) — the STAGE stays RCAI-purple. */
-    --brand-secondary: #7f56d9;
-    --brand-700: #7354ef;
-    --brand-500: #9e77ed;
-    --gray-50: #f9fafb;
-    --gray-300: #d0d5dd;
-    --font-urbanist: 'Urbanist', sans-serif;
-
-    /* Inside the browser + widget: a neutral web system font (reads native). */
-    --web-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-
-    /* Clínica Sonrisa brand: soft mint-teal (the widget's accent). */
-    --teal-700: #0c8a7e;
-    --teal-600: #0f9e91;
-    --teal-500: #14b8a6;
-    --teal-grad: linear-gradient(135deg, #15bda9 0%, #0d9488 100%);
-    --mint-50:  #ecfdf8;
-    --mint-100: #d6f6ee;
-    --visitor-bg: #eef0f3;
-    --ink: #1f2a37;
-  }
-  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; }
-
-  /* Painted kit icons: the injected <svg> sizes itself; the host just centers it. */
-  .ic { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
-  .ic svg { display: block; }
-
-  /* ============================================================
-     STAGE — fixed 1440x880 canvas (matches the landing iframe).
-     Light brand backdrop so the piece reads as an on-theme hero.
-     ============================================================ */
-  #stage {
-    position: relative;
-    width: 1440px; height: 880px;
-    margin: 0 auto; overflow: hidden;
-    background:
-      radial-gradient(1200px 700px at 50% 38%, #ffffff 0%, #faf8ff 46%, #f3effc 100%),
-      linear-gradient(180deg, #ffffff, #f6f3fe);
-    font-family: var(--font-urbanist);
-    color: #1d2939;
-  }
-  #stage::before {
-    content: ""; position: absolute; inset: 0;
-    background-image: radial-gradient(rgba(115,84,239,0.06) 1.4px, transparent 1.4px);
-    background-size: 30px 30px; pointer-events: none;
-  }
-  .orb { position: absolute; border-radius: 9999px; filter: blur(60px); pointer-events: none; opacity: 0.5; }
-  .orb-1 { width: 420px; height: 420px; left: -120px; top: -90px;  background: radial-gradient(circle, rgba(158,119,237,0.45), transparent 70%); }
-  .orb-2 { width: 480px; height: 480px; right: -150px; bottom: -130px; background: radial-gradient(circle, rgba(20,184,166,0.28), transparent 70%); }
-
-  /* ============================================================
-     HEADLINE — brand + "instant AI" story lives on the STAGE,
-     NEVER inside the widget UI (honesty requirement). Purple.
-     ============================================================ */
-  .headline { position: absolute; left: 104px; top: 224px; width: 600px; z-index: 6; }
-  .eyebrow {
-    display: inline-flex; align-items: center; gap: 10px;
-    font-size: 19px; font-weight: 800; letter-spacing: 0.03em;
-    color: #7354ef; background: rgba(115,84,239,0.09);
-    padding: 9px 18px; border-radius: 9999px;
-  }
-  .eyebrow .globe { color: #7354ef; }
-  .headline h1 {
-    margin: 22px 0 0; font-size: 46px; font-weight: 800; line-height: 1.06;
-    letter-spacing: -0.027em; color: #101828;
-  }
-  .headline h1 .accent { color: #7354ef; }
-  .headline p {
-    margin: 18px 0 0; font-size: 25px; font-weight: 500; line-height: 1.38; color: #667085;
-    max-width: 540px;
-  }
-  .ticks { margin: 28px 0 0; display: flex; flex-direction: column; gap: 14px; }
-  .tick { display: flex; align-items: flex-start; gap: 13px; font-size: 24px; font-weight: 600; color: #344054; line-height: 1.28; }
-  .tick .tick-ic {
-    flex: 0 0 34px; width: 34px; height: 34px; border-radius: 9999px; margin-top: 1px;
-    background: rgba(115,84,239,0.12); color: #7354ef;
-  }
-
-  /* ============================================================
-     BROWSER — a desktop browser-frame mockup of the clinic site.
-     The chat WIDGET (launcher + panel) lives pinned bottom-right
-     inside the browser body, overlapping the page like a real one.
-     ============================================================ */
-  #browser {
-    position: absolute; left: 726px; top: 40px; z-index: 5;
-    width: 684px; height: 800px;
-    background: #ffffff;
-    border-radius: 18px;
-    box-shadow:
-      0 50px 90px -30px rgba(16,24,40,0.42),
-      0 18px 50px -20px rgba(115,84,239,0.20),
-      0 0 0 1px rgba(16,24,40,0.05);
-    overflow: hidden;
-    font-family: var(--web-font);
-  }
-
-  /* macOS-style chrome bar. */
-  .bchrome {
-    height: 46px; display: flex; align-items: center; gap: 14px;
-    padding: 0 16px; background: #e9ebee;
-    border-bottom: 1px solid #dcdfe3;
-  }
-  .lights { display: flex; align-items: center; gap: 8px; }
-  .light { width: 13px; height: 13px; border-radius: 50%; }
-  .light.r { background: #ff5f57; }
-  .light.y { background: #febc2e; }
-  .light.g { background: #28c840; }
-  .urlpill {
-    flex: 1 1 auto; max-width: 420px; margin: 0 auto;
-    height: 30px; background: #ffffff; border-radius: 8px;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    color: #5a6675; font-size: 15px; font-weight: 500;
-    box-shadow: inset 0 0 0 1px #d7dbe0;
-  }
-  .urlpill .ic { color: #7a8696; }
-  .chrome-spacer { width: 54px; flex: 0 0 54px; }
-
-  /* Clinic website body. */
-  .bbody { position: relative; height: calc(100% - 46px); background: #ffffff; overflow: hidden; }
-
-  .site-nav {
-    height: 62px; display: flex; align-items: center; padding: 0 24px;
-    border-bottom: 1px solid #eef0f2; background: #ffffff;
-  }
-  .brand { display: flex; align-items: center; gap: 11px; }
-  .brand .mark {
-    width: 32px; height: 32px; border-radius: 9px; overflow: hidden;
-    background: var(--mint-100); box-shadow: 0 2px 8px -3px rgba(13,148,136,0.5);
-  }
-  .brand .mark img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .brand .bname { font-size: 18px; font-weight: 800; color: #0f5e57; letter-spacing: -0.01em; }
-  .nav-links { margin-left: auto; display: flex; align-items: center; gap: 22px; }
-  .nav-links a { font-size: 15px; font-weight: 600; color: #5b6672; text-decoration: none; }
-  .nav-cta {
-    font-size: 15px; font-weight: 700; color: #ffffff; background: var(--teal-grad);
-    padding: 9px 16px; border-radius: 9999px; box-shadow: 0 8px 18px -8px rgba(13,148,136,0.6);
-  }
-
-  /* Hero image band with an overlaid (clinic-owned) headline. */
-  .hero { position: relative; height: 296px; overflow: hidden; }
-  .hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .hero .scrim {
-    position: absolute; inset: 0;
-    background: linear-gradient(90deg, rgba(8,52,48,0.78) 0%, rgba(8,52,48,0.45) 42%, rgba(8,52,48,0.05) 78%);
-  }
-  .hero .htext { position: absolute; left: 30px; bottom: 26px; right: 40%; }
-  .hero .heyebrow {
-    display: inline-flex; align-items: center; gap: 7px;
-    font-size: 12px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
-    color: #b8f5e8; background: rgba(255,255,255,0.14); padding: 5px 12px; border-radius: 9999px;
-  }
-  .hero h2 { margin: 13px 0 0; font-size: 33px; font-weight: 800; line-height: 1.08; color: #ffffff; letter-spacing: -0.02em; }
-  .hero .hbtn {
-    display: inline-flex; align-items: center; gap: 8px; margin-top: 16px;
-    font-size: 15px; font-weight: 700; color: #0c5a52; background: #ffffff;
-    padding: 11px 20px; border-radius: 9999px; box-shadow: 0 12px 26px -10px rgba(0,0,0,0.45);
-  }
-  .hero .hbtn .ic { color: #0f9e91; }
-
-  /* 3-up services strip. */
-  .services { padding: 22px 24px 0; }
-  .services .stitle { font-size: 13px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #95a0ad; }
-  .scards { display: flex; gap: 14px; margin-top: 13px; }
-  .scard {
-    flex: 1 1 0; background: #f7fbfa; border: 1px solid #e6f1ee; border-radius: 14px;
-    padding: 15px 15px 16px;
-  }
-  .scard .sic {
-    width: 38px; height: 38px; border-radius: 10px; background: var(--mint-100); color: var(--teal-600);
-    display: inline-flex; align-items: center; justify-content: center;
-  }
-  .scard .sname { margin-top: 11px; font-size: 16px; font-weight: 800; color: #233038; }
-  .scard .sprice { margin-top: 3px; font-size: 14px; font-weight: 600; color: #6b7682; }
-
-  /* ============================================================
-     WIDGET LAUNCHER — mint/teal circle pinned bottom-right.
-     Pulses, then OPENS the panel from its corner.
-     ============================================================ */
-  #launcher {
-    position: absolute; right: 20px; bottom: 20px; z-index: 12;
-    width: 60px; height: 60px; border-radius: 50%;
-    background: var(--teal-grad); color: #ffffff;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 16px 30px -10px rgba(13,148,136,0.6), 0 4px 10px -4px rgba(13,148,136,0.5);
-    cursor: pointer;
-  }
-  #launcher .ic { color: #ffffff; }
-  #launcher .ic-close { display: none; }
-  #launcher.open .ic-msg { display: none; }
-  #launcher.open .ic-close { display: inline-flex; }
-  /* Pulse ring (2 cycles while inviting the visitor to open). */
-  #launcher.pulsing { animation: wg-pulse 1.15s ease-out 2; }
-  @keyframes wg-pulse {
-    0%   { box-shadow: 0 16px 30px -10px rgba(13,148,136,0.6), 0 0 0 0 rgba(20,184,166,0.45); }
-    70%  { box-shadow: 0 16px 30px -10px rgba(13,148,136,0.6), 0 0 0 20px rgba(20,184,166,0); }
-    100% { box-shadow: 0 16px 30px -10px rgba(13,148,136,0.6), 0 0 0 0 rgba(20,184,166,0); }
-  }
-
-  /* ============================================================
-     WIDGET PANEL — opens from the launcher corner.
-     ============================================================ */
-  #panel {
-    position: absolute; right: 20px; bottom: 92px; z-index: 11;
-    width: 372px; height: 528px;
-    background: #ffffff; border-radius: 20px; overflow: hidden;
-    display: flex; flex-direction: column;
-    box-shadow: 0 30px 70px -24px rgba(16,24,40,0.45), 0 0 0 1px rgba(16,24,40,0.05);
-    transform-origin: bottom right;
-    transform: scale(0.18); opacity: 0; pointer-events: none;
-    transition: transform 0.44s cubic-bezier(0.22,1,0.36,1), opacity 0.30s ease;
-  }
-  #panel.open { transform: scale(1); opacity: 1; pointer-events: auto; }
-
-  .pheader {
-    flex: 0 0 70px; display: flex; align-items: center; gap: 12px;
-    padding: 0 16px; background: var(--teal-grad); color: #ffffff;
-  }
-  .pheader .pav {
-    flex: 0 0 42px; width: 42px; height: 42px; border-radius: 50%; overflow: hidden;
-    background: #ffffff; box-shadow: 0 0 0 2px rgba(255,255,255,0.55);
-    position: relative;
-  }
-  .pheader .pav img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .pheader .pid { flex: 1 1 auto; min-width: 0; }
-  .pheader .pname { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.1; }
-  .pheader .pstatus { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.92); margin-top: 3px; }
-  .pheader .dot { width: 8px; height: 8px; border-radius: 50%; background: #6ee7b7; box-shadow: 0 0 0 2px rgba(110,231,183,0.35); }
-  .pheader .pmin { color: rgba(255,255,255,0.9); }
-
-  /* Thread — bottom-anchored so the newest reply is always visible. */
-  .pthread {
-    flex: 1 1 auto; overflow: hidden;
-    display: flex; flex-direction: column; justify-content: flex-end;
-    padding: 14px 14px 12px;
-    background:
-      radial-gradient(520px 320px at 80% 0%, #f1fcf9 0%, rgba(241,252,249,0) 70%),
-      #ffffff;
-  }
-  .feed { display: flex; flex-direction: column; }
-  .feed.dissolving { opacity: 0; transition: opacity 0.5s ease; }
-
-  .row {
-    display: flex; margin-top: 11px;
-    opacity: 0; transform: translateY(13px);
-    transition: opacity 0.38s ease, transform 0.44s cubic-bezier(0.22,1,0.36,1);
-  }
-  .row.shown { opacity: 1; transform: none; }
-  .row.out { justify-content: flex-end; }
-  .row.in  { justify-content: flex-start; align-items: flex-end; gap: 8px; }
-
-  .av-sm {
-    flex: 0 0 30px; width: 30px; height: 30px; border-radius: 50%;
-    overflow: hidden; background: var(--mint-100); margin-bottom: 2px;
-  }
-  .av-sm img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-  .botcol { display: flex; flex-direction: column; align-items: flex-start; max-width: 84%; gap: 8px; }
-
-  .msg {
-    max-width: 84%;
-    padding: 10px 14px;
-    font-size: 18.5px; line-height: 1.34; font-weight: 500;
-    border-radius: 17px;
-    word-wrap: break-word;
-  }
-  .msg-out {
-    background: var(--visitor-bg); color: var(--ink);
-    border-bottom-right-radius: 6px;
-  }
-  .msg-in {
-    background: var(--teal-grad); color: #ffffff;
-    border-bottom-left-radius: 6px;
-    box-shadow: 0 10px 20px -12px rgba(13,148,136,0.55);
-  }
-  .botcol .msg { max-width: 100%; }
-
-  /* Typing-dots indicator (neutral bubble on the bot side). */
-  .msg.typing { display: flex; align-items: center; gap: 7px; padding: 14px 16px; background: #eef1f3; }
-  .msg.typing span {
-    width: 9px; height: 9px; border-radius: 50%; background: #9aa6b2;
-    animation: wgdot 1.2s infinite ease-in-out;
-  }
-  .msg.typing span:nth-child(2) { animation-delay: 0.18s; }
-  .msg.typing span:nth-child(3) { animation-delay: 0.36s; }
-  @keyframes wgdot {
-    0%, 80%, 100% { transform: translateY(0);   opacity: 0.40; }
-    40%           { transform: translateY(-7px); opacity: 1; }
-  }
-
-  /* --- slotPicker: quick-reply / mini-calendar chips. --- */
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip {
-    display: inline-flex; align-items: center; gap: 7px;
-    font-size: 16px; font-weight: 700; color: var(--teal-700);
-    background: #ffffff; border: 1.5px solid #b7e7df; border-radius: 12px;
-    padding: 9px 13px; box-shadow: 0 4px 10px -6px rgba(13,148,136,0.4);
-    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-  }
-  .chip .ic { color: var(--teal-500); }
-  .chip.sel {
-    background: var(--teal-grad); color: #ffffff; border-color: transparent;
-    box-shadow: 0 10px 20px -8px rgba(13,148,136,0.6);
-  }
-  .chip.sel .ic { color: #ffffff; }
-
-  /* --- bookingConfirmed: confirmation card. --- */
-  .confcard {
-    width: 100%; background: #ffffff;
-    border: 1.5px solid #cdeee6; border-radius: 16px;
-    padding: 13px 15px 15px; box-shadow: 0 14px 28px -16px rgba(13,148,136,0.45);
-  }
-  .conf-head { display: flex; align-items: center; gap: 8px; padding-bottom: 11px; border-bottom: 1px solid #edf3f1; }
-  .conf-head .ic { color: #16a34a; }
-  .conf-head .ct { font-size: 16px; font-weight: 800; color: #15803d; letter-spacing: -0.01em; }
-  .conf-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 16.5px; color: #2a3640; font-weight: 600; }
-  .conf-row.lead { font-size: 17px; font-weight: 800; color: #15302c; }
-  .conf-row .ic { flex: 0 0 20px; color: var(--teal-600); }
-
-  /* Composer (at rest — never typed into). */
-  .pcomposer {
-    flex: 0 0 60px; display: flex; align-items: center; gap: 9px;
-    padding: 0 13px; border-top: 1px solid #eef0f2; background: #ffffff;
-  }
-  .cbar {
-    flex: 1 1 auto; height: 42px; border: 1.5px solid #e1e5ea; border-radius: 9999px;
-    display: flex; align-items: center; padding: 0 16px;
-  }
-  .cbar .ph { font-size: 16px; font-weight: 500; color: #99a3ae; }
-  .csend {
-    flex: 0 0 42px; width: 42px; height: 42px; border-radius: 50%;
-    background: var(--teal-grad); display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 8px 16px -6px rgba(13,148,136,0.6);
-  }
-  .csend .ic { color: #ffffff; }
-
-  /* Powered-by line (honest: this is OUR widget on their site). */
-  .powered { text-align: center; font-size: 12px; font-weight: 600; color: #aeb6c0; padding: 4px 0 6px; background: #ffffff; }
-  .powered b { color: #7354ef; font-weight: 800; }
-
-  /* ============================================================
-     REDUCED MOTION — compose a full static frame (panel open).
-     ============================================================ */
-  @media (prefers-reduced-motion: reduce) {
-    .msg.typing span { animation: none !important; }
-    .row, .feed, #panel, #launcher { transition: none !important; animation: none !important; }
-  }
-</style>
-
-<script>
-  tailwind.config = { theme: { extend: { fontFamily: {
-    urbanist: ['var(--font-urbanist)', 'sans-serif'],
-    sans:     ['var(--font-urbanist)', 'sans-serif'],
-  } } } };
-</script>
+<link rel="stylesheet" href="assets/demo-kit.css" />
+<script src="assets/demo-engine.js"></script>
 </head>
-
-<body class="font-urbanist">
-  <!-- Fixed 1440x880 canvas so it drops into the landing hero iframe unchanged. -->
-  <div id="stage" aria-label="Ilustración: el widget web de Clínica Sonrisa responde y agenda una cita sin que el visitante salga de la página">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-
-    <!-- Brand headline / AI-speed story (on the stage, not inside the widget). -->
-    <div class="headline">
-      <span class="eyebrow">
-        <span class="ic globe" data-icon="globe" data-size="20" data-stroke="2.2"></span>
-        Chat web con IA · 24/7
-      </span>
-      <h1>Tu sitio web atiende<br><span class="accent">y agenda solo.</span></h1>
-      <p>El widget de Clínica Sonrisa saluda a cada visitante, responde precios y tratamientos al instante con la info de tu clínica, y cierra la cita sin que muevas un dedo.</p>
-      <div class="ticks">
-        <div class="tick"><span class="ic tick-ic" data-icon="check" data-size="20" data-stroke="2.6"></span> Responde precios, tratamientos y horarios al instante</div>
-        <div class="tick"><span class="ic tick-ic" data-icon="check" data-size="20" data-stroke="2.6"></span> Muestra cupos libres y confirma la cita en el chat</div>
-        <div class="tick"><span class="ic tick-ic" data-icon="check" data-size="20" data-stroke="2.6"></span> Atiende de noche y domingos, con el consultorio cerrado</div>
-      </div>
-    </div>
-
-    <!-- The browser (dominant). Inside it: the clinic site + the chat widget. -->
-    <div id="browser">
-      <div class="bchrome">
-        <div class="lights"><span class="light r"></span><span class="light y"></span><span class="light g"></span></div>
-        <div class="urlpill"><span class="ic" data-icon="lock" data-size="14" data-stroke="2.2"></span> clinicasonrisa.com</div>
-        <div class="chrome-spacer"></div>
-      </div>
-
-      <div class="bbody">
-        <!-- Clinic landing page (set-dressing — tasteful + lightweight). -->
-        <div class="site-nav">
-          <div class="brand">
-            <div class="mark"><img src="assets/gen/sonrisa-avatar.webp" alt="Clínica Sonrisa" decoding="async" /></div>
-            <span class="bname">Clínica Sonrisa</span>
-          </div>
-          <div class="nav-links">
-            <a href="#">Inicio</a>
-            <a href="#">Tratamientos</a>
-            <a href="#">Nosotros</a>
-            <span class="nav-cta">Agendar cita</span>
-          </div>
-        </div>
-
-        <div class="hero">
-          <img src="assets/gen/sonrisa-hero.webp" alt="Clínica dental Sonrisa" decoding="async" />
-          <div class="scrim"></div>
-          <div class="htext">
-            <span class="heyebrow">Odontología integral</span>
-            <h2>Tu mejor sonrisa<br>empieza aquí</h2>
-            <span class="hbtn"><span class="ic" data-icon="calendar" data-size="17" data-stroke="2.2"></span> Agendar cita</span>
-          </div>
-        </div>
-
-        <div class="services">
-          <div class="stitle">Tratamientos</div>
-          <div class="scards">
-            <div class="scard">
-              <span class="sic"><span class="ic" data-icon="sparkles" data-size="20" data-stroke="2.2"></span></span>
-              <div class="sname">Blanqueamiento</div>
-              <div class="sprice">desde $120.000</div>
-            </div>
-            <div class="scard">
-              <span class="sic"><span class="ic" data-icon="shield-check" data-size="20" data-stroke="2.2"></span></span>
-              <div class="sname">Limpieza dental</div>
-              <div class="sprice">desde $60.000</div>
-            </div>
-            <div class="scard">
-              <span class="sic"><span class="ic" data-icon="star" data-size="20" data-stroke="2.2"></span></span>
-              <div class="sname">Ortodoncia</div>
-              <div class="sprice">planes a tu medida</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- The chat WIDGET (launcher + panel) — pinned bottom-right. -->
-        <div id="panel">
-          <div class="pheader">
-            <div class="pav"><img src="assets/gen/sonrisa-avatar.webp" alt="Clínica Sonrisa" decoding="async" /></div>
-            <div class="pid">
-              <div class="pname">Clínica Sonrisa</div>
-              <div class="pstatus"><span class="dot"></span> En línea</div>
-            </div>
-            <span class="ic pmin" data-icon="chevron-down" data-size="24" data-stroke="2.4"></span>
-          </div>
-
-          <div class="pthread"><div class="feed" id="feed"></div></div>
-
-          <div class="pcomposer">
-            <div class="cbar"><span class="ph">Escribe un mensaje…</span></div>
-            <div class="csend"><span class="ic" data-icon="send-horizontal" data-size="20" data-stroke="2.2"></span></div>
-          </div>
-          <div class="powered">Con tecnología de <b>ReadyChatAI</b></div>
-        </div>
-
-        <div id="launcher" class="pulsing">
-          <span class="ic ic-msg" data-icon="message-square" data-size="26" data-stroke="2.2"></span>
-          <span class="ic ic-close" data-icon="chevron-down" data-size="26" data-stroke="2.4"></span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    (function () {
-      'use strict';
-
-      // ---- Paint every kit icon placeholder ([data-icon]). --------------------
-      function paintIcons(root) {
-        var nodes = (root || document).querySelectorAll('[data-icon]');
-        for (var i = 0; i < nodes.length; i++) {
-          var n = nodes[i];
-          if (n.getAttribute('data-painted')) continue;
-          var opts = {};
-          var size = n.getAttribute('data-size');   if (size) opts.size = parseFloat(size);
-          var strk = n.getAttribute('data-stroke'); if (strk) opts.stroke = parseFloat(strk);
-          var col  = n.getAttribute('data-color');  if (col)  opts.color = col;
-          n.innerHTML = window.RCAI_ICON(n.getAttribute('data-icon'), opts);
-          n.setAttribute('data-painted', '1');
-        }
-      }
-      paintIcons(document);
-
-      var feed = document.getElementById('feed');
-      var panel = document.getElementById('panel');
-      var launcher = document.getElementById('launcher');
-      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      // Approved Clínica Sonrisa widget conversation (memory + scheduling on-page).
-      var M = {
-        bot1:  '¡Hola! 👋 Soy el asistente de Clínica Sonrisa. ¿En qué te puedo ayudar hoy?',
-        vis1:  'hola, ¿hacen blanqueamiento dental? ¿cuánto sale?',
-        bot2:  '¡Sí! 😁 Hacemos blanqueamiento profesional en consultorio. Sale $120.000 e incluye una limpieza previa. La sesión dura 1 hora y se nota el mismo día ✨ ¿Quieres que te agende una cita?',
-        vis2:  'siii porfa, ¿esta semana se puede?',
-        bot3:  '¡Claro! Estos son los cupos libres para esta semana, elige el que más te sirva 👇',
-        vis3:  'el jueves a las 4 me queda perfecto 🙌',
-        bot4:  '¡Listo! Tu cita quedó agendada 🦷 Te enviaré un recordatorio por WhatsApp un día antes. ¡Nos vemos!'
-      };
-
-      var AV = '<div class="av-sm"><img src="assets/gen/sonrisa-avatar.webp" alt="" loading="lazy" decoding="async" /></div>';
-      var DOTS = '<span></span><span></span><span></span>';
-
-      // Slot chips (this-week dental slots). The middle one is the picked slot.
-      var SLOTS = [
-        { id: 'mie', label: 'Mié 10:00', ic: 'calendar' },
-        { id: 'jue', label: 'Jue 4:00 PM', ic: 'clock' },
-        { id: 'vie', label: 'Vie 11:30', ic: 'calendar' }
-      ];
-
-      function chipHtml(s) {
-        return '<span class="chip" data-chip="' + s.id + '">' +
-          '<span class="ic" data-icon="' + s.ic + '" data-size="16" data-stroke="2.2"></span>' + s.label +
-          '</span>';
-      }
-      function slotsHtml() {
-        var h = '<div class="chips">';
-        for (var i = 0; i < SLOTS.length; i++) h += chipHtml(SLOTS[i]);
-        return h + '</div>';
-      }
-      function confHtml() {
-        return '<div class="confcard">' +
-          '<div class="conf-head"><span class="ic" data-icon="check-circle" data-size="22" data-stroke="2.4" data-color="#16a34a"></span>' +
-            '<span class="ct">Cita confirmada</span></div>' +
-          '<div class="conf-row lead"><span class="ic" data-icon="sparkles" data-size="19" data-stroke="2.2"></span> Blanqueamiento dental</div>' +
-          '<div class="conf-row"><span class="ic" data-icon="calendar" data-size="19" data-stroke="2.2"></span> Jueves · 4:00 PM</div>' +
-          '<div class="conf-row"><span class="ic" data-icon="clock" data-size="19" data-stroke="2.2"></span> 1 hora · Dra. Reyes</div>' +
-          '<div class="conf-row"><span class="ic" data-icon="map-pin" data-size="19" data-stroke="2.2"></span> Clínica Sonrisa</div>' +
-        '</div>';
-      }
-
-      function el(cls, html) {
-        var d = document.createElement('div');
-        d.className = cls; d.innerHTML = html;
-        feed.appendChild(d); paintIcons(d);
-        return d;
-      }
-      function reveal(node) {
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () { node.classList.add('shown'); });
-        });
-      }
-      function addVisitor(t) { return el('row out', '<div class="msg msg-out">' + t + '</div>'); }
-      function addBot(t)     { return el('row in', AV + '<div class="msg msg-in">' + t + '</div>'); }
-      function addTyping()   { return el('row in typing-row', AV + '<div class="msg msg-in typing">' + DOTS + '</div>'); }
-      // Beats render on the BOT/received side (avatar + a stacked column).
-      function addSlots(t)   { return el('row in', AV + '<div class="botcol"><div class="msg msg-in">' + t + '</div>' + slotsHtml() + '</div>'); }
-      function addConfirm(t) { return el('row in', AV + '<div class="botcol"><div class="msg msg-in">' + t + '</div>' + confHtml() + '</div>'); }
-      function pickSlot(id) {
-        var c = feed.querySelector('[data-chip="' + id + '"]');
-        if (c) c.classList.add('sel');
-      }
-
-      // ---- Reduced motion: panel open + full static exchange. -----------------
-      if (reduce) {
-        launcher.classList.remove('pulsing');
-        launcher.classList.add('open');
-        panel.classList.add('open');
-        addBot(M.bot1).classList.add('shown');
-        addVisitor(M.vis1).classList.add('shown');
-        addBot(M.bot2).classList.add('shown');
-        addVisitor(M.vis2).classList.add('shown');
-        addSlots(M.bot3).classList.add('shown');
-        addVisitor(M.vis3).classList.add('shown');
-        addConfirm(M.bot4).classList.add('shown');
-        pickSlot('jue');
-        return;
-      }
-
-      // ---- Animated timeline --------------------------------------------------
-      // HERO BEAT: the launcher pulses ~2x, then the panel scales open from its
-      // corner; the Q&A + booking conversation runs inside. Calm cadence: typing
-      // ~1.45s before each bot reply, ~2.2s reading gaps. The CLOSE (confirmed
-      // appointment) lands ~16.9s and HOLDS ~5s, then the widget re-closes and
-      // the loop restarts.
-      var timers = [];
-      function after(ms, fn) { timers.push(setTimeout(fn, ms)); }
-      function clearTimers() { timers.forEach(clearTimeout); timers = []; }
-
-      function runCycle() {
-        clearTimers();
-        feed.classList.remove('dissolving');
-        feed.innerHTML = '';
-        panel.classList.remove('open');
-        launcher.classList.remove('open');
-
-        var t = 0;
-        var typingNode = null;
-        function clearTyping() {
-          if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
-          typingNode = null;
-        }
-
-        // Pulse the launcher (invite), then OPEN the panel from its corner.
-        after((t += 60),   function () { launcher.classList.add('pulsing'); });
-        after((t += 2300), function () {
-          launcher.classList.remove('pulsing');
-          launcher.classList.add('open');
-          panel.classList.add('open');
-        });
-
-        // Greeting is already waiting when the panel opens.
-        after((t += 520),  function () { reveal(addBot(M.bot1)); });
-
-        // Exchange 1 — visitor asks price; bot answers from memory.
-        after((t += 1250), function () { reveal(addVisitor(M.vis1)); });
-        after((t += 1450), function () { typingNode = addTyping(); reveal(typingNode); });
-        after((t += 1450), function () { clearTyping(); reveal(addBot(M.bot2)); });
-
-        // Exchange 2 — visitor wants this week; bot offers free slots (slotPicker).
-        after((t += 2200), function () { reveal(addVisitor(M.vis2)); });
-        after((t += 1450), function () { typingNode = addTyping(); reveal(typingNode); });
-        after((t += 1450), function () { clearTyping(); reveal(addSlots(M.bot3)); });
-
-        // Exchange 3 — visitor picks Thursday 4PM; bot CLOSES (bookingConfirmed).
-        after((t += 2300), function () { reveal(addVisitor(M.vis3)); pickSlot('jue'); });
-        after((t += 1450), function () { typingNode = addTyping(); reveal(typingNode); });
-        after((t += 1500), function () { clearTyping(); reveal(addConfirm(M.bot4)); });
-
-        // ~5s readable end-hold on the confirmed appointment, then re-close + loop.
-        after((t += 5000), function () { feed.classList.add('dissolving'); });
-        after((t += 520),  function () {
-          panel.classList.remove('open');
-          launcher.classList.remove('open');
-        });
-        after((t += 760),  function () { runCycle(); });
-      }
-
-      function start() { after(300, runCycle); }
-      if (document.readyState === 'complete') start();
-      else window.addEventListener('load', start, { once: true });
-    })();
-  </script>
+<body>
+<script>
+window.DEMO_CONFIG = {
+  id: 'widget',
+  mode: 'desktop',
+  platform: 'widget',
+  surface: 'widget',
+  business: { name: 'Clínica Sonrisa', handle: 'clinicasonrisa', avatar: 'assets/gen/sonrisa-avatar.webp', online: true },
+  siteImage: { es: 'assets/gen/clinic-es-2.webp', en: 'assets/gen/clinic-en-1.webp' },
+  scene: 'booking',
+  bookingService: {
+    name: { es: 'Blanqueamiento dental', en: 'Teeth whitening' },
+    category: { es: 'Odontología', en: 'Dentistry' },
+    duration: { es: '1 hora', en: '1 hour' },
+    desc: { es: 'Blanqueamiento profesional en consultorio, incluye limpieza previa. Con la Dra. Reyes.',
+            en: 'Professional in-office whitening, includes a prior cleaning. With Dr. Reyes.' },
+    picked: { day: 13, time: { es: '10:00 a. m.', en: '10:00 AM' } }
+  },
+  locales: {
+    es: {
+      stage: {
+        eyebrow: 'Chat web con IA · 24/7',
+        h1: 'Tu sitio web atiende',
+        h1accent: 'y agenda solo.',
+        sub: 'El widget de Clínica Sonrisa saluda a cada visitante, responde precios y tratamientos al instante, y manda el botón para que reserve su cita — sin que muevas un dedo.',
+        ticks: [
+          'Responde precios y tratamientos al instante, 24/7',
+          'Manda el botón para reservar en tu página de citas',
+          'Atiende de noche y domingos, con el consultorio cerrado'
+        ],
+        cta: 'Agrega el chat a tu web'
+      },
+      thread: [
+        { from: 'bot', text: '¡Hola! 👋 Soy el asistente de Clínica Sonrisa. ¿En qué te puedo ayudar hoy?' },
+        { from: 'visitor', text: 'Hola, ¿hacen blanqueamiento dental? ¿cuánto sale? 🦷' },
+        { from: 'bot', text: '¡Sí! 😁 Hacemos blanqueamiento profesional en consultorio: sale $120.000 e incluye una limpieza previa. La sesión dura 1 hora y se nota el mismo día ✨' },
+        { from: 'bot', beat: 'bookingButton', text: '¿Quieres que te agende? Toca aquí para elegir tu día y hora 👇' }
+      ]
+    },
+    en: {
+      stage: {
+        eyebrow: 'AI web chat · 24/7',
+        h1: 'Your website answers',
+        h1accent: 'and books for you.',
+        sub: 'Clínica Sonrisa’s widget greets every visitor, answers prices and treatments instantly, and sends the button to book the appointment — without you lifting a finger.',
+        ticks: [
+          'Answers prices and treatments instantly, 24/7',
+          'Sends the button to book on your appointments page',
+          'Works at night and on Sundays, with the office closed'
+        ],
+        cta: 'Add the chat to your site'
+      },
+      thread: [
+        { from: 'bot', text: 'Hi there! 👋 I’m the Clínica Sonrisa assistant. How can I help you today?' },
+        { from: 'visitor', text: 'Hi, do you do teeth whitening? how much is it? 🦷' },
+        { from: 'bot', text: 'Yes! 😁 We do professional in-office whitening: it’s $120,000 and includes a prior cleaning. The session takes 1 hour and you see results the same day ✨' },
+        { from: 'bot', beat: 'bookingButton', text: 'Want me to book you in? Tap here to pick your day and time 👇' }
+      ]
+    }
+  }
+};
+window.RCAIDemo.boot();
+</script>
 </body>
 </html>

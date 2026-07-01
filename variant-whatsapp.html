@@ -3,611 +3,92 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ReadyChatAI · Tu WhatsApp toma el pedido y cobra solo</title>
-<!-- Inline favicon so the demo emits zero 404s (no external favicon request). -->
+<title>ReadyChatAI · Tu WhatsApp toma el pedido y registra la orden</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%237354EF'/%3E%3Ccircle%20cx='12'%20cy='16'%20r='2.6'%20fill='white'/%3E%3Ccircle%20cx='20'%20cy='16'%20r='2.6'%20fill='white'/%3E%3C/svg%3E" />
-
-<!-- Preload the in-chat product photo (optimized WebP) so it decodes instantly when the card reveals. -->
-<link rel="preload" as="image" href="assets/gen/dulcelina-cake.webp" />
-
-<!-- Google Fonts: Urbanist (the real app wires next/font Urbanist to --font-urbanist) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-<!-- Real-SVG icon kit ("iconos de verdad") — replaces RemixIcon. -->
 <script src="assets/chat-kit.js"></script>
-
-<!-- Tailwind v3 Play CDN (matches the repo's Tailwind 3.4) -->
-<script src="https://cdn.tailwindcss.com/3.4.16"></script>
-
-<style>
-  :root {
-    /* Brand Colors (globals.css :root, verbatim) */
-    --brand-secondary: #7f56d9;
-    --brand-700: #7354ef;
-    --brand-500: #9e77ed;
-    --font-urbanist: 'Urbanist', sans-serif;
-
-    /* WhatsApp palette (authentic — current LIGHT scheme). */
-    --wa-surface: #ffffff;    /* modern light status bar + conversation header */
-    --wa-accent:  #008069;    /* modern WhatsApp green accent (back + actions) */
-    --wa-hairline: rgba(11,20,26,0.10); /* hairline under the header */
-    --wa-ink:    #111b21;     /* near-black header text */
-    --wa-send:   #00A884;     /* round send button */
-    --wa-out:    #D9FDD3;     /* outgoing (customer) bubble */
-    --wa-paper:  #EFEAE2;     /* chat wallpaper beige */
-    --wa-tick:   #53BDEB;     /* blue read ticks */
-    --wa-meta:   #667781;     /* timestamp gray */
-  }
-  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; }
-  .ic { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
-
-  /* ============================================================
-     STAGE — fixed 1440x880 canvas (matches the landing iframe).
-     RCAI purple ambient world hosting a WhatsApp-green story.
-     ============================================================ */
-  #stage {
-    position: relative;
-    width: 1440px; height: 880px;
-    margin: 0 auto; overflow: hidden;
-    background:
-      radial-gradient(1200px 700px at 50% 38%, #ffffff 0%, #faf8ff 46%, #f3effc 100%),
-      linear-gradient(180deg, #ffffff, #f6f3fe);
-    font-family: var(--font-urbanist);
-    color: #1d2939;
-  }
-  #stage::before {
-    content: ""; position: absolute; inset: 0;
-    background-image: radial-gradient(rgba(115,84,239,0.06) 1.4px, transparent 1.4px);
-    background-size: 30px 30px; pointer-events: none;
-  }
-  .orb { position: absolute; border-radius: 9999px; filter: blur(60px); pointer-events: none; opacity: 0.5; }
-  .orb-1 { width: 420px; height: 420px; left: -120px; top: -90px;  background: radial-gradient(circle, rgba(158,119,237,0.45), transparent 70%); }
-  .orb-2 { width: 480px; height: 480px; right: -150px; bottom: -130px; background: radial-gradient(circle, rgba(16,185,129,0.30), transparent 70%); }
-
-  /* ============================================================
-     HEADLINE — brand + "instant AI" story lives AROUND the phone,
-     NEVER inside the WhatsApp UI (honesty requirement). The stage
-     headline uses the SHARED brand purple so every channel tab lines
-     up in the hero; the WhatsApp green identity stays inside the phone.
-     ============================================================ */
-  .headline { position: absolute; left: 104px; top: 230px; width: 600px; z-index: 6; }
-  .eyebrow {
-    display: inline-flex; align-items: center; gap: 10px;
-    font-size: 19px; font-weight: 800; letter-spacing: 0.03em;
-    color: #7354ef; background: rgba(115,84,239,0.09);
-    padding: 8px 18px 8px 9px; border-radius: 9999px;
-  }
-  .eyebrow .wa-badge {
-    width: 28px; height: 28px; border-radius: 8px; background: #25D366;
-    display: inline-flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 10px -3px rgba(37,211,102,0.55);
-  }
-  .headline h1 {
-    margin: 20px 0 0; font-size: 47px; font-weight: 800; line-height: 1.08;
-    letter-spacing: -0.025em; color: #101828;
-  }
-  .headline h1 .accent { color: #7354ef; }
-  .headline p {
-    margin: 16px 0 0; font-size: 25px; font-weight: 500; line-height: 1.38; color: #667085;
-    max-width: 548px;
-  }
-  .ticks { margin: 26px 0 0; display: flex; flex-direction: column; gap: 14px; }
-  .tick { display: flex; align-items: center; gap: 13px; font-size: 24px; font-weight: 600; color: #344054; }
-  .tick .tick-ic {
-    flex: 0 0 34px; width: 34px; height: 34px; border-radius: 9999px;
-    background: rgba(115,84,239,0.12); color: #7354ef;
-  }
-
-  /* ============================================================
-     PHONE — the dominant hero element. A real smartphone: tall + narrow
-     (406x860, ~9:19.5, ~98% of the 880 stage height).
-     ============================================================ */
-  #phone {
-    position: absolute; left: 872px; top: 10px; z-index: 5;
-    width: 404px; height: 860px;
-    background: linear-gradient(160deg, #15151c, #050507);
-    border-radius: 48px; padding: 12px;
-    box-shadow:
-      0 50px 90px -30px rgba(16,24,40,0.50),
-      0 14px 40px -16px rgba(7,94,84,0.28),
-      0 0 0 1px rgba(16,24,40,0.04);
-  }
-  .screen {
-    position: relative; width: 100%; height: 100%;
-    background: var(--wa-paper);
-    border-radius: 37px; overflow: hidden;
-    display: flex; flex-direction: column;
-    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  }
-  .island {
-    position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
-    width: 104px; height: 26px; background: #000; border-radius: 14px; z-index: 30;
-  }
-
-  /* Status bar — modern light safe-area: white surface, dark glyphs. */
-  .statusbar {
-    flex: 0 0 40px; display: flex; align-items: center; justify-content: space-between;
-    padding: 0 20px; background: var(--wa-surface); color: #0b141a;
-  }
-  .sb-time { font-size: 16px; font-weight: 600; letter-spacing: 0.01em; }
-  .sb-icons { display: flex; align-items: center; gap: 6px; }
-  .sb-icons .ic { width: 18px; height: 18px; }
-
-  /* WhatsApp conversation header (modern light: white surface, green accents). */
-  .wa-header {
-    flex: 0 0 64px; display: flex; align-items: center;
-    padding: 0 12px 0 8px; background: var(--wa-surface); color: var(--wa-ink);
-    box-shadow: 0 0.5px 0 var(--wa-hairline);
-    position: relative; z-index: 2;
-  }
-  .wa-header .back { width: 22px; height: 26px; margin-right: 3px; color: var(--wa-accent); }
-  .wa-avatar {
-    flex: 0 0 40px; width: 40px; height: 40px; border-radius: 50%;
-    overflow: hidden; margin-right: 9px; background: #d9d2c5;
-    box-shadow: 0 0 0 1px rgba(11,20,26,0.08);
-  }
-  .wa-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .wa-id { flex: 1 1 auto; min-width: 0; }
-  .wa-name {
-    font-size: 19px; font-weight: 600; color: var(--wa-ink); letter-spacing: -0.01em;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1;
-  }
-  .wa-presence { font-size: 14px; font-weight: 400; color: var(--wa-meta); margin-top: 1px; }
-  .wa-presence.typing { color: var(--wa-accent); font-weight: 500; }
-  .wa-actions { display: flex; align-items: center; gap: 13px; margin-left: 6px; }
-  .wa-actions .ic { width: 23px; height: 23px; color: var(--wa-accent); }
-  .wa-actions .ic.menu { width: 20px; }
-
-  /* Thread — WhatsApp wallpaper; bottom-anchored so the newest is always visible
-     and older messages clip at the TOP (realistic scrolled-to-newest view). */
-  .thread {
-    flex: 1 1 auto; overflow: hidden;
-    display: flex; flex-direction: column; justify-content: flex-end;
-    padding: 10px 13px 12px;
-    background-color: var(--wa-paper);
-    background-repeat: repeat;
-  }
-  .feed { display: flex; flex-direction: column; }
-  .feed.dissolving { opacity: 0; transition: opacity 0.5s ease; }
-
-  /* Centered set-dressing pills (date + encryption). */
-  .center-pill {
-    align-self: center; text-align: center;
-    border-radius: 8px; padding: 5px 12px; margin: 4px 0 2px;
-    font-size: 14px; font-weight: 500; color: #54656f;
-    box-shadow: 0 1px 1px rgba(0,0,0,0.05);
-  }
-  .pill-date { background: rgba(255,255,255,0.92); letter-spacing: 0.04em; }
-  .pill-enc {
-    background: #FDF4C5; color: #5b6b4f; max-width: 88%;
-    display: flex; align-items: center; gap: 7px; justify-content: center;
-    line-height: 1.28; font-size: 13px; padding: 7px 12px;
-  }
-  .pill-enc .ic { width: 14px; height: 14px; color: #b39b2e; flex: 0 0 14px; }
-
-  .row {
-    display: flex; margin-top: 8px;
-    opacity: 0; transform: translateY(14px);
-    transition: opacity 0.4s ease, transform 0.46s cubic-bezier(0.22,1,0.36,1);
-  }
-  .row.shown { opacity: 1; transform: none; }
-  .row.out { justify-content: flex-end; }
-  .row.in  { justify-content: flex-start; }
-  .center-pill { opacity: 0; transform: translateY(8px); transition: opacity 0.4s ease, transform 0.4s ease; }
-  .center-pill.shown { opacity: 1; transform: none; }
-
-  /* Bubbles. */
-  .bubble {
-    position: relative; max-width: 80%;
-    display: flex; flex-direction: column;
-    padding: 8px 11px 7px 12px;
-    border-radius: 9px;
-    box-shadow: 0 1px 1px rgba(0,0,0,0.13), 0 1px 0.5px rgba(0,0,0,0.06);
-  }
-  .b-in  { background: #fff; border-top-left-radius: 1px; }
-  .b-out { background: var(--wa-out); border-top-right-radius: 1px; }
-  /* WhatsApp tail flags. */
-  .b-in::before {
-    content: ""; position: absolute; top: 0; left: -8px; width: 11px; height: 12px;
-    background: #fff; clip-path: polygon(100% 0, 100% 100%, 0 0);
-  }
-  .b-out::before {
-    content: ""; position: absolute; top: 0; right: -8px; width: 11px; height: 12px;
-    background: var(--wa-out); clip-path: polygon(0 0, 0 100%, 100% 0);
-  }
-  /* A continuation bubble (same sender, stacked) drops its tail + sharp corner. */
-  .b-cont::before { display: none; }
-  .b-cont.b-in  { border-top-left-radius: 9px; margin-top: -2px; }
-
-  .btext { font-size: 24px; line-height: 1.3; font-weight: 400; color: #111b21; word-wrap: break-word; }
-  .meta { align-self: flex-end; display: flex; align-items: center; gap: 4px; margin-top: 1px; }
-  .meta .t { font-size: 13px; font-weight: 400; color: var(--wa-meta); }
-  .meta .ic { width: 16px; height: 16px; margin-left: -1px; }
-
-  /* ============================================================
-     RICH BOT CARDS — productCard / paymentLink / bookingConfirmed.
-     All render on the BOT (received) side as a same-sender continuation
-     of the preceding bot text bubble (no tail), themed in WhatsApp green.
-     ============================================================ */
-  .wa-card { max-width: 84%; padding: 5px 5px 4px; }
-
-  /* productCard — cake photo on top, title, big green price, size chips. */
-  .pc-img { width: 100%; height: 176px; border-radius: 7px; overflow: hidden; background: #e6e0d7; }
-  .pc-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .pc-body { padding: 9px 8px 2px; }
-  .pc-title { font-size: 23px; font-weight: 700; color: #111b21; line-height: 1.16; }
-  .pc-sub { font-size: 17px; font-weight: 400; color: #667781; margin-top: 2px; }
-  .pc-price { font-size: 30px; font-weight: 800; color: var(--wa-accent); margin-top: 7px; letter-spacing: -0.01em; }
-  .pc-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
-  .pc-chip {
-    font-size: 16px; font-weight: 600; color: #1c6152;
-    background: rgba(0,128,105,0.10); border-radius: 9999px; padding: 5px 12px;
-  }
-  .wa-card .meta { padding: 4px 6px 1px; }
-
-  /* paymentLink — compact secure-payment card with a green CTA link button. */
-  .pay-card { max-width: 76%; padding: 13px 14px 11px; }
-  .pay-head { display: flex; align-items: center; gap: 8px; }
-  .pay-head .ic { width: 19px; height: 19px; color: #2a6f60; }
-  .pay-head .lbl { font-size: 15px; font-weight: 700; color: #667781; letter-spacing: 0.05em; text-transform: uppercase; }
-  .pay-amount { font-size: 33px; font-weight: 800; color: #111b21; margin: 7px 0 1px; letter-spacing: -0.02em; }
-  .pay-sub { font-size: 16px; color: #667781; margin-bottom: 11px; }
-  .pay-btn {
-    display: flex; align-items: center; justify-content: center; gap: 9px;
-    height: 50px; border-radius: 12px; background: var(--wa-accent); color: #fff;
-    font-size: 21px; font-weight: 700;
-    box-shadow: 0 8px 18px -8px rgba(0,128,105,0.6);
-  }
-  .pay-btn .ic { width: 21px; height: 21px; }
-  .pay-card .meta { padding: 7px 2px 0; }
-
-  /* bookingConfirmed — THE CLOSE. Green header + item summary + detail rows. */
-  .bk-card { max-width: 84%; padding: 0; overflow: hidden; }
-  .bk-top {
-    display: flex; align-items: center; gap: 9px;
-    padding: 11px 14px; background: rgba(0,128,105,0.10);
-  }
-  .bk-top .ic { width: 25px; height: 25px; }
-  .bk-top .bk-ttl { font-size: 21px; font-weight: 800; color: #1c6152; letter-spacing: -0.01em; }
-  .bk-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px 9px; }
-  .bk-thumb { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 8px; overflow: hidden; background: #e6e0d7; }
-  .bk-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .bk-item-txt { flex: 1 1 auto; min-width: 0; }
-  .bk-item-name { font-size: 19px; font-weight: 700; color: #111b21; line-height: 1.16; }
-  .bk-item-meta { font-size: 15px; color: #667781; margin-top: 2px; }
-  .bk-item-price { font-size: 20px; font-weight: 800; color: var(--wa-accent); white-space: nowrap; align-self: flex-start; }
-  .bk-rows { padding: 4px 15px 8px; display: flex; flex-direction: column; gap: 9px; }
-  .bk-row { display: flex; align-items: center; gap: 11px; font-size: 20px; color: #111b21; font-weight: 500; }
-  .bk-row .ic { width: 20px; height: 20px; color: #5b7a72; flex: 0 0 20px; }
-  .bk-card .meta { padding: 0 13px 8px; }
-
-  /* ============================================================
-     REDUCED MOTION — compose a full static frame (whole exchange).
-     ============================================================ */
-  @media (prefers-reduced-motion: reduce) {
-    .row, .center-pill, .feed { transition: none !important; }
-  }
-</style>
-
-<script>
-  tailwind.config = { theme: { extend: { fontFamily: {
-    urbanist: ['var(--font-urbanist)', 'sans-serif'],
-    sans:     ['var(--font-urbanist)', 'sans-serif'],
-  } } } };
-</script>
+<link rel="stylesheet" href="assets/demo-kit.css" />
+<script src="assets/demo-engine.js"></script>
 </head>
-
-<body class="font-urbanist">
-  <!-- Fixed 1440x880 canvas so it drops into the landing hero iframe unchanged. -->
-  <div id="stage" aria-label="Ilustración: ReadyChatAI toma el pedido y cobra por WhatsApp para Dulce Lina Repostería">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-
-    <!-- Brand headline / AI-speed story (lives on the stage, not inside WhatsApp). -->
-    <div class="headline">
-      <span class="eyebrow">
-        <span class="wa-badge"><span class="ic" data-ic="wa-logo" data-sz="19" data-col="#ffffff"></span></span>
-        WhatsApp para tu repostería
-      </span>
-      <h1>Tu WhatsApp toma el pedido<br>y <span class="accent">cobra solo.</span></h1>
-      <p>Responde en segundos, arma la orden completa, manda el link de pago y te confirma la venta — aunque tengas las manos en la masa.</p>
-      <div class="ticks">
-        <div class="tick"><span class="ic tick-ic" data-ic="check" data-sz="20" data-st="2.6"></span> Responde al instante con tus sabores, tamaños y precios</div>
-        <div class="tick"><span class="ic tick-ic" data-ic="check" data-sz="20" data-st="2.6"></span> Arma el pedido: producto, cantidad y fecha de entrega</div>
-        <div class="tick"><span class="ic tick-ic" data-ic="check" data-sz="20" data-st="2.6"></span> Envía el link de pago y confirma la orden por ti</div>
-      </div>
-    </div>
-
-    <!-- The phone (dominant). Inside it: an authentic WhatsApp thread. -->
-    <div id="phone">
-      <div class="screen">
-        <div class="island"></div>
-
-        <div class="statusbar">
-          <span class="sb-time">9:41</span>
-          <span class="sb-icons">
-            <span class="ic" data-ic="signal" data-sz="17"></span>
-            <span class="ic" data-ic="wifi" data-sz="18"></span>
-            <span class="ic" data-ic="battery" data-sz="19"></span>
-          </span>
-        </div>
-
-        <div class="wa-header">
-          <span class="ic back" data-ic="chevron-left" data-sz="24" data-st="2.4"></span>
-          <div class="wa-avatar"><img src="assets/gen/bakery-avatar.webp" alt="Dulce Lina" decoding="async" /></div>
-          <div class="wa-id">
-            <div class="wa-name">Dulce Lina</div>
-            <div class="wa-presence" id="presence">en línea</div>
-          </div>
-          <div class="wa-actions">
-            <span class="ic" data-ic="wa-video" data-sz="23"></span>
-            <span class="ic" data-ic="wa-call" data-sz="21"></span>
-            <span class="ic menu" data-ic="more-v" data-sz="20"></span>
-          </div>
-        </div>
-
-        <div class="thread">
-          <div class="feed" id="feed"></div>
-        </div>
-
-        <div class="composer" id="composer"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Composer markup is static; kept out of the timeline. -->
-  <template id="composer-tpl">
-    <div class="cwrap">
-      <div class="cpill">
-        <span class="ic emoji" data-ic="wa-emoji" data-sz="22"></span>
-        <span class="cph">Mensaje</span>
-        <span class="cright">
-          <span class="ic" data-ic="wa-attach" data-sz="21"></span>
-          <span class="ic" data-ic="wa-camera" data-sz="21"></span>
-        </span>
-      </div>
-      <div class="csend"><span class="ic" data-ic="wa-send" data-sz="23"></span></div>
-    </div>
-  </template>
-
-  <style>
-    .composer { flex: 0 0 72px; display: flex; align-items: center; gap: 9px; padding: 0 11px; background: var(--wa-paper); }
-    .cwrap { display: flex; align-items: center; gap: 9px; width: 100%; }
-    .cpill {
-      flex: 1 1 auto; height: 48px; background: #fff; border-radius: 9999px;
-      display: flex; align-items: center; gap: 10px; padding: 0 12px 0 13px;
-      box-shadow: 0 1px 1px rgba(0,0,0,0.07);
+<body>
+<script>
+window.DEMO_CONFIG = {
+  id: 'whatsapp',
+  mode: 'desktop',
+  platform: 'whatsapp',
+  surface: 'phone',
+  business: { name: 'Dulce Lina', handle: '@dulcelina.reposteria', avatar: 'assets/gen/bakery-avatar.webp', online: true },
+  contentImage: 'assets/gen/dulcelina-cake.webp',
+  scene: 'order',
+  order: {
+    number: '1042',
+    status: 'confirmed',
+    customer: { name: 'Emma Cortés', platform: 'whatsapp', phone: '+56 9 5512 4408' },
+    items: [
+      { name: { es: 'Torta de chocolate', en: 'Chocolate cake' }, qty: 1,
+        note: { es: 'Para 20 · placa: “Feliz cumple Mati”', en: 'Serves 20 · plate: “Happy bday Mati”' } }
+    ],
+    checkout: [
+      { q: { es: '¿Retiro o entrega?', en: 'Pickup or delivery?' },
+        a: { es: 'Retira en tienda — sábado', en: 'Store pickup — Saturday' } }
+    ]
+  },
+  locales: {
+    es: {
+      stage: {
+        eyebrow: 'WhatsApp para tu repostería',
+        h1: 'Tu WhatsApp toma el pedido',
+        h1accent: 'y registra la orden.',
+        sub: 'Responde en segundos, arma la orden completa y te la deja registrada lista para cobrar — aunque tengas las manos en la masa.',
+        ticks: [
+          'Responde al instante con tus sabores, tamaños y precios',
+          'Arma el pedido: producto, cantidad y fecha de entrega',
+          'Confirma con número de orden y te avisa para cerrar el pago'
+        ],
+        cta: 'Conecta tu WhatsApp'
+      },
+      thread: [
+        { from: 'customer', text: 'Holaa 🙌 ¿hacen tortas para cumpleaños?' },
+        { from: 'bot', text: '¡Hola! Claro que sí 🎂 Hacemos tortas personalizadas. ¿Para cuántas personas y para qué día la necesitas?' },
+        { from: 'customer', text: 'Como para 20 personas, la quiero el sábado. De chocolate porfa 🍫' },
+        { from: 'bot', text: '¡Buenísima elección! 🍫 Torta de chocolate para 20, con relleno de manjar y cobertura. Mira cómo queda 👇' },
+        { from: 'bot', beat: 'photo' },
+        { from: 'customer', text: 'Aww se ve increíble 😍 que diga “Feliz cumple Mati” en la placa' },
+        { from: 'bot', text: '¡Anotado! 📝 Una última cosa para dejar tu pedido listo: ¿la recoges en la tienda o prefieres entrega a domicilio?' },
+        { from: 'customer', text: 'La recojo yo el sábado 🙌' },
+        { from: 'bot', beat: 'orderConfirm', text: '¡Perfecto! 🎉 Tu pedido quedó registrado con el número #1042. Alguien de Dulce Lina te escribirá por aquí para coordinar el pago y afinar los últimos detalles. ¡Gracias por elegirnos! 💛' }
+      ]
+    },
+    en: {
+      stage: {
+        eyebrow: 'WhatsApp for your bakery',
+        h1: 'Your WhatsApp takes the order',
+        h1accent: 'and logs it for you.',
+        sub: 'It replies in seconds, builds the full order and leaves it logged and ready to charge — even with your hands in the dough.',
+        ticks: [
+          'Replies instantly with your flavors, sizes and prices',
+          'Builds the order: product, quantity and delivery date',
+          'Confirms with an order number and pings you to close payment'
+        ],
+        cta: 'Connect your WhatsApp'
+      },
+      thread: [
+        { from: 'customer', text: 'Hii 🙌 do you make birthday cakes?' },
+        { from: 'bot', text: 'Hi there! Of course we do 🎂 We make custom cakes. How many people is it for, and what day do you need it?' },
+        { from: 'customer', text: 'For about 20 people, I’d like it on Saturday. Chocolate please 🍫' },
+        { from: 'bot', text: 'Great choice! 🍫 A chocolate cake for 20, with dulce de leche filling and frosting. Here’s how it looks 👇' },
+        { from: 'bot', beat: 'photo' },
+        { from: 'customer', text: 'Aww it looks amazing 😍 can the plate say “Happy bday Mati”?' },
+        { from: 'bot', text: 'Noted! 📝 One last thing to lock in your order: would you like store pickup or home delivery?' },
+        { from: 'customer', text: 'I’ll pick it up on Saturday 🙌' },
+        { from: 'bot', beat: 'orderConfirm', text: 'Perfect! 🎉 Your order is in with number #1042. Someone from Dulce Lina will message you here to arrange payment and finalize the details. Thanks for choosing us! 💛' }
+      ]
     }
-    .cpill .emoji { color: #54656f; }
-    .cpill .cph { flex: 1 1 auto; font-size: 18px; color: #8696a0; font-weight: 400; }
-    .cpill .cright { display: flex; align-items: center; gap: 13px; color: #54656f; }
-    .cpill .ic { width: 22px; height: 22px; }
-    .csend {
-      flex: 0 0 48px; width: 48px; height: 48px; border-radius: 50%;
-      background: var(--wa-send); display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 12px -4px rgba(0,168,132,0.6);
-    }
-    .csend .ic { width: 23px; height: 23px; color: #fff; }
-  </style>
-
-  <script>
-    (function () {
-      'use strict';
-
-      // ---- Paint every real-icon placeholder ([data-ic]) via the kit. --------
-      function paintIcons(root) {
-        (root || document).querySelectorAll('[data-ic]').forEach(function (e) {
-          if (e.dataset.painted) return;
-          e.innerHTML = RCAI_ICON(e.dataset.ic, {
-            size: e.dataset.sz ? +e.dataset.sz : 24,
-            color: e.dataset.col || undefined,
-            stroke: e.dataset.st ? +e.dataset.st : 2,
-          });
-          e.dataset.painted = '1';
-        });
-      }
-
-      // Mount the static composer, then paint all chrome icons.
-      var composer = document.getElementById('composer');
-      composer.appendChild(document.getElementById('composer-tpl').content.cloneNode(true));
-      paintIcons(document);
-
-      // ---- WhatsApp wallpaper: beige (#EFEAE2) is the load-bearing recognizable
-      // part; a VERY faint, trademark-safe doodle tile adds texture on top. ----
-      (function paintWallpaper() {
-        var thread = document.querySelector('.thread');
-        if (!thread) return;
-        var SVG =
-          "<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'>" +
-          "<g fill='none' stroke='#6b5d45' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' stroke-opacity='0.05'>" +
-          "<path d='M30 44c-6-9-18-4-18 4 0 7 9 12 18 19 9-7 18-12 18-19 0-8-12-13-18-4z'/>" +
-          "<path d='M150 28h26v12a13 13 0 0 1-13 13 13 13 0 0 1-13-13z'/><path d='M176 32h6a5 5 0 0 1 0 10h-6'/><path d='M150 60h26'/>" +
-          "<path d='M104 96l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z'/>" +
-          "<circle cx='44' cy='150' r='17'/><path d='M38 147h.1M50 147h.1M37 156a9 9 0 0 0 14 0'/>" +
-          "<rect x='150' y='150' width='40' height='28' rx='5'/><circle cx='170' cy='164' r='8'/><path d='M158 150l3-5h18l3 5'/>" +
-          "<path d='M192 92v26a8 8 0 1 1-5-7V96l14-4v22a8 8 0 1 1-5-7'/>" +
-          "<path d='M96 188c-12 2-22-6-22-18 12-2 22 6 22 18z'/><path d='M96 188c0-10 8-18 18-18'/>" +
-          "</g></svg>";
-        thread.style.backgroundImage = "url(\"data:image/svg+xml," + encodeURIComponent(SVG) + "\")";
-        thread.style.backgroundSize = "220px 220px";
-      })();
-
-      var feed = document.getElementById('feed');
-      var presence = document.getElementById('presence');
-      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      // Authentic, founder-approved Dulce Lina order+payment flow (10 turns).
-      var TIME = '14:32';
-      var TICKS = '<span class="ic" data-ic="check-double" data-sz="18" data-col="' + getComputedStyle(document.documentElement).getPropertyValue('--wa-tick').trim() + '"></span>';
-      var CAKE = 'assets/gen/dulcelina-cake.webp';
-
-      function metaOut() { return '<div class="meta"><span class="t">' + TIME + '</span>' + TICKS + '</div>'; }
-      function metaIn()  { return '<div class="meta"><span class="t">' + TIME + '</span></div>'; }
-
-      function el(cls, html) {
-        var d = document.createElement('div');
-        d.className = cls; d.innerHTML = html;
-        feed.appendChild(d); paintIcons(d);
-        return d;
-      }
-      function reveal(node) {
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () { node.classList.add('shown'); });
-        });
-      }
-      function setTyping(on) {
-        presence.textContent = on ? 'escribiendo…' : 'en línea';
-        presence.classList.toggle('typing', !!on);
-      }
-
-      function addDate() { return el('center-pill pill-date', 'HOY'); }
-      function addEnc()  { return el('center-pill pill-enc',
-        '<span class="ic" data-ic="lock" data-sz="14"></span>Los mensajes están cifrados de extremo a extremo.'); }
-      function addCustomer(t) {
-        return el('row out', '<div class="bubble b-out"><div class="btext">' + t + '</div>' + metaOut() + '</div>');
-      }
-      function addBot(t) {
-        return el('row in', '<div class="bubble b-in"><div class="btext">' + t + '</div>' + metaIn() + '</div>');
-      }
-
-      // ---- BEAT: productCard (chocolate cake x20, $35.000) — bot continuation. -
-      function addProductCard() {
-        return el('row in',
-          '<div class="bubble b-in b-cont wa-card pc-card">' +
-            '<div class="pc-img"><img src="' + CAKE + '" alt="Torta de chocolate de Dulce Lina" loading="lazy" decoding="async" /></div>' +
-            '<div class="pc-body">' +
-              '<div class="pc-title">Torta de Chocolate 🍫</div>' +
-              '<div class="pc-sub">Relleno de manjar + cobertura</div>' +
-              '<div class="pc-price">$35.000</div>' +
-              '<div class="pc-chips"><span class="pc-chip">Para 20</span><span class="pc-chip">Personalizada</span></div>' +
-            '</div>' +
-            metaIn() +
-          '</div>');
-      }
-
-      // ---- BEAT: paymentLink ($35.000, "Pagar ahora") — bot continuation. -----
-      function addPaymentCard() {
-        return el('row in',
-          '<div class="bubble b-in b-cont wa-card pay-card">' +
-            '<div class="pay-head"><span class="ic" data-ic="lock" data-sz="19"></span><span class="lbl">Pago seguro</span></div>' +
-            '<div class="pay-amount">$35.000</div>' +
-            '<div class="pay-sub">Aparta tu torta · expira en 24h</div>' +
-            '<div class="pay-btn"><span class="ic" data-ic="credit-card" data-sz="21" data-col="#ffffff"></span>Pagar ahora<span class="ic" data-ic="arrow-right" data-sz="20" data-col="#ffffff"></span></div>' +
-            metaIn() +
-          '</div>');
-      }
-
-      // ---- BEAT: bookingConfirmed (order confirmed for Saturday, pickup) — CLOSE.
-      function addBookingCard() {
-        return el('row in',
-          '<div class="bubble b-in b-cont wa-card bk-card">' +
-            '<div class="bk-top"><span class="ic" data-ic="check-circle-fill" data-sz="25" data-col="#16a34a"></span><span class="bk-ttl">Pedido confirmado</span></div>' +
-            '<div class="bk-item">' +
-              '<div class="bk-thumb"><img src="' + CAKE + '" alt="" loading="lazy" decoding="async" /></div>' +
-              '<div class="bk-item-txt"><div class="bk-item-name">Torta de chocolate × 20</div><div class="bk-item-meta">Placa: “Feliz cumple Mati”</div></div>' +
-              '<div class="bk-item-price">$35.000</div>' +
-            '</div>' +
-            '<div class="bk-rows">' +
-              '<div class="bk-row"><span class="ic" data-ic="calendar" data-sz="20"></span>Sábado · recoges en tienda</div>' +
-              '<div class="bk-row"><span class="ic" data-ic="map-pin" data-sz="20"></span>Dulce Lina · Av. Las Flores 240</div>' +
-            '</div>' +
-            metaIn() +
-          '</div>');
-      }
-
-      // ---- The 10-turn script (lightly trimmed to fit bubbles; meaning + prices kept). --
-      var CUST1 = 'Holaa 🙌 ¿hacen tortas para cumpleaños?';
-      var BOT1  = '¡Hola! Claro que sí 🎂 Hacemos tortas personalizadas. ¿Para cuántas personas y para qué día?';
-      var CUST2 = 'Como pa 20 personas, la quiero el sábado. De chocolate porfa 🍫';
-      var BOT2  = '¡Buenísima elección! 🍫 Torta de chocolate para 20, con relleno de manjar y cobertura. ¿Le ponemos algún mensaje en la placa?';
-      var CUST3 = 'Siii que diga “Feliz cumple Mati” 🥳';
-      var BOT3  = '¡Me encanta! 😍 Una última cosa: ¿la recoges en la tienda o prefieres que te la llevemos?';
-      var CUST4 = 'La recojo yo el sábado 🙌';
-      var BOT4  = 'Perfecto 😍 Te resumo: torta de chocolate ×20, placa “Feliz cumple Mati”, la recoges el sábado. Total $35.000 👇';
-      var CUST5 = 'Ya quedó, acabo de pagar 🙌';
-      var BOT5  = '¡Recibido! 🧾 Tu pedido quedó confirmado para el sábado 💛 Te aviso apenas esté lista. ¡Gracias por elegir a Dulce Lina!';
-
-      // ---- Reduced motion: compose the full static exchange (10 turns + beats).
-      if (reduce) {
-        addDate().classList.add('shown');
-        addEnc().classList.add('shown');
-        addCustomer(CUST1).classList.add('shown');
-        addBot(BOT1).classList.add('shown');
-        addCustomer(CUST2).classList.add('shown');
-        addBot(BOT2).classList.add('shown');
-        addProductCard().classList.add('shown');
-        addCustomer(CUST3).classList.add('shown');
-        addBot(BOT3).classList.add('shown');
-        addCustomer(CUST4).classList.add('shown');
-        addBot(BOT4).classList.add('shown');
-        addPaymentCard().classList.add('shown');
-        addCustomer(CUST5).classList.add('shown');
-        addBot(BOT5).classList.add('shown');
-        addBookingCard().classList.add('shown');
-        return;
-      }
-
-      // ---- Animated timeline — tightened so the CLOSE lands fast. ------------
-      // "escribiendo…" shows ~0.95s before each bot reply; a rich beat (card)
-      // slides in ~0.65s after its bot text bubble as a same-sender continuation.
-      // Five exchanges build to the CLOSE (bookingConfirmed ~16.5s cycle / ~17s
-      // from load), which then HOLDS ~5.5s as the resting "Pedido confirmado"
-      // money-shot before the feed dissolves and the ~23s loop restarts.
-      var timers = [];
-      function after(ms, fn) { timers.push(setTimeout(fn, ms)); }
-      function clearTimers() { timers.forEach(clearTimeout); timers = []; }
-
-      function runCycle() {
-        clearTimers();
-        feed.classList.remove('dissolving');
-        feed.innerHTML = '';
-        setTyping(false);
-
-        var t = 0;
-
-        after((t += 150),  function () { reveal(addDate()); reveal(addEnc()); });
-
-        // Exchange 1 — customer asks; bot composes (escribiendo…); calm reply.
-        after((t += 600),  function () { reveal(addCustomer(CUST1)); });
-        after((t += 850),  function () { setTyping(true); });
-        after((t += 950),  function () { setTyping(false); reveal(addBot(BOT1)); });
-
-        // Exchange 2 — order details; bot confirms + sends the productCard.
-        after((t += 1200), function () { reveal(addCustomer(CUST2)); });
-        after((t += 850),  function () { setTyping(true); });
-        after((t += 950),  function () { setTyping(false); reveal(addBot(BOT2)); });
-        after((t += 650),  function () { reveal(addProductCard()); });
-
-        // Exchange 3 — placa message; bot asks pickup vs delivery.
-        after((t += 1200), function () { reveal(addCustomer(CUST3)); });
-        after((t += 850),  function () { setTyping(true); });
-        after((t += 950),  function () { setTyping(false); reveal(addBot(BOT3)); });
-
-        // Exchange 4 — pickup; bot summarizes + sends the paymentLink.
-        after((t += 1200), function () { reveal(addCustomer(CUST4)); });
-        after((t += 850),  function () { setTyping(true); });
-        after((t += 950),  function () { setTyping(false); reveal(addBot(BOT4)); });
-        after((t += 650),  function () { reveal(addPaymentCard()); });
-
-        // Exchange 5 — customer paid; bot CLOSES with the confirmation card.
-        after((t += 1200), function () { reveal(addCustomer(CUST5)); });
-        after((t += 850),  function () { setTyping(true); });
-        after((t += 950),  function () { setTyping(false); reveal(addBot(BOT5)); });
-        after((t += 650),  function () { reveal(addBookingCard()); });
-
-        // ~5.5s readable end-hold on the CLOSED sale (the money-shot the viewer
-        // rests on), then dissolve + loop.
-        after((t += 5500), function () { feed.classList.add('dissolving'); });
-        after((t += 560),  function () { runCycle(); });
-      }
-
-      function start() { after(450, runCycle); }
-      if (document.readyState === 'complete') start();
-      else window.addEventListener('load', start, { once: true });
-    })();
-  </script>
+  }
+};
+window.RCAIDemo.boot();
+</script>
 </body>
 </html>

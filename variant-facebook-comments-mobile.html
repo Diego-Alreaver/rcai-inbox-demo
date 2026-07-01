@@ -3,604 +3,79 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ReadyChatAI · Comentarios de anuncios de Facebook que terminan agendados (móvil)</title>
-<!-- Inline favicon so the demo emits zero 404s (no external favicon request). -->
+<title>ReadyChatAI · Cada comentario de tu anuncio termina agendado</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%237354EF'/%3E%3Ccircle%20cx='12'%20cy='16'%20r='2.6'%20fill='white'/%3E%3Ccircle%20cx='20'%20cy='16'%20r='2.6'%20fill='white'/%3E%3C/svg%3E" />
-
-<!-- Google Fonts: Urbanist — used ONLY on the RCAI brand chip. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-<!-- Tailwind v3 Play CDN (matches the repo's Tailwind 3.4) -->
-<script src="https://cdn.tailwindcss.com/3.4.16"></script>
-
-<!-- RCAI chat-kit: real-SVG icons (Lucide UI glyphs + Simple-Icons brand logos). No webfont, no emoji-as-UI. -->
 <script src="assets/chat-kit.js"></script>
-
-<style>
-  :root {
-    --brand-secondary: #7f56d9;
-    --brand-700: #7354ef;
-    --brand-500: #9e77ed;
-    --font-urbanist: 'Urbanist', sans-serif;
-
-    /* Native platform stack — used INSIDE the Facebook / Messenger UI. */
-    --fb-sys: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-
-    --fb-blue:   #1877f2;
-    --fb-ink:    #050505;
-    --fb-sec:    #65676b;
-    --fb-chip:   #f0f2f5;
-    --fb-chip-d: #e4e6eb;
-
-    --msgr-blue: #0084ff;
-    --msgr-incoming: #f0f0f0;
-    --msgr-text: #050505;
-    --msgr-gray: #65676b;
-  }
-  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; }
-
-  .ico { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
-  .ico svg { display: block; }
-
-  /* ============================================================
-     STAGE — fixed 430x900 PORTRAIT canvas (mobile column).
-     The PHONE is the dominant element so it fills the column when
-     the landing scales it ~0.85x.
-     ============================================================ */
-  #stage {
-    position: relative;
-    width: 430px;
-    height: 900px;
-    margin: 0 auto;
-    overflow: hidden;
-    background:
-      radial-gradient(620px 520px at 50% 30%, #ffffff 0%, #faf8ff 48%, #f3effc 100%),
-      linear-gradient(180deg, #ffffff, #f5f1fe);
-    font-family: var(--font-urbanist);
-    color: #1d2939;
-  }
-  #stage::before {
-    content: "";
-    position: absolute; inset: 0;
-    background-image: radial-gradient(rgba(115,84,239,0.06) 1.4px, transparent 1.4px);
-    background-size: 26px 26px;
-    pointer-events: none;
-  }
-  .orb { position: absolute; border-radius: 9999px; filter: blur(58px); pointer-events: none; opacity: 0.5; }
-  .orb-1 { width: 300px; height: 300px; left: -110px; top: -70px;  background: radial-gradient(circle, rgba(158,119,237,0.45), transparent 70%); }
-  .orb-2 { width: 340px; height: 340px; right: -120px; bottom: -110px; background: radial-gradient(circle, rgba(24,119,242,0.24), transparent 70%); }
-
-  /* ---- The single bold RCAI brand signature (only brand text) ---- */
-  .brand-chip {
-    position: absolute; top: 16px; left: 50%; transform: translateX(-50%); z-index: 6;
-    display: inline-flex; align-items: center; gap: 9px; white-space: nowrap;
-    font-size: 16px; font-weight: 800; letter-spacing: 0.01em;
-    color: var(--fb-blue);
-    background: rgba(24,119,242,0.10);
-    padding: 6px 16px 6px 7px; border-radius: 9999px;
-    box-shadow: 0 6px 16px -8px rgba(24,119,242,0.40);
-  }
-  .brand-chip .fb-badge {
-    width: 25px; height: 25px; border-radius: 7px; background: #fff;
-    display: inline-flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 7px -2px rgba(24,119,242,0.5);
-  }
-
-  /* ============================================================
-     PHONE — the star. ~398x818. A single device that first shows
-     the FB AD (comment + public auto-reply) then slides to Messenger.
-     ============================================================ */
-  .phone {
-    position: absolute; left: 16px; top: 60px; z-index: 4;
-    width: 398px; height: 818px;
-    background: #0e1016;
-    border-radius: 50px;
-    padding: 12px;
-    box-shadow: 0 54px 96px -34px rgba(16,24,40,0.55), 0 0 0 1px rgba(16,24,40,0.06);
-  }
-  .ph-screen {
-    width: 100%; height: 100%; background: #fff; border-radius: 39px; overflow: hidden;
-    display: flex; flex-direction: column; position: relative;
-    font-family: var(--fb-sys);
-  }
-  .ph-notch { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 120px; height: 27px; background: #0e1016; border-radius: 9999px; z-index: 8; }
-  .ph-status { display: flex; align-items: center; justify-content: space-between; padding: 14px 26px 8px; font-size: 17px; font-weight: 600; color: var(--fb-ink); flex: none; }
-  .ph-status .ph-icons { display: flex; align-items: center; gap: 8px; color: var(--fb-ink); }
-
-  /* ---- Views container: two overlapping screens that swap ---- */
-  .ph-views { position: relative; flex: 1; overflow: hidden; }
-  .view {
-    position: absolute; inset: 0; display: flex; flex-direction: column;
-    background: #fff; font-family: var(--fb-sys);
-    transition: transform 640ms cubic-bezier(0.22,1,0.36,1), opacity 480ms ease;
-  }
-  .view-post { transform: translateX(0); opacity: 1; z-index: 2; }
-  .view-dm   { transform: translateX(100%); opacity: 0; z-index: 1; }
-  .ph-views.to-dm .view-post { transform: translateX(-26%); opacity: 0; }
-  .ph-views.to-dm .view-dm   { transform: translateX(0);    opacity: 1; z-index: 3; }
-  .ph-views.no-trans .view { transition: none !important; }
-  .ph-views.dissolving { opacity: 0; transition: opacity 440ms ease; }
-
-  /* ============================================================
-     FB AD VIEW — real gym creative + authentic feed chrome.
-     ============================================================ */
-  .pc-header { display: flex; align-items: center; gap: 12px; padding: 10px 16px 6px; flex: none; }
-  .fb-avatar { flex: none; width: 50px; height: 50px; border-radius: 50%; overflow: hidden; background: #2c2f33; }
-  .fb-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .pc-id { flex: 1; min-width: 0; line-height: 1.15; }
-  .pc-name { font-size: 22px; font-weight: 700; color: var(--fb-ink); }
-  .pc-sub { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 500; color: var(--fb-sec); margin-top: 2px; }
-  .pc-sub .ico { color: var(--fb-sec); }
-  .pc-more { margin-left: auto; color: var(--fb-sec); }
-
-  .ad-text { padding: 0 16px 8px; font-size: 16px; line-height: 1.38; color: var(--fb-ink); flex: none; }
-  .ad-text b { font-weight: 700; }
-  .ad-text .more { color: var(--fb-sec); font-weight: 500; }
-
-  .pc-media { position: relative; flex: 1 1 auto; min-height: 104px; overflow: hidden; background: #16181c; }
-  .pc-media img { width: 100%; height: 100%; object-fit: cover; object-position: center 32%; display: block; }
-
-  .fb-linkbar { display: flex; align-items: center; gap: 11px; padding: 11px 16px; background: var(--fb-chip); flex: none; }
-  .fb-lb-text { flex: 1; min-width: 0; line-height: 1.2; }
-  .fb-lb-domain { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--fb-sec); }
-  .fb-lb-title { font-size: 16px; font-weight: 700; color: var(--fb-ink); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .fb-cta { flex: none; background: var(--fb-chip-d); color: var(--fb-ink); font-size: 16px; font-weight: 700; padding: 9px 15px; border-radius: 8px; }
-
-  .fb-stats { display: flex; align-items: center; gap: 8px; padding: 7px 16px 5px; flex: none; font-size: 16px; color: var(--fb-sec); }
-  .fb-reacts { display: inline-flex; align-items: center; }
-  .fb-react { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; border: 1.5px solid #fff; }
-  .fb-react.thumb { background: var(--fb-blue); }
-  .fb-react.love  { background: #f3425f; margin-left: -6px; }
-  .fb-stats .count { font-weight: 500; }
-  .fb-stats .spacer { margin-left: auto; }
-
-  .fb-actions { display: flex; align-items: center; padding: 2px 8px; border-top: 1px solid #e9ebee; border-bottom: 1px solid #e9ebee; flex: none; }
-  .fb-act { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 0; font-size: 17px; font-weight: 600; color: var(--fb-sec); }
-  .fb-act svg { display: block; }
-
-  .pc-comments { padding: 7px 16px 8px; display: flex; flex-direction: column; gap: 2px; flex: none; }
-  .fb-comment { display: flex; align-items: flex-start; gap: 10px; padding: 5px 0; }
-  .fb-c-av { flex: none; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; }
-  .fb-c-av.cust { width: 46px; height: 46px; font-size: 20px; background: linear-gradient(135deg, #8a63d2 0%, #f06292 100%); }
-  .fb-c-av img { width: 100%; height: 100%; object-fit: cover; }
-  .fb-c-body { flex: 1; min-width: 0; }
-  .fb-cbubble { background: var(--fb-chip); border-radius: 18px; padding: 9px 15px; display: inline-block; max-width: 100%; }
-  .fb-c-name { font-size: 17px; font-weight: 700; color: var(--fb-ink); line-height: 1.2; }
-  .fb-c-name .vbadge { color: var(--fb-blue); margin-left: 3px; }
-  .fb-c-text { font-size: 20px; line-height: 1.3; color: var(--fb-ink); margin-top: 2px; }
-  .fb-c-meta { margin-top: 4px; padding-left: 15px; font-size: 14px; font-weight: 600; color: var(--fb-sec); display: flex; gap: 18px; }
-
-  .fb-reply { margin-left: 34px; display: flex; flex-direction: column; }
-  .fb-reply .fb-c-av { width: 38px; height: 38px; }
-  .fb-reply.show .fb-c-av { animation: avPop 620ms cubic-bezier(0.22,1,0.36,1) both; }
-  @keyframes avPop { 0% { transform: scale(0.6); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
-
-  .reveal { opacity: 0; transform: translateY(16px); }
-  .reveal.show { opacity: 1; transform: none; transition: opacity 500ms ease, transform 620ms cubic-bezier(0.22,1,0.36,1); }
-
-  /* ============================================================
-     MESSENGER VIEW — gray bot bubbles + blue customer bubble.
-     The lead is qualified, picks a free-class slot, gets booked.
-     ============================================================ */
-  .dm-header { display: flex; align-items: center; gap: 11px; padding: 0 16px; height: 66px; flex: none; border-bottom: 1px solid #f0f0f0; }
-  .dm-header .dm-back { color: var(--msgr-blue); }
-  .dm-avatar { position: relative; flex: none; width: 46px; height: 46px; }
-  .dm-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #2c2f33; }
-  .dm-avatar .presence { position: absolute; right: -1px; bottom: -1px; width: 13px; height: 13px; border-radius: 50%; background: #31a24c; border: 2.5px solid #fff; }
-  .dm-id { line-height: 1.12; min-width: 0; flex: 1; }
-  .dm-id .dm-handle { font-size: 21px; font-weight: 700; color: var(--fb-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .dm-id .dm-active { font-size: 15px; font-weight: 400; color: var(--msgr-gray); margin-top: 1px; }
-  .dm-header .dm-call { margin-left: auto; display: flex; gap: 16px; color: var(--msgr-blue); }
-
-  /* Messenger thread-top intro: profile mini-card + "Hoy" date separator. */
-  .thread-intro { flex: none; display: flex; flex-direction: column; align-items: center; padding: 4px 0 0; }
-  .thread-intro .ti-av { width: 58px; height: 58px; border-radius: 50%; object-fit: cover; background: #2c2f33; }
-  .ti-name { margin-top: 6px; font-size: 22px; font-weight: 700; color: var(--fb-ink); }
-  .ti-meta { margin-top: 2px; display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 400; color: var(--msgr-gray); }
-  .ti-date { margin-top: 8px; font-size: 14px; font-weight: 600; color: var(--msgr-gray); letter-spacing: 0.01em; }
-
-  /* Bottom-anchored, real-chat scroll (min-height:0 is load-bearing). */
-  .dm-thread { flex: 1; min-height: 0; padding: 14px 16px 10px; display: flex; flex-direction: column; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; -ms-overflow-style: none; scrollbar-width: none; }
-  .dm-thread::-webkit-scrollbar { width: 0; height: 0; display: none; }
-  .dm-feed { display: flex; flex-direction: column; }
-  .dm-row { display: flex; align-items: flex-end; gap: 9px; max-width: 100%; margin-top: 10px; }
-  .dm-row.in { justify-content: flex-start; }
-  .dm-row.out { justify-content: flex-end; }
-  .av-sm { width: 34px; height: 34px; border-radius: 50%; flex: none; object-fit: cover; background: #2c2f33; }
-  .dm-bubble { max-width: 290px; padding: 12px 18px; font-size: 25px; line-height: 1.3; font-weight: 400; border-radius: 23px; }
-  .dm-bubble.incoming { background: var(--msgr-incoming); color: var(--msgr-text); border-bottom-left-radius: 6px; }
-  .dm-bubble.outgoing { color: #fff; border-bottom-right-radius: 6px; background: linear-gradient(160deg, #18a0ff 0%, #0a7cff 55%, #0064e0 100%); }
-
-  .dm-row.reveal { opacity: 0; transform: translateY(16px); }
-  .dm-row.reveal.show { opacity: 1; transform: none; transition: opacity 460ms ease, transform 560ms cubic-bezier(0.22,1,0.36,1); }
-
-  /* slotPicker beat — bot-side free-class slot chips. */
-  .slot-wrap { margin: 8px 0 0 43px; display: flex; flex-wrap: wrap; gap: 9px; opacity: 0; transform: translateY(16px); }
-  .slot-wrap.show { opacity: 1; transform: none; transition: opacity 460ms ease, transform 560ms cubic-bezier(0.22,1,0.36,1); }
-  .slot-chip {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 11px 16px; border-radius: 9999px;
-    border: 1.8px solid var(--msgr-blue); background: #fff; color: var(--msgr-blue);
-    font-size: 19px; font-weight: 700; white-space: nowrap;
-    transition: background 320ms ease, color 320ms ease, transform 320ms ease;
-  }
-  .slot-chip .ico { color: inherit; }
-  .slot-chip.picked { background: var(--msgr-blue); color: #fff; box-shadow: 0 8px 18px -8px rgba(0,132,255,0.7); transform: translateY(-1px); }
-
-  /* bookingConfirmed beat — confirmation card (bot side). THE CLOSE. */
-  .book-card {
-    max-width: 326px; background: #fff; border: 1px solid #d8efdf; border-radius: 20px;
-    border-bottom-left-radius: 6px; overflow: hidden;
-    box-shadow: 0 14px 30px -16px rgba(16,24,40,0.28);
-  }
-  .book-head { display: flex; align-items: center; gap: 11px; padding: 14px 17px; background: linear-gradient(135deg, #eaf9ef, #f3fbf6); border-bottom: 1px solid #e3f3e9; }
-  .book-head .bk-ic { flex: none; color: #1faa55; }
-  .book-head .bk-t { line-height: 1.18; }
-  .book-head .bk-kicker { font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #1faa55; }
-  .book-head .bk-title { font-size: 23px; font-weight: 800; color: #0d1b12; margin-top: 1px; }
-  .book-rows { padding: 13px 17px 15px; display: flex; flex-direction: column; gap: 12px; }
-  .book-row { display: flex; align-items: center; gap: 13px; font-size: 21px; font-weight: 600; color: #1d2b22; }
-  .book-row .ico { flex: none; color: var(--msgr-blue); }
-  .book-note { margin-top: 2px; font-size: 18px; font-weight: 500; color: var(--msgr-gray); line-height: 1.34; display: flex; align-items: flex-start; gap: 10px; }
-  .book-note .ico { flex: none; color: var(--msgr-gray); margin-top: 2px; }
-
-  .typing-bubble { background: var(--msgr-incoming); border-radius: 23px; border-bottom-left-radius: 6px; padding: 18px 20px; display: flex; gap: 8px; }
-  .typing-bubble span { width: 11px; height: 11px; border-radius: 50%; background: #b0b0b0; animation: typing 1.1s infinite ease-in-out; }
-  .typing-bubble span:nth-child(2) { animation-delay: 0.16s; }
-  .typing-bubble span:nth-child(3) { animation-delay: 0.32s; }
-  @keyframes typing { 0%,80%,100% { transform: translateY(0); opacity: 0.45; } 40% { transform: translateY(-6px); opacity: 1; } }
-
-  .dm-composer { display: flex; align-items: center; gap: 13px; padding: 0 16px; height: 70px; flex: none; border-top: 1px solid #f0f0f0; }
-  .dm-composer .comp-ic { color: var(--msgr-blue); }
-  .dm-composer .comp-field { flex: 1; height: 46px; border-radius: 9999px; background: #f0f2f5; display: flex; align-items: center; padding: 0 18px; color: var(--msgr-gray); font-size: 18px; font-weight: 400; }
-
-  /* Reduced-motion-only stacked handoff cue */
-  .rm-cue { display: none; }
-
-  /* ============================================================
-     REDUCED MOTION — compose the FULL static story in one column:
-     stack the trimmed AD view (comment + public reply) ABOVE the
-     Messenger thread (qualify + slot chips + booking).
-     ============================================================ */
-  @media (prefers-reduced-motion: reduce) {
-    .ph-views { overflow: visible; }
-    .view { position: static; inset: auto; transform: none !important; opacity: 1 !important; transition: none !important; }
-    .pc-header, .pc-media, .ad-text, .fb-linkbar, .fb-stats, .fb-actions, .dm-composer, .dm-header, .fb-c-meta, .thread-intro { display: none !important; }
-    .pc-comments { flex: none; padding-top: 6px; padding-bottom: 0; }
-    .dm-thread { flex: none; min-height: 0; justify-content: flex-start; padding: 3px 16px 4px; overflow: visible; }
-    /* The static frame has no scroll, so the full story must fit above the fold.
-       Shrink type in THIS frame only; the animated path keeps full size + live scroll. */
-    .dm-bubble { font-size: 14px; line-height: 1.25; padding: 6px 11px; border-radius: 14px; max-width: 262px; }
-    .dm-row { margin-top: 3px; }
-    .av-sm { width: 23px; height: 23px; }
-    .slot-wrap { margin: 3px 0 0 30px; gap: 6px; }
-    .slot-chip { font-size: 12px; padding: 5px 9px; }
-    .book-card { max-width: 280px; border-radius: 13px; }
-    .book-head { padding: 6px 11px; gap: 8px; }
-    .book-head .bk-ic svg { width: 22px !important; height: 22px !important; }
-    .book-head .bk-kicker { font-size: 10px; }
-    .book-head .bk-title { font-size: 15px; }
-    .book-rows { padding: 7px 11px 8px; gap: 5px; }
-    .book-row { font-size: 14px; gap: 9px; }
-    .book-row .ico svg { width: 18px !important; height: 18px !important; }
-    .book-note { font-size: 12px; }
-    .book-note .ico svg { width: 16px !important; height: 16px !important; }
-    .fb-c-text { font-size: 15px; margin-top: 1px; }
-    .fb-c-name { font-size: 14px; }
-    .fb-comment { padding: 1px 0; }
-    .fb-cbubble { padding: 6px 11px; }
-    .fb-c-av.cust { width: 30px; height: 30px; font-size: 14px; }
-    .fb-reply .fb-c-av { width: 26px; height: 26px; }
-    .fb-reply { margin-left: 26px; }
-    .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
-    .fb-reply.show .fb-c-av, .typing-bubble span { animation: none !important; }
-    .rm-cue {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      margin: 1px 16px 0; padding: 5px 0; color: var(--msgr-blue); font-size: 15px; font-weight: 700;
-      border-top: 1px solid #f0f0f0; font-family: var(--font-urbanist);
+<link rel="stylesheet" href="assets/demo-kit.css" />
+<script src="assets/demo-engine.js"></script>
+</head>
+<body>
+<script>
+window.DEMO_CONFIG = {
+  id: 'facebook-comments',
+  mode: 'mobile',
+  platform: 'facebook',
+  surface: 'phone',
+  business: { name: 'FitZone', handle: 'fitzone.gym', avatar: 'assets/gen/fitzone-avatar.webp', online: true },
+  contentImage: 'assets/gen/fitzone-ad.webp',
+  scene: 'booking',
+  bookingService: {
+    name: { es: 'Clase de prueba gratis', en: 'Free trial class' },
+    category: { es: 'Entrenamiento', en: 'Training' },
+    duration: { es: '1 hora', en: '1 hour' },
+    desc: { es: 'Primera clase gratis con un coach que te guía desde cero. En FitZone · Sucursal Centro.',
+            en: 'Free first class with a coach who guides you from zero. At FitZone · Downtown branch.' },
+    picked: { day: 17, time: { es: '3:00 p. m.', en: '3:00 PM' } }
+  },
+  locales: {
+    es: {
+      stage: {
+        eyebrow: 'Comentarios en anuncios',
+        h1: 'Cada “info” en tu anuncio',
+        h1accent: 'termina agendado.',
+        sub: 'El bot responde el comentario, lleva el lead a Messenger y le manda el botón para reservar su clase de prueba gratis.',
+        ticks: [
+          'Responde cada comentario de tu anuncio en segundos',
+          'Lleva el lead del anuncio a Messenger y lo califica',
+          'Manda el botón para reservar la clase gratis'
+        ],
+        cta: 'Conecta tu Facebook'
+      },
+      thread: [
+        { from: 'business', beat: 'photo' },
+        { from: 'visitor', text: 'Vi su anuncio de la primera clase GRATIS 👀 ¿info y precios porfa?' },
+        { from: 'bot', beat: 'publicReply', text: '¡Hola! 🙌 Qué bueno que te animas 💪 Te escribimos por Messenger con los precios y tu clase de cortesía GRATIS para que conozcas FitZone 👇' },
+        { from: 'customer', text: 'Holaa! Sí, vi el anuncio. Quiero bajar de peso pero soy súper principiante 😅 ¿cuánto sale la mensualidad?' },
+        { from: 'bot', beat: 'bookingButton', text: '¡Bienvenido! 🔥 Tranqui, casi todos empiezan desde cero y nuestros coaches te guían en cada ejercicio. La mensualidad está en $35.000 con acceso completo 💪 Pero antes de pagar nada, prueba GRATIS: toca aquí para reservar tu clase de cortesía con un coach 👇' }
+      ]
+    },
+    en: {
+      stage: {
+        eyebrow: 'Comments on ads',
+        h1: 'Every “info?” on your ad',
+        h1accent: 'ends up booked.',
+        sub: 'The bot answers the comment, moves the lead to Messenger and sends the button to book their free trial class.',
+        ticks: [
+          'Answers every comment on your ad in seconds',
+          'Moves the lead from the ad into Messenger and qualifies it',
+          'Sends the button to book the free class'
+        ],
+        cta: 'Connect your Facebook'
+      },
+      thread: [
+        { from: 'business', beat: 'photo' },
+        { from: 'visitor', text: 'Saw your ad for the FREE first class 👀 info and prices please?' },
+        { from: 'bot', beat: 'publicReply', text: 'Hi! 🙌 So glad you’re going for it 💪 We just messaged you on Messenger with the prices and your FREE courtesy class so you can check out FitZone 👇' },
+        { from: 'customer', text: 'Hii! Yeah, I saw the ad. I want to lose weight but I’m a total beginner 😅 how much is the monthly?' },
+        { from: 'bot', beat: 'bookingButton', text: 'Welcome! 🔥 No worries, almost everyone starts from zero and our coaches guide you through every exercise. Membership is $35,000/mo with full access 💪 But before paying anything, try it FREE: tap here to book your courtesy class with a coach 👇' }
+      ]
     }
   }
-</style>
-
-<script>
-  tailwind.config = { theme: { extend: { fontFamily: {
-    urbanist: ['var(--font-urbanist)', 'sans-serif'],
-    sans:     ['var(--font-urbanist)', 'sans-serif'],
-  } } } };
+};
+window.RCAIDemo.boot();
 </script>
-</head>
-
-<body class="font-urbanist">
-  <!-- Portrait stage: a fixed 430x900 column. The landing scales this ~0.85x into a phone-width slot. -->
-  <div id="stage" aria-label="Ilustración: ReadyChatAI responde en público un comentario en un anuncio de Facebook de FitZone y agenda una clase gratis por Messenger">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-
-    <span class="brand-chip">
-      <span class="fb-badge"><span class="ico" data-icon="facebook-logo" data-size="19"></span></span>
-      Facebook · Comentarios en anuncios
-    </span>
-
-    <!-- ===== The phone: the star ===== -->
-    <div class="phone">
-      <div class="ph-screen">
-        <div class="ph-notch"></div>
-        <div class="ph-status">
-          <span>9:41</span>
-          <span class="ph-icons">
-            <span class="ico" data-icon="signal" data-size="17"></span>
-            <span class="ico" data-icon="wifi" data-size="17"></span>
-            <span class="ico" data-icon="battery" data-size="20"></span>
-          </span>
-        </div>
-
-        <div class="ph-views" id="ph-views">
-
-          <!-- ---------- FB AD VIEW ---------- -->
-          <section class="view view-post">
-            <div class="pc-header">
-              <span class="fb-avatar"><img src="assets/gen/fitzone-avatar.webp" alt="FitZone" decoding="async" /></span>
-              <div class="pc-id">
-                <div class="pc-name">FitZone</div>
-                <div class="pc-sub">Publicidad <span class="ico" data-icon="globe" data-size="14"></span></div>
-              </div>
-              <span class="ico pc-more" data-icon="more-h" data-size="26"></span>
-            </div>
-
-            <div class="ad-text">
-              🔥 ¿Otra vez "empiezo el lunes"? En FitZone empiezas <b>HOY</b> 💪 Plan desde <b>$35.000/mes</b> y <b>PRIMERA CLASE GRATIS</b>. <span class="more">…Ver más</span>
-            </div>
-
-            <div class="pc-media">
-              <img src="assets/gen/fitzone-ad.webp" alt="Entrenamiento de fuerza en FitZone" decoding="async" />
-            </div>
-
-            <div class="fb-linkbar">
-              <div class="fb-lb-text">
-                <div class="fb-lb-domain">fitzone.cl</div>
-                <div class="fb-lb-title">Primera clase GRATIS</div>
-              </div>
-              <span class="fb-cta">Reservar</span>
-            </div>
-
-            <div class="fb-stats">
-              <span class="fb-reacts">
-                <span class="fb-react thumb"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="#fff"><path d="M7 22V11h-2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1zM9 11l3.5-7.5a2.2 2.2 0 0 1 2.1 2.8L13.8 9h5.4a1.6 1.6 0 0 1 1.55 2.05l-2.2 7.6A2 2 0 0 1 16.6 22H9z"/></svg></span>
-                <span class="fb-react love"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="#fff"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg></span>
-              </span>
-              <span class="count">1.2 mil</span>
-              <span class="spacer">84 comentarios</span>
-            </div>
-
-            <div class="fb-actions">
-              <span class="fb-act"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg> Me gusta</span>
-              <span class="fb-act"><span class="ico" data-icon="message-square" data-size="22"></span> Comentar</span>
-              <span class="fb-act"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 0 1 4-4h12"/></svg> Compartir</span>
-            </div>
-
-            <div class="pc-comments">
-              <!-- Visitor PUBLIC comment on the ad -->
-              <div class="fb-comment reveal" id="comment-customer">
-                <span class="fb-c-av cust">C</span>
-                <div class="fb-c-body">
-                  <div class="fb-cbubble">
-                    <div class="fb-c-name">Camila Rojas</div>
-                    <div class="fb-c-text">uff justo lo que ando necesitando 😩 info y precios porfa?</div>
-                  </div>
-                  <div class="fb-c-meta"><span>Me gusta</span><span>Responder</span><span>2 h</span></div>
-                </div>
-              </div>
-
-              <!-- Nested reply: the public bot auto-reply, indented UNDER Camila -->
-              <div class="fb-reply reveal" id="comment-reply">
-                <div class="fb-comment">
-                  <span class="fb-c-av"><img src="assets/gen/fitzone-avatar.webp" alt="FitZone" decoding="async" /></span>
-                  <div class="fb-c-body">
-                    <div class="fb-cbubble">
-                      <div class="fb-c-name">FitZone<span class="vbadge"><span class="ico" data-icon="check-circle-fill" data-size="14"></span></span></div>
-                      <div class="fb-c-text">¡Hola! 🙌 Qué bueno que te animas 💪 Te escribimos por Messenger con los precios y una clase GRATIS 👇</div>
-                    </div>
-                    <div class="fb-c-meta"><span>Me gusta</span><span>Responder</span><span>Ahora</span></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- ---------- reduced-motion-only stacked cue ---------- -->
-          <div class="rm-cue">y la conversación sigue en Messenger</div>
-
-          <!-- ---------- MESSENGER VIEW ---------- -->
-          <section class="view view-dm">
-            <div class="dm-header">
-              <span class="ico dm-back" data-icon="chevron-left" data-size="30" data-stroke="2.4"></span>
-              <span class="dm-avatar"><img src="assets/gen/fitzone-avatar.webp" alt="FitZone" decoding="async" /><span class="presence"></span></span>
-              <div class="dm-id">
-                <div class="dm-handle">FitZone</div>
-                <div class="dm-active">Activo(a) ahora</div>
-              </div>
-              <div class="dm-call">
-                <span class="ico" data-icon="phone" data-size="25"></span>
-                <span class="ico" data-icon="video" data-size="26"></span>
-              </div>
-            </div>
-
-            <div class="dm-thread">
-              <!-- Messenger thread-top: profile mini-card + "Hoy" date separator. -->
-              <div class="thread-intro" id="thread-intro">
-                <img class="ti-av" src="assets/gen/fitzone-avatar.webp" alt="FitZone" decoding="async" />
-                <div class="ti-name">FitZone</div>
-                <div class="ti-meta"><span class="ico" data-icon="messenger-logo" data-size="15"></span> Messenger · responde al instante</div>
-                <div class="ti-date">Hoy</div>
-              </div>
-              <div class="dm-feed" id="dm-feed"></div>
-            </div>
-
-            <div class="dm-composer">
-              <span class="ico comp-ic" data-icon="plus" data-size="25" data-stroke="2.4"></span>
-              <span class="ico comp-ic" data-icon="camera" data-size="24"></span>
-              <span class="ico comp-ic" data-icon="image" data-size="24"></span>
-              <div class="comp-field">Mensaje...</div>
-              <span class="ico comp-ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg></span>
-            </div>
-          </section>
-
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    (function () {
-      'use strict';
-
-      /* ---- Real-icon injection: chat-kit paints a <svg> into every [data-icon]. ---- */
-      function paintIcons(root) {
-        var nodes = (root || document).querySelectorAll('[data-icon]');
-        for (var i = 0; i < nodes.length; i++) {
-          var n = nodes[i];
-          if (n.getAttribute('data-painted')) continue;
-          var opts = { size: n.getAttribute('data-size') ? +n.getAttribute('data-size') : 24 };
-          if (n.getAttribute('data-color'))  opts.color  = n.getAttribute('data-color');
-          if (n.getAttribute('data-stroke')) opts.stroke = +n.getAttribute('data-stroke');
-          n.innerHTML = window.RCAI_ICON(n.getAttribute('data-icon'), opts);
-          n.setAttribute('data-painted', '1');
-        }
-      }
-      paintIcons();
-
-      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      var elViews = document.getElementById('ph-views');
-      var elCust  = document.getElementById('comment-customer');
-      var elReply = document.getElementById('comment-reply');
-      var feed    = document.getElementById('dm-feed');
-      var thread  = feed.parentNode;   // .dm-thread — the bottom-anchored scroll container
-
-      function scrollDmDown() { if (thread) thread.scrollTop = thread.scrollHeight; }
-
-      var AV   = '<img class="av-sm" src="assets/gen/fitzone-avatar.webp" alt="" loading="lazy" decoding="async" />';
-      var DOTS = '<span></span><span></span><span></span>';
-
-      // Messenger thread: lead (Camila) moves from the ad comment to Messenger,
-      // is qualified (beginner + price), picks a free-class slot, and is booked.
-      var CUST1 = 'holaa! si vi el anuncio 🙌 quiero bajar de peso pero soy super principiante 😅 cuánto sale la mensualidad?';
-      var BOT1  = '¡Bienvenida! 🔥 Tranqui, casi todos empiezan desde cero y un coach te guía en cada ejercicio. La mensualidad es <b>$35.000/mes</b> con acceso completo 💪 Pero antes de pagar, te invito a una <b>clase GRATIS</b>. Elige el día y la hora 👇';
-      var CUST2 = 'buenísimo!! el miércoles a las 6pm me queda perfecto 🙌';
-
-      function el(cls, html) {
-        var d = document.createElement('div');
-        d.className = cls; d.innerHTML = html;
-        feed.appendChild(d); paintIcons(d); return d;
-      }
-      function reveal(node) {
-        requestAnimationFrame(function () { requestAnimationFrame(function () { node.classList.add('show'); }); });
-      }
-      function botText(t)  { return el('dm-row in reveal',  AV + '<div class="dm-bubble incoming">' + t + '</div>'); }
-      function custText(t) { return el('dm-row out reveal', '<div class="dm-bubble outgoing">' + t + '</div>'); }
-      function typing()    { return el('dm-row in typing-row', AV + '<div class="typing-bubble" id="dm-typing">' + DOTS + '</div>'); }
-
-      function slotPicker() {
-        return el('slot-wrap',
-          '<span class="slot-chip" data-slot="mie"><span class="ico" data-icon="calendar" data-size="19"></span>Mié 6:00 PM</span>' +
-          '<span class="slot-chip"><span class="ico" data-icon="calendar" data-size="19"></span>Sáb 10:00 AM</span>' +
-          '<span class="slot-chip"><span class="ico" data-icon="calendar" data-size="19"></span>Vie 7:00 PM</span>');
-      }
-      function pickSlot(wrap) {
-        if (!wrap) return;
-        var chip = wrap.querySelector('[data-slot="mie"]');
-        if (chip) chip.classList.add('picked');
-      }
-      function bookingCard() {
-        return el('dm-row in reveal',
-          AV +
-          '<div class="book-card">' +
-            '<div class="book-head">' +
-              '<span class="ico bk-ic" data-icon="check-circle-fill" data-size="32"></span>' +
-              '<div class="bk-t"><div class="bk-kicker">Clase de prueba</div><div class="bk-title">¡GRATIS y agendada! 🎉</div></div>' +
-            '</div>' +
-            '<div class="book-rows">' +
-              '<div class="book-row"><span class="ico" data-icon="calendar" data-size="23"></span>Miércoles · 6:00 PM</div>' +
-              '<div class="book-row"><span class="ico" data-icon="map-pin" data-size="23"></span>FitZone — Sucursal Centro</div>' +
-              '<div class="book-note"><span class="ico" data-icon="info" data-size="19"></span>Lleva ropa cómoda y tu botella de agua 💧 Tu coach te estará esperando. ¡A darle! 💪</div>' +
-            '</div>' +
-          '</div>');
-      }
-
-      // ---- Reduced motion: stacked static story (comment + reply, then full thread).
-      if (reduce) {
-        elCust.classList.add('show');
-        elReply.classList.add('show');
-        custText(CUST1).classList.add('show');
-        botText(BOT1).classList.add('show');
-        var sp = slotPicker(); sp.classList.add('show'); pickSlot(sp);
-        custText(CUST2).classList.add('show');
-        bookingCard().classList.add('show');
-        return;
-      }
-
-      var timers = [];
-      function after(ms, fn) { timers.push(setTimeout(fn, ms)); }
-      function clearTimers() { timers.forEach(clearTimeout); timers = []; }
-
-      function resetViews() {
-        elViews.classList.add('no-trans');
-        elViews.classList.remove('to-dm');
-        elCust.classList.remove('show');
-        elReply.classList.remove('show');
-        feed.innerHTML = '';
-        if (thread) thread.scrollTop = 0;  // next cycle starts from the top (intro visible)
-        void elViews.offsetWidth;          // force reflow so the snap is instant
-        elViews.classList.remove('no-trans');
-      }
-
-      function runCycle() {
-        clearTimers();
-        var typingNode = null;
-        var slotNode = null;
-
-        // AD VIEW: visitor public comment, then a calm public auto-reply.
-        after(400,  function () { elCust.classList.add('show'); });
-        after(2600, function () { elReply.classList.add('show'); });
-
-        // SLIDE TO MESSENGER.
-        after(4300, function () { elViews.classList.add('to-dm'); });
-
-        // MESSENGER: the lead writes first (qualifies herself: beginner + price).
-        after(5100, function () { reveal(custText(CUST1)); scrollDmDown(); });
-
-        // Bot qualifies + offers the free class with slot chips.
-        after(6700, function () { typingNode = typing(); reveal(typingNode); scrollDmDown(); });
-        after(8200, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
-                                  reveal(botText(BOT1)); scrollDmDown(); });
-        after(9400, function () { slotNode = slotPicker(); reveal(slotNode); scrollDmDown(); });
-
-        // Lead picks Wednesday 6 PM; the chosen chip highlights.
-        after(11700, function () { reveal(custText(CUST2)); pickSlot(slotNode); scrollDmDown(); });
-
-        // Bot confirms the booking — the close. Thread overflows -> auto-scrolls down.
-        after(13100, function () { typingNode = typing(); reveal(typingNode); scrollDmDown(); });
-        after(14600, function () { if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
-                                   reveal(bookingCard()); scrollDmDown(); });
-
-        // END HOLD on the booking close + clean dissolve + loop.
-        after(14600 + 6200, function () {
-          elViews.classList.add('dissolving');
-          after(500, function () {
-            resetViews();
-            elViews.classList.remove('dissolving');
-            after(760, runCycle);
-          });
-        });
-      }
-
-      function start() { after(250, runCycle); }
-      if (document.readyState === 'complete') { start(); }
-      else { window.addEventListener('load', start, { once: true }); }
-    })();
-  </script>
 </body>
 </html>

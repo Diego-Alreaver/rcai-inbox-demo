@@ -3,507 +3,74 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ReadyChatAI · Tu agenda se llena sola por Messenger (móvil)</title>
-<!-- Inline favicon so the demo emits zero 404s (no external favicon request). -->
+<title>ReadyChatAI · Tu agenda se llena sola por Messenger</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%237354EF'/%3E%3Ccircle%20cx='12'%20cy='16'%20r='2.6'%20fill='white'/%3E%3Ccircle%20cx='20'%20cy='16'%20r='2.6'%20fill='white'/%3E%3C/svg%3E" />
-
-<!-- Google Fonts: Urbanist (the real app wires next/font Urbanist to --font-urbanist) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-<!-- Tailwind v3 Play CDN (matches the repo's Tailwind 3.4) -->
-<script src="https://cdn.tailwindcss.com/3.4.16"></script>
-
-<!-- RCAI chat-kit: real-SVG icon kit (Lucide + Simple Icons). NO webfont glyphs. -->
 <script src="assets/chat-kit.js"></script>
-
-<style>
-  :root {
-    /* Brand Colors (globals.css :root, verbatim) */
-    --brand-secondary: #7f56d9;
-    --brand-700: #7354ef;
-    --brand-500: #9e77ed;
-    --gray-50: #f9fafb;
-    --gray-300: #d0d5dd;
-    --font-urbanist: 'Urbanist', sans-serif;
-
-    /* Inside the phone: the platform's OWN system font (reads native, not branded). */
-    --fb-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-
-    /* Facebook Messenger palette (authentic modern light scheme). */
-    --fb-blue: #0084FF;       /* Messenger blue: sent bubble, chrome accents */
-    --fb-gray: #f0f0f0;       /* received (bot) bubble */
-    --fb-input: #f0f2f5;      /* composer input pill */
-  }
-  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; }
-
-  /* Painted kit icons: the injected <svg> sizes itself; the host just centers it. */
-  .ic { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
-  .ic svg { display: block; }
-
-  /* ============================================================
-     STAGE — fixed 430x900 PORTRAIT canvas (mobile column sibling).
-     Light brand backdrop; the PHONE is the dominant element.
-     ============================================================ */
-  #stage {
-    position: relative;
-    width: 430px;
-    height: 900px;
-    margin: 0 auto;
-    overflow: hidden;
-    background:
-      radial-gradient(640px 560px at 50% 28%, #ffffff 0%, #faf8ff 48%, #f3effc 100%),
-      linear-gradient(180deg, #ffffff, #f5f1fe);
-    font-family: var(--font-urbanist);
-    color: #1d2939;
-  }
-  #stage::before {
-    content: "";
-    position: absolute; inset: 0;
-    background-image: radial-gradient(rgba(115,84,239,0.06) 1.3px, transparent 1.3px);
-    background-size: 26px 26px;
-    pointer-events: none;
-  }
-  .orb { position: absolute; border-radius: 9999px; filter: blur(58px); pointer-events: none; opacity: 0.5; }
-  .orb-1 { width: 300px; height: 300px; left: -110px; top: -70px;   background: radial-gradient(circle, rgba(158,119,237,0.45), transparent 70%); }
-  .orb-2 { width: 340px; height: 340px; right: -130px; bottom: -120px; background: radial-gradient(circle, rgba(0,132,255,0.26), transparent 70%); }
-
-  /* ============================================================
-     EYEBROW — the only brand text; lives ABOVE the phone, never
-     inside the Messenger UI (honesty requirement). Small chip.
-     ============================================================ */
-  .eyebrow {
-    position: absolute; top: 17px; left: 50%; transform: translateX(-50%);
-    display: inline-flex; align-items: center; gap: 9px; z-index: 6;
-    font-size: 19px; font-weight: 800; letter-spacing: 0.02em;
-    color: #7354ef;
-    background: rgba(115,84,239,0.10);
-    padding: 8px 18px; border-radius: 9999px;
-    white-space: nowrap;
-    box-shadow: 0 6px 18px -10px rgba(115,84,239,0.45);
-  }
-  .eyebrow .bolt { color: #f5a623; }
-  .eyebrow .fb-mark { display: inline-flex; }
-
-  /* ============================================================
-     PHONE — the dominant element. 398x814 fills the 430x900 stage.
-     ============================================================ */
-  #phone {
-    position: absolute; left: 16px; top: 64px; z-index: 5;
-    width: 398px; height: 814px;
-    background: linear-gradient(160deg, #15151c, #050507);
-    border-radius: 50px;
-    padding: 11px;
-    box-shadow:
-      0 46px 84px -28px rgba(16,24,40,0.50),
-      0 14px 38px -16px rgba(0,132,255,0.28),
-      0 0 0 1px rgba(16,24,40,0.04);
-  }
-  .screen {
-    position: relative;
-    width: 100%; height: 100%;
-    background: #ffffff;
-    border-radius: 40px;
-    overflow: hidden;
-    display: flex; flex-direction: column;
-    font-family: var(--fb-font);
-  }
-  /* Dynamic-island hint. */
-  .island {
-    position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
-    width: 112px; height: 27px; background: #000; border-radius: 16px; z-index: 30;
-  }
-
-  /* iOS status bar. */
-  .statusbar {
-    flex: 0 0 40px; display: flex; align-items: center; justify-content: space-between;
-    padding: 0 27px; color: #050505;
-  }
-  .sb-time { font-size: 19px; font-weight: 700; letter-spacing: 0.02em; }
-  .sb-icons { display: flex; align-items: center; gap: 8px; }
-
-  /* Messenger conversation header (white surface, blue accents). */
-  .fb-header {
-    flex: 0 0 70px; display: flex; align-items: center; gap: 0;
-    padding: 0 14px; border-bottom: 1px solid #ededed; background: #fff;
-  }
-  .fb-header .back { color: var(--fb-blue); margin-right: 8px; }
-  .fb-avatar {
-    position: relative;
-    flex: 0 0 46px; width: 46px; height: 46px; border-radius: 50%;
-    overflow: hidden; background: #f6e7ee;
-    box-shadow: 0 3px 10px -4px rgba(16,24,40,0.35);
-    margin-right: 11px;
-  }
-  .fb-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .fb-avatar .dot {
-    position: absolute; right: -1px; bottom: -1px; width: 13px; height: 13px;
-    border-radius: 50%; background: #31cc6a; border: 2px solid #fff;
-  }
-  .fb-id { flex: 1 1 auto; min-width: 0; }
-  .fb-name {
-    font-size: 22px; font-weight: 700; color: #050505; letter-spacing: -0.03em;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.08;
-  }
-  .fb-status { font-size: 17px; font-weight: 400; color: #8a8d91; margin-top: 2px; }
-  .fb-header .hdr-ic { color: var(--fb-blue); }
-  .fb-header .hdr-ic.call { margin-left: 6px; margin-right: 16px; }
-  .fb-header .hdr-ic.video { margin-right: 16px; }
-
-  /* Thread — clips overflow; the feed is BOTTOM-anchored (chat scrolled to
-     newest). justify-content:flex-end makes a tall feed overflow at the TOP
-     (oldest message clips, realistic) so the newest bot reply is always
-     fully visible above the composer — never bottom-clipped. */
-  .thread {
-    flex: 1 1 auto; overflow: hidden;
-    display: flex; flex-direction: column; justify-content: flex-end;
-    padding: 12px 16px 14px;
-    background: #fff;
-  }
-  .feed { display: flex; flex-direction: column; }
-  .feed.dissolving { opacity: 0; transition: opacity 0.5s ease; }
-
-  .row {
-    display: flex; margin-top: 9px;
-    opacity: 0; transform: translateY(16px);
-    transition: opacity 0.4s ease, transform 0.46s cubic-bezier(0.22,1,0.36,1);
-  }
-  .row.shown { opacity: 1; transform: none; }
-  .row.out { justify-content: flex-end; }
-  .row.in  { justify-content: flex-start; align-items: flex-end; gap: 8px; }
-  .row.date-row { justify-content: center; margin: 6px 0 2px; }
-  /* Beat rows (chips / card) nest under the bot bubble: indent past the avatar gutter. */
-  .row.beat { padding-left: 44px; }
-
-  .datestamp { font-size: 18px; font-weight: 600; color: #b0b0b0; letter-spacing: 0.03em; }
-
-  .msg {
-    max-width: 80%;
-    padding: 12px 17px;
-    font-size: 25px; line-height: 1.3; font-weight: 400;
-    border-radius: 23px;
-    word-wrap: break-word;
-    white-space: pre-line;
-  }
-  .msg-out {
-    background: var(--fb-blue); color: #fff;
-    border-bottom-right-radius: 8px;
-    box-shadow: 0 10px 22px -13px rgba(0,132,255,0.55);
-  }
-  .msg-in {
-    background: var(--fb-gray); color: #050505;
-    border-bottom-left-radius: 8px;
-  }
-
-  /* Small business avatar beside bot (received) bubbles. */
-  .av-sm {
-    flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%;
-    overflow: hidden; background: #f6e7ee; margin-bottom: 2px;
-  }
-  .av-sm img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-  /* Messenger typing-dots indicator (gray bubble). */
-  .msg.typing { display: flex; align-items: center; gap: 8px; padding: 16px 19px; }
-  .msg.typing span {
-    width: 12px; height: 12px; border-radius: 50%; background: #b0b0b0;
-    animation: fbdot 1.2s infinite ease-in-out;
-  }
-  .msg.typing span:nth-child(2) { animation-delay: 0.18s; }
-  .msg.typing span:nth-child(3) { animation-delay: 0.36s; }
-  @keyframes fbdot {
-    0%, 80%, 100% { transform: translateY(0);   opacity: 0.40; }
-    40%           { transform: translateY(-8px); opacity: 1; }
-  }
-
-  /* ---- slotPicker beat: a row of quick-reply / mini-calendar chips. -------- */
-  .slots { display: flex; flex-wrap: wrap; gap: 10px; max-width: 318px; }
-  .slot-chip {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 10px 16px; border-radius: 9999px;
-    border: 1.5px solid var(--fb-blue); color: var(--fb-blue);
-    background: #fff; font-size: 20px; font-weight: 700; letter-spacing: -0.01em;
-    box-shadow: 0 5px 14px -10px rgba(0,132,255,0.5);
-    transition: background 0.35s ease, color 0.35s ease, transform 0.35s ease;
-  }
-  .slot-chip .ic { color: inherit; }
-  .slot-chip.picked {
-    background: var(--fb-blue); color: #fff; border-color: var(--fb-blue);
-    transform: translateY(-1px);
-    box-shadow: 0 10px 20px -10px rgba(0,132,255,0.65);
-  }
-
-  /* ---- bookingConfirmed beat: the CLOSE — a confirmation card. ------------- */
-  .booking-card {
-    width: 320px; max-width: 100%;
-    background: #fff; border: 1px solid #e8e8ec;
-    border-radius: 20px; overflow: hidden;
-    box-shadow: 0 14px 32px -16px rgba(16,24,40,0.30);
-  }
-  .bc-head {
-    display: flex; align-items: center; gap: 10px;
-    padding: 12px 18px; background: #e9f9f0;
-    color: #157f4a; font-weight: 800; font-size: 21px; letter-spacing: -0.01em;
-  }
-  .bc-head .ic { flex: 0 0 24px; }
-  .bc-body { padding: 14px 18px 16px; }
-  .bc-title { font-size: 26px; font-weight: 800; color: #101828; letter-spacing: -0.02em; }
-  .bc-sub { font-size: 18px; font-weight: 600; color: #667085; margin-top: 2px; }
-  .bc-row {
-    display: flex; align-items: center; gap: 11px; margin-top: 11px;
-    font-size: 20px; font-weight: 600; color: #344054; line-height: 1.25;
-  }
-  .bc-row .ic { flex: 0 0 24px; color: var(--fb-blue); }
-
-  /* Messenger composer (at rest — never typed into). */
-  .composer {
-    flex: 0 0 80px; display: flex; align-items: center; gap: 13px;
-    padding: 0 15px; border-top: 1px solid #ededed; background: #fff;
-  }
-  .composer .cic { color: var(--fb-blue); display: inline-flex; }
-  .cbar {
-    flex: 1 1 auto; height: 50px; background: var(--fb-input); border-radius: 9999px;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 18px;
-  }
-  .cbar .ph { font-size: 21px; font-weight: 500; color: #8a8d91; }
-  .cbar .emoji { color: var(--fb-blue); display: inline-flex; }
-  .composer .like { color: var(--fb-blue); display: inline-flex; }
-
-  /* ============================================================
-     REDUCED MOTION — compose a full static frame (whole exchange).
-     ============================================================ */
-  @media (prefers-reduced-motion: reduce) {
-    .msg.typing span { animation: none !important; }
-    .row, .feed, .slot-chip { transition: none !important; }
-  }
-</style>
-
-<script>
-  tailwind.config = {
-    theme: { extend: { fontFamily: {
-      urbanist: ['var(--font-urbanist)', 'sans-serif'],
-      sans:     ['var(--font-urbanist)', 'sans-serif'],
-    } } },
-  };
-</script>
+<link rel="stylesheet" href="assets/demo-kit.css" />
+<script src="assets/demo-engine.js"></script>
 </head>
-
-<body class="font-urbanist">
-  <!-- Fixed 430x900 portrait canvas so it fills the landing's narrow phone column. -->
-  <div id="stage" aria-label="Ilustración: ReadyChatAI agenda automáticamente las citas de Studio Bella por Facebook Messenger">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-
-    <!-- Small brand chip — the AI-speed story lives on the stage, not inside Messenger. -->
-    <span class="eyebrow">
-      <span class="ic bolt"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="#f5a623" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></span>
-      <span class="ic fb-mark" data-icon="messenger-logo" data-size="20"></span>
-      Agenda por Messenger
-    </span>
-
-    <!-- The phone (dominant). Inside it: an authentic Facebook Messenger thread. -->
-    <div id="phone">
-      <div class="screen">
-        <div class="island"></div>
-
-        <div class="statusbar">
-          <span class="sb-time">9:41</span>
-          <span class="sb-icons">
-            <span class="ic" data-icon="signal" data-size="18" data-stroke="2.4"></span>
-            <span class="ic" data-icon="wifi" data-size="18" data-stroke="2.4"></span>
-            <span class="ic" data-icon="battery" data-size="22" data-stroke="2.2"></span>
-          </span>
-        </div>
-
-        <div class="fb-header">
-          <span class="ic back" data-icon="chevron-left" data-size="29" data-stroke="2.4"></span>
-          <div class="fb-avatar">
-            <img src="assets/gen/studiobella-avatar.webp" alt="Studio Bella" decoding="async" />
-            <span class="dot"></span>
-          </div>
-          <div class="fb-id">
-            <div class="fb-name">Studio Bella</div>
-            <div class="fb-status">Activo(a) ahora</div>
-          </div>
-          <span class="ic hdr-ic call" data-icon="phone" data-size="24" data-stroke="2"></span>
-          <span class="ic hdr-ic video" data-icon="video" data-size="26" data-stroke="2"></span>
-          <span class="ic hdr-ic" data-icon="info" data-size="25" data-stroke="2"></span>
-        </div>
-
-        <div class="thread">
-          <div class="feed" id="feed"></div>
-        </div>
-
-        <div class="composer">
-          <span class="ic cic" data-icon="plus" data-size="27" data-stroke="2.4"></span>
-          <span class="ic cic" data-icon="camera" data-size="25" data-stroke="2"></span>
-          <span class="ic cic" data-icon="image" data-size="24" data-stroke="2"></span>
-          <span class="ic cic" data-icon="mic" data-size="24" data-stroke="2"></span>
-          <div class="cbar">
-            <span class="ph">Aa</span>
-            <span class="ic emoji" data-icon="emoji" data-size="23" data-stroke="2"></span>
-          </div>
-          <span class="ic like" data-icon="ig-heart" data-size="26" data-stroke="2"></span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    (function () {
-      'use strict';
-
-      // ---- Paint every kit icon placeholder ([data-icon]) once. ---------------
-      function paintIcons(root) {
-        var nodes = (root || document).querySelectorAll('[data-icon]');
-        for (var i = 0; i < nodes.length; i++) {
-          var n = nodes[i];
-          if (n.getAttribute('data-painted')) continue;
-          var opts = {};
-          var size = n.getAttribute('data-size');   if (size)   opts.size = parseFloat(size);
-          var strk = n.getAttribute('data-stroke'); if (strk)   opts.stroke = parseFloat(strk);
-          var col  = n.getAttribute('data-color');  if (col)    opts.color = col;
-          n.innerHTML = window.RCAI_ICON(n.getAttribute('data-icon'), opts);
-          n.setAttribute('data-painted', '1');
-        }
-      }
-      paintIcons(document);
-
-      var feed = document.getElementById('feed');
-      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      // Authentic Studio Bella (peluquería & spa) Messenger thread that books an
-      // appointment — the "Adiós Calendly" flow: the bot OFFERS real free slots
-      // (slotPicker), the client picks, and the bot CLOSES with a confirmed
-      // appointment card (bookingConfirmed). Pure agenda, no payment.
-      var M = {
-        cust1:     'Holaa 👋 atienden este finde? me quiero hacer un balayage 💕',
-        bot1:      '¡Holaa, bienvenida a Studio Bella! 😍 Sí atendemos sábado y domingo. El balayage dura aprox 2h30 e incluye lavado, tono y secado. Te dejo los horarios libres este finde, elige el que más te acomode 👇',
-        cust2:     'El sábado a las 10 me queda perfecto 🙌 a nombre de Daniela',
-        bot2intro: '¡Lista, Daniela! 💖 Te aparté tu cita 👇',
-        bot3:      'Te mando un recordatorio el viernes 😉 ¿Necesitas mover la hora? Escríbeme por aquí.',
-        cust3:     'Perfecto, mil gracias!! nos vemos el sábado 🥰'
-      };
-
-      var AV   = '<div class="av-sm"><img src="assets/gen/studiobella-avatar.webp" alt="" loading="lazy" decoding="async" /></div>';
-      var DOTS = '<span></span><span></span><span></span>';
-
-      // slotPicker markup — weekend balayage slots; first one is the picked one.
-      var SLOTS_HTML =
-        '<div class="slots">' +
-          '<span class="slot-chip" data-slot="1"><span class="ic" data-icon="calendar" data-size="18" data-stroke="2"></span>Sáb 10:00</span>' +
-          '<span class="slot-chip"><span class="ic" data-icon="calendar" data-size="18" data-stroke="2"></span>Sáb 15:30</span>' +
-          '<span class="slot-chip"><span class="ic" data-icon="calendar" data-size="18" data-stroke="2"></span>Dom 11:00</span>' +
-        '</div>';
-
-      // bookingConfirmed markup — THE CLOSE.
-      var CARD_HTML =
-        '<div class="booking-card">' +
-          '<div class="bc-head"><span class="ic" data-icon="check-circle" data-size="24" data-stroke="2.4"></span>Cita confirmada</div>' +
-          '<div class="bc-body">' +
-            '<div class="bc-title">Balayage</div>' +
-            '<div class="bc-sub">2h 30min · con Caro</div>' +
-            '<div class="bc-row"><span class="ic" data-icon="calendar" data-size="24" data-stroke="2"></span>Sábado · 10:00 a.m.</div>' +
-            '<div class="bc-row"><span class="ic" data-icon="map-pin" data-size="24" data-stroke="2"></span>Studio Bella · Av. Las Palmas 240</div>' +
-          '</div>' +
-        '</div>';
-
-      function el(cls, html) {
-        var d = document.createElement('div');
-        d.className = cls;
-        d.innerHTML = html;
-        feed.appendChild(d);
-        paintIcons(d);
-        return d;
-      }
-      function reveal(node) {
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () { node.classList.add('shown'); });
-        });
-      }
-      function addDate()      { return el('row date-row', '<div class="datestamp">HOY 10:18</div>'); }
-      function addCustomer(t) { return el('row out', '<div class="msg msg-out">' + t + '</div>'); }
-      function addBot(t)      { return el('row in', AV + '<div class="msg msg-in">' + t + '</div>'); }
-      function addTyping()    { return el('row in typing-row', AV + '<div class="msg msg-in typing">' + DOTS + '</div>'); }
-      function addSlots()     { return el('row in beat', SLOTS_HTML); }
-      function addCard()      { return el('row in beat', CARD_HTML); }
-
-      // Mark the chosen slot (Sáb 10:00) as picked — mirrors the client's choice.
-      var slotsNode = null;
-      function pickSlot() {
-        if (!slotsNode) return;
-        var chip = slotsNode.querySelector('[data-slot="1"]');
-        if (chip) chip.classList.add('picked');
-      }
-
-      // ---- Reduced motion: compose the full static exchange (with beats). -----
-      if (reduce) {
-        addDate().classList.add('shown');
-        addCustomer(M.cust1).classList.add('shown');
-        addBot(M.bot1).classList.add('shown');
-        slotsNode = addSlots(); slotsNode.classList.add('shown'); pickSlot();
-        addCustomer(M.cust2).classList.add('shown');
-        addBot(M.bot2intro).classList.add('shown');
-        addCard().classList.add('shown');
-        addBot(M.bot3).classList.add('shown');
-        addCustomer(M.cust3).classList.add('shown');
-        return;
-      }
-
-      // ---- Animated timeline --------------------------------------------------
-      // Calm, readable cadence (Diego's review): a typing indicator shows ~1.45s
-      // before every bot reply and exchanges are spaced ~2.2s apart. The bot
-      // offers the slot chips, the client picks, and the bot CLOSES with the
-      // confirmed appointment card (~10s). The feed then HOLDS ~5s on the closed
-      // booking — reminder + thank-you sit below but keep the card fully visible.
-      var timers = [];
-      function after(ms, fn) { timers.push(setTimeout(fn, ms)); }
-      function clearTimers() { timers.forEach(clearTimeout); timers = []; }
-
-      function runCycle() {
-        clearTimers();
-        feed.classList.remove('dissolving');
-        feed.innerHTML = '';
-        slotsNode = null;
-
-        var t = 0;
-        var typingNode = null;
-        function clearTyping() {
-          if (typingNode && typingNode.parentNode) typingNode.parentNode.removeChild(typingNode);
-          typingNode = null;
-        }
-
-        // Date header.
-        after((t += 150), function () { reveal(addDate()); });
-
-        // Exchange 1 — client asks; bot types (~1.45s); bot replies + offers slots.
-        after((t += 650),  function () { reveal(addCustomer(M.cust1)); });
-        after((t += 1450), function () { typingNode = addTyping(); reveal(typingNode); });
-        after((t += 1450), function () { clearTyping(); reveal(addBot(M.bot1)); });
-        after((t += 600),  function () { slotsNode = addSlots(); reveal(slotsNode); });
-
-        // Exchange 2 — client picks Sáb 10:00 (chip highlights); bot CLOSES.
-        after((t += 2300), function () { reveal(addCustomer(M.cust2)); pickSlot(); });
-        after((t += 1450), function () { typingNode = addTyping(); reveal(typingNode); });
-        after((t += 1450), function () { clearTyping(); reveal(addBot(M.bot2intro)); });
-        after((t += 600),  function () { reveal(addCard()); });
-
-        // Bot's follow-up reminder, then the client's warm thank-you.
-        after((t += 2100), function () { typingNode = addTyping(); reveal(typingNode); });
-        after((t += 1450), function () { clearTyping(); reveal(addBot(M.bot3)); });
-        after((t += 2050), function () { reveal(addCustomer(M.cust3)); });
-
-        // ~5s readable end-hold on the CLOSED booking, then dissolve + loop.
-        after((t += 5000), function () { feed.classList.add('dissolving'); });
-        after((t += 560),  function () { runCycle(); });
-      }
-
-      function start() { after(300, runCycle); }
-      if (document.readyState === 'complete') start();
-      else window.addEventListener('load', start, { once: true });
-    })();
-  </script>
+<body>
+<script>
+window.DEMO_CONFIG = {
+  id: 'facebook-messenger',
+  mode: 'mobile',
+  platform: 'messenger',
+  surface: 'phone',
+  business: { name: 'Studio Bella', handle: '@studiobella.spa', avatar: 'assets/gen/studiobella-avatar.webp', online: true },
+  scene: 'booking',
+  bookingService: {
+    name: { es: 'Balayage', en: 'Balayage' },
+    category: { es: 'Color & Estilo', en: 'Color & Style' },
+    duration: { es: '2 h 30 min', en: '2 hr 30 min' },
+    desc: { es: 'Incluye lavado, tono y secado. Con tu estilista Caro, en Studio Bella.',
+            en: 'Includes wash, tone and blow-dry. With your stylist Caro, at Studio Bella.' },
+    picked: { day: 13, time: { es: '10:00 a. m.', en: '10:00 AM' } }
+  },
+  locales: {
+    es: {
+      stage: {
+        eyebrow: 'Messenger · Studio Bella',
+        h1: 'Tu agenda se llena sola.',
+        h1accent: 'Adiós Calendly.',
+        sub: 'Studio Bella responde en Messenger y manda el botón para reservar: la clienta elige su hora y queda agendada sola.',
+        ticks: [
+          'Responde cada “¿tienen hora?” al instante',
+          'Manda el botón para reservar en tu página de citas',
+          'La clienta elige y su cita queda agendada sola'
+        ],
+        cta: 'Conecta tu Facebook'
+      },
+      thread: [
+        { from: 'customer', text: 'Holaa 👋 ¿atienden este finde? me quiero hacer un balayage 💕' },
+        { from: 'bot', text: '¡Holaa, bienvenida a Studio Bella! 😍 Claro que sí, atendemos sábado y domingo. El balayage dura aprox 2h30 e incluye lavado, tono y secado.' },
+        { from: 'bot', beat: 'bookingButton', text: 'Toca aquí para elegir tu horario y reservar tu cita 👇' }
+      ]
+    },
+    en: {
+      stage: {
+        eyebrow: 'Messenger · Studio Bella',
+        h1: 'Your calendar fills itself.',
+        h1accent: 'Goodbye Calendly.',
+        sub: 'Studio Bella replies on Messenger and sends the booking button: the client picks her time and books herself in.',
+        ticks: [
+          'Answers every “any openings?” instantly',
+          'Sends the button to book on your appointments page',
+          'The client picks and her appointment books itself'
+        ],
+        cta: 'Connect your Facebook'
+      },
+      thread: [
+        { from: 'customer', text: 'Hii 👋 are you open this weekend? I’d love to get a balayage 💕' },
+        { from: 'bot', text: 'Hii, welcome to Studio Bella! 😍 Yes, we’re open Saturday and Sunday. The balayage takes about 2h30 and includes wash, tone and blow-dry.' },
+        { from: 'bot', beat: 'bookingButton', text: 'Tap here to pick your time and book your appointment 👇' }
+      ]
+    }
+  }
+};
+window.RCAIDemo.boot();
+</script>
 </body>
 </html>
