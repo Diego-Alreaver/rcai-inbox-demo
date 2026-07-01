@@ -24,6 +24,13 @@
   var FIRST = 700, TYPING = 1800, AFTER_TYPING = 350, READ_GAP = 3000,
       BEAT_HOLD = 1200, PRE_SCENE = 2600;
 
+  /* ---- Customer-message streaming (DESIGN_DOC_V3 §2). The customer's own
+   * turns type char-by-char into the composer, then "send". These constants are
+   * SHARED by streamCustomer() (the animation) and streamDuration() (the timeline
+   * accounting) so the two never drift. STREAM_PRE replaces READ_GAP for a sent
+   * turn (the compose-type itself eats the rest of the old read gap). ---------- */
+  var CPS = 34, STREAM_PRE = 1250, STREAM_FOCUS = 170, STREAM_SEND = 360;
+
   /* ---- Engine-owned RCAI / platform strings (es/en). --------------------- */
   var CHROME = {
     whatsapp:  { online:{es:"en línea",en:"online"}, offline:{es:"desconectado",en:"offline"}, typing:{es:"escribiendo…",en:"typing…"}, today:{es:"HOY",en:"TODAY"} },
@@ -48,6 +55,15 @@
     colNote: { es:"Nota", en:"Note" },
     fromChat:{ es:"Creada desde el chat", en:"Created from chat" }
   };
+  /* Order bridge → right-side transition-intro (DESIGN_DOC_V3 §1b/§4). Shown on
+   * the RIGHT (never as a chat bubble) before the dashboard builds. */
+  var ORDER_INTRO = {
+    saving: { es:"Guardando tu pedido en el sistema…", en:"Saving your order to the system…" }
+  };
+  function orderSavedText() {
+    var n = (cfg.order || {}).number || "";
+    return { es:"✓ Pedido #" + n + " guardado", en:"✓ Order #" + n + " saved" };
+  }
   var BOOK_T = {
     step1:   { es:"Elegir hora", en:"Choose Time" },
     step2:   { es:"Confirmar", en:"Confirm" },
@@ -92,6 +108,12 @@
   var stageEl, feedEl, threadEl, phoneEl, headlineEl, presenceNode, typingNode = null;
   var igIntroNode = null;
   var timers = [];
+  /* Visibility-resilient playback (DESIGN_DOC_V3 §1a). `started` flips once run()
+   * actually begins; `finished` flips when the timeline+scene reach their resting
+   * end; `hiddenAt` timestamps the last tab-hide so we can require a ≥800ms hide
+   * before restarting (ignores quick focus flickers). */
+  var started = false, finished = false, hiddenAt = 0, visBound = false;
+  function markFinished() { finished = true; }
 
   /* ---- Small helpers. ---------------------------------------------------- */
   function tr(v) { // resolve string | {es,en}
@@ -255,6 +277,8 @@
           '<div><div class="wp-name">' + (b.name || "") + '</div><div class="wp-status" id="presence">' + presenceText(false) + "</div></div>" +
           '<span class="ic wp-close">' + ic("x", 22) + "</span></div>" +
         '<div class="thread" id="thread"><div class="feed" id="feed"></div></div>' +
+        '<div class="wp-composer"><span class="ph">' + (lang === "es" ? "Escribe un mensaje…" : "Type a message…") + "</span>" +
+          '<span class="ic wp-send">' + ic("send-horizontal", 20, { color: "#7354ef" }) + "</span></div>" +
         '<div class="wp-footer">' + tr(POWERED) + " <b>ReadyChatAI</b></div>" +
       "</div>" +
     "</div>";
@@ -286,9 +310,7 @@
         var want = this.getAttribute("data-lang");
         if (want === lang) return;
         lang = want;
-        teardown();
-        buildStage();
-        run();
+        restart();
       });
     }
 
@@ -476,8 +498,9 @@
   function playSubThread(thread, startT, onDone) {
     var t = startT;
     thread.forEach(function (item, idx) {
+      if (item.beat === "openOrder") return;
       var sent = isSent(item.from);
-      if (idx === 0) t += FIRST; else if (sent) t += READ_GAP; else t += AFTER_TYPING;
+      if (idx === 0) t += FIRST; else if (sent) t += STREAM_PRE; else t += AFTER_TYPING;
       // On the FIRST bubble, fade + remove the IG profile intro (DESIGN_DOC_V2 §3);
       // mirrors the normal-flow dismiss (t-220). No-op for conv2 (igIntroNode null).
       if (idx === 0 && igIntroNode) after(Math.max(0, t - 220), dismissIgProfile);
@@ -489,7 +512,8 @@
         after(t, showTyping); t += TYPING;
         after(t, function () { hideTyping(); reveal(renderItem(item)); });
       } else {
-        after(t, function () { reveal(renderItem(item)); });
+        after(t, function () { streamCustomer(item, function () { reveal(renderItem(item)); }); });
+        t += streamDuration(item);
       }
     });
     t += BEAT_HOLD;
@@ -591,7 +615,7 @@
     resetThreadForConv2();
     var t = 300;
     after(t, function () { var d = el("center-pill pill-date", tr(LEARN_T.divider)); reveal(d); });
-    playSubThread(L.conv2 || [], t + 200, function () { makeThreadScrollable(); });
+    playSubThread(L.conv2 || [], t + 200, function () { makeThreadScrollable(); markFinished(); });
   }
   function runLearnFlow() {
     var L = locale().learn || {};
@@ -611,6 +635,7 @@
     var pills = feedEl.querySelectorAll(".center-pill"); for (var i = 0; i < pills.length; i++) pills[i].classList.add("shown");
     makeThreadScrollable();
     openKbScene(L, null, true);
+    markFinished();
   }
 
   // Render a single thread item (returns the row node).
@@ -639,6 +664,54 @@
   }
 
   /* ======================================================================
+   * CUSTOMER MESSAGE STREAMING (DESIGN_DOC_V3 §2). Only customer|visitor turns:
+   * the text types char-by-char into the composer (a .composer-typed node that
+   * replaces the .ph placeholder), a short beat, then "send" → the outgoing
+   * bubble appears and the composer resets. The bot keeps its typing-indicator.
+   * ==================================================================== */
+  function composerBar() {
+    if (!stageEl) return null;
+    // widget = the .wp-composer pill; phone platforms = the .composer .cbar pill.
+    return surface === "widget"
+      ? stageEl.querySelector(".wp-composer")
+      : stageEl.querySelector(".composer .cbar");
+  }
+  // Glyph count that respects surrogate pairs (emoji), so slicing never renders a
+  // lone half-emoji. Shared by streamCustomer + streamDuration to stay in lockstep.
+  function glyphsOf(item) { return Array.from(tr(item.text) || ""); }
+  // Timeline accounting — MUST stay in lockstep with streamCustomer()'s schedule.
+  function streamDuration(item) {
+    if (reduce) return 40;
+    return STREAM_FOCUS + Math.round(glyphsOf(item).length * 1000 / CPS) + STREAM_SEND;
+  }
+  // Animate the customer typing `item` into the composer, then call onSent().
+  function streamCustomer(item, onSent) {
+    var bar = composerBar();
+    var ph = bar && bar.querySelector(".ph");
+    var glyphs = glyphsOf(item);
+    if (reduce || !bar || !ph || !glyphs.length) { onSent(); return; }
+    var typed = document.createElement("span");
+    typed.className = "composer-typed";
+    bar.insertBefore(typed, ph);            // sits where the placeholder was
+    ph.style.display = "none";
+    bar.classList.add("composing");
+    var i = 0;
+    function finishSend() {
+      if (typed.parentNode) typed.parentNode.removeChild(typed);
+      ph.style.display = "";
+      bar.classList.remove("composing");
+      onSent();
+    }
+    function step() {
+      if (i >= glyphs.length) { later(STREAM_SEND, finishSend); return; }
+      i += 1; typed.textContent = glyphs.slice(0, i).join("");
+      typed.scrollLeft = typed.scrollWidth;   // follow the caret/tail like a real input
+      timers.push(setTimeout(step, Math.round(1000 / CPS)));
+    }
+    timers.push(setTimeout(step, STREAM_FOCUS));
+  }
+
+  /* ======================================================================
    * TIMELINE.
    * ==================================================================== */
   function run() {
@@ -660,22 +733,27 @@
     after(t, addDateSep);
     if (igIntroNode) t += 1000;   // let the IG profile intro breathe before msg 1
     thread.forEach(function (item, idx) {
+      // Legacy order-bridge bubble is now a RIGHT-side transition, never a chat
+      // bubble — drop it wherever a not-yet-updated config still ships it. (§1b/§4)
+      if (item.beat === "openOrder") return;
       var sent = isSent(item.from);
-      if (idx === 0) t += FIRST; else if (sent) t += READ_GAP; else t += AFTER_TYPING;
+      if (idx === 0) t += FIRST; else if (sent) t += STREAM_PRE; else t += AFTER_TYPING;
       if (idx === 0 && igIntroNode) after(Math.max(0, t - 220), dismissIgProfile);
       if (!sent) {
         after(t, showTyping);
         t += TYPING;
         after(t, function () { hideTyping(); reveal(renderItem(item)); });
       } else {
-        after(t, function () { reveal(renderItem(item)); });
+        after(t, function () { streamCustomer(item, function () { reveal(renderItem(item)); }); });
+        t += streamDuration(item);
       }
-      if (item.beat === "openOrder" || item.beat === "bookingButton") {
+      if (item.beat === "orderConfirm" || item.beat === "bookingButton") {
+        if (item.beat === "bookingButton") after(Math.max(t, t + PRE_SCENE - 1650), tapCta);
         t += PRE_SCENE;
         after(t, startScene);
       }
     });
-    if (!cfg.scene) { t += PRE_SCENE; after(t, makeThreadScrollable); }
+    if (!cfg.scene) { t += PRE_SCENE; after(t, function () { makeThreadScrollable(); markFinished(); }); }
   }
 
   function makeThreadScrollable() {
@@ -684,29 +762,58 @@
     threadEl.scrollTop = threadEl.scrollHeight;
   }
 
+  /* ---- CTA tap (DESIGN_DOC_V3 §3): a simulated tap on the booking CTA button
+   * (tap indicator lands + press scale + ripple) just before the calendar opens,
+   * so the open reads as caused by the click. Booking channels only. --------- */
+  function tapCta() {
+    var btn = feedEl && feedEl.querySelector(".cta-btn");
+    var wrap = btn && btn.parentNode;
+    if (!btn || !wrap || btn.getAttribute("data-tapped")) return;
+    btn.setAttribute("data-tapped", "1");
+    var cx = btn.offsetLeft + btn.offsetWidth * 0.66;
+    var cy = btn.offsetTop + btn.offsetHeight / 2;
+    var dot = document.createElement("span");
+    dot.className = "tap-dot";
+    dot.style.left = cx + "px";
+    dot.style.top = cy + "px";
+    wrap.appendChild(dot);
+    reveal(dot);                                   // dot glides onto the button
+    later(430, function () {
+      dot.classList.add("press");                  // finger down
+      btn.classList.add("pressed");                // button scales to ~0.96
+      var rip = document.createElement("span");
+      rip.className = "tap-ripple";
+      rip.style.left = (btn.offsetWidth * 0.66) + "px";
+      rip.style.top = (btn.offsetHeight / 2) + "px";
+      btn.appendChild(rip);
+      later(20, function () { rip.classList.add("go"); });
+    });
+    later(780, function () { btn.classList.remove("pressed"); dot.classList.add("lift"); });
+    later(1180, function () { if (dot.parentNode) dot.parentNode.removeChild(dot); });
+  }
+
   function renderStatic(thread) {
     // Full static end frame: whole thread + (if any) the scene end-state.
     // (No ig-profile intro: it belongs to the START of the flow, gone by the end.)
     addDateSep();
     var c = chrome();
     // mark date pills shown
-    thread.forEach(function (item) { renderItem(item).classList.add("shown"); });
+    thread.forEach(function (item) { if (item.beat === "openOrder") return; renderItem(item).classList.add("shown"); });
     var pills = feedEl.querySelectorAll(".center-pill"); for (var i = 0; i < pills.length; i++) pills[i].classList.add("shown");
     if (cfg.scene) startScene(true);
     else makeThreadScrollable();
+    markFinished();
   }
 
   /* ======================================================================
    * SCENES (the honest finale).
    * ==================================================================== */
-  function startScene(staticEnd) {
-    makeThreadScrollable();
-    var html = cfg.scene === "booking" ? bookingHTML() : orderHTML();
+  // Mount a scene's markup in the right-side surface (phone → floating scene-panel;
+  // widget → the browser frame, chat panel closing back to the launcher). Returns
+  // the container element (or null if the widget frame is missing).
+  function mountScenePanel(html, staticEnd) {
     var container;
-
     if (surface === "widget") {
-      // Widget: the booking page opens IN the browser frame (replaces the site);
-      // the chat panel closes back to the launcher so the booking page is fully visible.
       var wp = stageEl.querySelector("#wpanel"); if (wp) wp.classList.remove("open");
       var lz = stageEl.querySelector("#launcher"); if (lz) lz.style.display = "";
       var bz = stageEl.querySelector("#bzpage");
@@ -721,14 +828,61 @@
       if (staticEnd) panel.classList.add("shown");
       else reveal(panel);
     }
-    if (!container) return;
+    return container;
+  }
 
+  function startScene(staticEnd) {
+    makeThreadScrollable();
     if (cfg.scene === "booking") {
-      if (staticEnd) bookingFinalState(container); else animateBooking(container);
-    } else {
-      if (staticEnd) { var bl = container.querySelectorAll(".ord-reveal"); for (var i = 0; i < bl.length; i++) bl[i].classList.add("shown"); }
-      else animateOrder(container);
+      var bc = mountScenePanel(bookingHTML(), staticEnd);
+      if (!bc) return;
+      if (staticEnd) bookingFinalState(bc); else animateBooking(bc);
+      return;
     }
+    // ORDER — the bridge is a RIGHT-side "saving → saved" transition-intro that
+    // morphs into the dashboard, NEVER a chat bubble. (DESIGN_DOC_V3 §1b/§4)
+    var html = '<div class="ord-scene">' + orderIntroHTML() +
+      '<div class="ord-morph" id="ord-morph">' + orderHTML() + "</div></div>";
+    var oc = mountScenePanel(html, staticEnd);
+    if (!oc) return;
+    var morph = oc.querySelector(".ord-morph");
+    if (staticEnd) {
+      var intro = oc.querySelector(".ord-intro"); if (intro) intro.style.display = "none";
+      if (morph) morph.classList.add("shown");
+      var bl = oc.querySelectorAll(".ord-reveal"); for (var i = 0; i < bl.length; i++) bl[i].classList.add("shown");
+      return;
+    }
+    animateOrderIntro(oc, morph);
+  }
+
+  /* ---- ORDER transition-intro (saving → saved → morph into dashboard). ------ */
+  function orderIntroHTML() {
+    return '<div class="ord-intro" id="ord-intro"><div class="ord-intro-card">' +
+      '<div class="ord-intro-icon" id="ord-intro-icon"><span class="ord-spin"></span></div>' +
+      '<div class="ord-intro-text" id="ord-intro-text">' + tr(ORDER_INTRO.saving) + "</div>" +
+      "</div></div>";
+  }
+  function animateOrderIntro(container, morph) {
+    var intro = container.querySelector(".ord-intro");
+    var iconEl = container.querySelector("#ord-intro-icon");
+    var textEl = container.querySelector("#ord-intro-text");
+    // 1) card fades/scales in once the panel has slid into place.
+    later(560, function () { if (intro) intro.classList.add("shown"); });
+    // 2) saving → saved: swap spinner for a green check badge, flip the copy.
+    later(1450, function () {
+      if (iconEl) {
+        iconEl.classList.add("done");
+        iconEl.innerHTML = '<svg width="54" height="54" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+          '<circle cx="12" cy="12" r="11" fill="#12b76a"/>' +
+          '<path d="M6.8 12.4l3.3 3.3L17.2 8.4" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      }
+      if (textEl) { textEl.innerHTML = tr(orderSavedText()); textEl.classList.add("done"); }
+    });
+    // 3) hold ~1.4s, then cross-fade the card OUT / dashboard IN and build rows.
+    later(2850, function () {
+      if (intro) intro.classList.add("gone");
+      if (morph) { morph.classList.add("shown"); animateOrder(morph); }
+    });
   }
 
   /* ---- ORDER scene markup + animation. ---------------------------------- */
@@ -769,7 +923,8 @@
   }
   function animateOrder(container) {
     var blocks = container.querySelectorAll(".ord-reveal");
-    for (var i = 0; i < blocks.length; i++) (function (b, idx) { later(520 + idx * 170, function () { b.classList.add("shown"); }); })(blocks[i], i);
+    var last = blocks.length - 1;
+    for (var i = 0; i < blocks.length; i++) (function (b, idx) { later(520 + idx * 170, function () { b.classList.add("shown"); if (idx === last) markFinished(); }); })(blocks[i], i);
   }
 
   /* ---- BOOKING scene markup + animation. -------------------------------- */
@@ -872,7 +1027,7 @@
     later(1250, function () { var p = container.querySelector('.bk-day[data-pick="1"]'); if (p) p.classList.add("pick"); });
     later(2150, function () { bookingRevealTimes(container, pickedTime); });
     later(3200, function () { bookingSelectSlot(container, pickedTime); });
-    later(4700, function () { bookingGoToConfirm(container); });
+    later(4700, function () { bookingGoToConfirm(container); later(1000, markFinished); });
   }
 
   /* ======================================================================
@@ -901,6 +1056,32 @@
   /* ======================================================================
    * BOOT.
    * ==================================================================== */
+  function startPlayback() {
+    started = true;
+    finished = false;
+    run();
+  }
+  // Full clean replay: used by the ES|EN toggle AND the visibility-restart path.
+  function restart() {
+    teardown();
+    buildStage();
+    startPlayback();
+  }
+  // Visibility-resilient playback (DESIGN_DOC_V3 §1a). Backgrounded tabs throttle
+  // timers and pause rAF, freezing the play-once chain; on return we cleanly
+  // restart an unfinished play so the viewer always sees a complete run.
+  function onVisibility() {
+    if (document.hidden) { hiddenAt = Date.now(); return; }
+    if (!started) { startPlayback(); return; }      // deferred at boot (hidden on load)
+    if (finished) return;                            // resting end state — never restart
+    var hiddenMs = hiddenAt ? (Date.now() - hiddenAt) : 0;
+    if (hiddenMs >= 800) restart();                  // ignore quick focus flickers
+  }
+  function begin() {
+    buildStage();
+    if (document.hidden) return;                     // defer run() until first visible
+    startPlayback();
+  }
   function boot() {
     // When embedded in the landing hero (iframe), the landing owns the ES|EN toggle,
     // so hide the in-stage one. Standalone (opened directly) keeps its own toggle.
@@ -911,9 +1092,10 @@
     platform = cfg.platform || "whatsapp";
     surface = cfg.surface || (platform === "widget" ? "widget" : "phone");
     lang = getLang();
+    if (!visBound) { document.addEventListener("visibilitychange", onVisibility); visBound = true; }
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", function () { buildStage(); run(); }, { once: true });
-    } else { buildStage(); run(); }
+      document.addEventListener("DOMContentLoaded", begin, { once: true });
+    } else { begin(); }
   }
 
   global.RCAIDemo = { boot: boot };

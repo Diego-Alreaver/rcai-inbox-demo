@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ReadyChatAI · Tu sitio web atiende y agenda solo</title>
+<title>ReadyChatAI · Tu sitio web toma pedidos y registra la orden</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%237354EF'/%3E%3Ccircle%20cx='12'%20cy='16'%20r='2.6'%20fill='white'/%3E%3Ccircle%20cx='20'%20cy='16'%20r='2.6'%20fill='white'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,54 +21,65 @@ window.DEMO_CONFIG = {
   surface: 'widget',
   business: { name: 'Clínica Sonrisa', handle: 'clinicasonrisa', avatar: 'assets/gen/sonrisa-avatar.webp', online: true },
   siteImage: { es: 'assets/gen/clinic-es-3.webp', en: 'assets/gen/clinic-en-3.webp' },
-  scene: 'booking',
-  bookingService: {
-    name: { es: 'Blanqueamiento dental', en: 'Teeth whitening' },
-    category: { es: 'Odontología', en: 'Dentistry' },
-    duration: { es: '1 hora', en: '1 hour' },
-    desc: { es: 'Blanqueamiento profesional en consultorio, incluye limpieza previa. Con la Dra. Reyes.',
-            en: 'Professional in-office whitening, includes a prior cleaning. With Dr. Reyes.' },
-    picked: { day: 13, time: { es: '10:00 a. m.', en: '10:00 AM' } }
+  scene: 'order',
+  order: {
+    number: '3218',
+    status: 'confirmed',
+    customer: { name: 'Camila Fuentes', platform: 'web' },
+    items: [
+      { name: { es: 'Kit de blanqueamiento en casa', en: 'Home whitening kit' }, qty: 1,
+        note: { es: 'Incluye 3 jeringas + férula', en: 'Includes 3 syringes + tray' } }
+    ],
+    checkout: [
+      { q: { es: '¿Retiro o envío?', en: 'Pickup or delivery?' },
+        a: { es: 'Envío a domicilio', en: 'Home delivery' } }
+    ]
   },
   locales: {
     es: {
       stage: {
-        eyebrow: 'Chat web · Clínica Sonrisa',
-        h1: 'Tu sitio web atiende',
-        h1accent: 'y agenda solo.',
-        sub: 'El widget de Clínica Sonrisa saluda a cada visitante, responde precios y tratamientos al instante, y manda el botón para que reserve su cita — sin que muevas un dedo.',
+        eyebrow: 'Chat web con IA · 24/7',
+        h1: 'Tu sitio web toma pedidos',
+        h1accent: 'y registra la orden.',
+        sub: 'El widget de Clínica Sonrisa atiende a cada visitante, responde precios al instante y arma el pedido de los productos que vendes — y te lo deja registrado, aunque la clínica esté cerrada.',
         ticks: [
-          'Responde precios y tratamientos al instante, 24/7',
-          'Manda el botón para reservar en tu página de citas',
-          'Atiende de noche y domingos, con el consultorio cerrado'
+          'Responde precios y productos al instante, 24/7',
+          'Arma el pedido y lo deja registrado en el sistema',
+          'Atiende de noche y domingos, con la clínica cerrada'
         ],
         cta: 'Agrega el chat a tu web'
       },
       thread: [
         { from: 'bot', text: '¡Hola! 👋 Soy el asistente de Clínica Sonrisa. ¿En qué te puedo ayudar hoy?' },
-        { from: 'visitor', text: 'Hola, ¿hacen blanqueamiento dental? ¿cuánto sale? 🦷' },
-        { from: 'bot', text: '¡Sí! 😁 Hacemos blanqueamiento profesional en consultorio: sale $120.000 e incluye una limpieza previa. La sesión dura 1 hora y se nota el mismo día ✨' },
-        { from: 'bot', beat: 'bookingButton', text: '¿Quieres que te agende? Toca aquí para elegir tu día y hora 👇' }
+        { from: 'visitor', text: 'Hola 🙌 quiero blanquear mis dientes en casa, ¿venden algún kit?' },
+        { from: 'bot', text: '¡Sí! 😁 Tenemos el Kit de blanqueamiento en casa: cuesta $39.900 e incluye 3 jeringas de gel + una férula a tu medida. Es para usar en casa siguiendo las indicaciones de la Dra. Reyes ✨ ¿Te lo dejo apartado?' },
+        { from: 'visitor', text: 'Siii porfa, quiero uno 🙌' },
+        { from: 'bot', text: '¡Perfecto! 📝 Una última cosa para dejar tu pedido listo: ¿lo retiras en la clínica o prefieres envío a domicilio?' },
+        { from: 'visitor', text: 'Con envío a domicilio porfa 🏠' },
+        { from: 'bot', beat: 'orderConfirm', text: '¡Listo! 🎉 Tu pedido quedó registrado con el número #3218 — Kit de blanqueamiento en casa, envío a domicilio. Alguien de Clínica Sonrisa te escribirá para coordinar el pago y la entrega. ¡Gracias por elegirnos! 💛' }
       ]
     },
     en: {
       stage: {
-        eyebrow: 'Web chat · Clínica Sonrisa',
-        h1: 'Your website answers',
-        h1accent: 'and books for you.',
-        sub: 'Clínica Sonrisa’s widget greets every visitor, answers prices and treatments instantly, and sends the button to book the appointment — without you lifting a finger.',
+        eyebrow: 'AI web chat · 24/7',
+        h1: 'Your website takes orders',
+        h1accent: 'and logs them for you.',
+        sub: 'Clínica Sonrisa’s widget greets every visitor, answers prices instantly and builds the order for the products you sell — and leaves it logged for you, even with the clinic closed.',
         ticks: [
-          'Answers prices and treatments instantly, 24/7',
-          'Sends the button to book on your appointments page',
-          'Works at night and on Sundays, with the office closed'
+          'Answers prices and products instantly, 24/7',
+          'Builds the order and logs it in the system',
+          'Works at night and on Sundays, with the clinic closed'
         ],
         cta: 'Add the chat to your site'
       },
       thread: [
         { from: 'bot', text: 'Hi there! 👋 I’m the Clínica Sonrisa assistant. How can I help you today?' },
-        { from: 'visitor', text: 'Hi, do you do teeth whitening? how much is it? 🦷' },
-        { from: 'bot', text: 'Yes! 😁 We do professional in-office whitening: it’s $120,000 CLP and includes a prior cleaning. The session takes 1 hour and you see results the same day ✨' },
-        { from: 'bot', beat: 'bookingButton', text: 'Want me to book you in? Tap here to pick your day and time 👇' }
+        { from: 'visitor', text: 'Hi 🙌 I want to whiten my teeth at home, do you sell a kit?' },
+        { from: 'bot', text: 'Yes! 😁 We have the Home whitening kit: it’s $39,900 CLP and includes 3 gel syringes + a custom-fit tray. It’s for at-home use following Dr. Reyes’ instructions ✨ Want me to set one aside for you?' },
+        { from: 'visitor', text: 'Yesss please, I’ll take one 🙌' },
+        { from: 'bot', text: 'Perfect! 📝 One last thing to lock in your order: would you pick it up at the clinic or prefer home delivery?' },
+        { from: 'visitor', text: 'Home delivery please 🏠' },
+        { from: 'bot', beat: 'orderConfirm', text: 'All set! 🎉 Your order is in with number #3218 — Home whitening kit, home delivery. Someone from Clínica Sonrisa will message you to arrange payment and delivery. Thanks for choosing us! 💛' }
       ]
     }
   }

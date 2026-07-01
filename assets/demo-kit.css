@@ -301,17 +301,38 @@ html, body { margin: 0; height: 100%; background: #fff; }
 
 /* bookingButton — a real cta_url_button rendered under the bot bubble. */
 .cta-btn {
+  position: relative; overflow: hidden;
   margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 9px;
   width: 100%; max-width: 100%; box-sizing: border-box;
   padding: 13px 18px; border-radius: 14px;
   background: var(--accent); color: #fff;
   font-size: 19px; font-weight: 700; letter-spacing: -0.01em;
   box-shadow: 0 10px 22px -10px color-mix(in srgb, var(--accent) 70%, transparent);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 .cta-btn.tapped { transform: translateY(1px) scale(0.985); }
+.cta-btn.pressed { transform: translateY(1px) scale(0.955); box-shadow: 0 4px 12px -8px color-mix(in srgb, var(--accent) 70%, transparent); }
 .cta-btn .ic { color: #fff; flex: 0 0 auto; }
-.cta-wrap { display: flex; flex-direction: column; max-width: 80%; }
+.cta-wrap { position: relative; display: flex; flex-direction: column; max-width: 80%; }
+
+/* CTA tap simulation (DESIGN_DOC_V3 §3): a finger/tap indicator lands on the CTA
+ * and a ripple flashes inside it, just before the booking calendar opens. */
+.tap-dot {
+  position: absolute; z-index: 6; width: 30px; height: 30px; margin: -15px 0 0 -15px;
+  border-radius: 50%; background: rgba(17,27,33,0.16); border: 2px solid rgba(17,27,33,0.3);
+  box-shadow: 0 6px 16px -6px rgba(0,0,0,0.45); pointer-events: none;
+  opacity: 0; transform: scale(1.7) translateY(9px);
+  transition: opacity 0.28s ease, transform 0.34s cubic-bezier(0.22,1,0.36,1);
+}
+.tap-dot.shown { opacity: 1; transform: scale(1); }
+.tap-dot.press { transform: scale(0.72); background: rgba(17,27,33,0.26); }
+.tap-dot.lift { opacity: 0; transform: scale(1.35); }
+.tap-ripple {
+  position: absolute; z-index: 1; width: 26px; height: 26px; margin: -13px 0 0 -13px;
+  border-radius: 50%; background: rgba(255,255,255,0.5); pointer-events: none;
+  transform: scale(0); opacity: 0.85;
+}
+.tap-ripple.go { transform: scale(9); opacity: 0; transition: transform 0.6s ease-out, opacity 0.6s ease-out; }
 
 /* publicReply — comment channels: the bot's public reply inside the post UI. */
 .public-reply { display: flex; gap: 10px; align-items: flex-start; }
@@ -327,7 +348,7 @@ html, body { margin: 0; height: 100%; background: #fff; }
 .composer { flex: 0 0 68px; display: flex; align-items: center; gap: 11px; padding: 0 13px; background: var(--composer-bg); }
 .composer .cic { color: var(--accent); display: inline-flex; flex: 0 0 auto; }
 .composer .cbar {
-  flex: 1 1 auto; height: 46px; border-radius: 9999px;
+  flex: 1 1 auto; min-width: 0; overflow: hidden; height: 46px; border-radius: 9999px;
   display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
   background: #f0f2f5; border: 1px solid transparent;
 }
@@ -339,6 +360,33 @@ html, body { margin: 0; height: 100%; background: #fff; }
 .csend .ic { color: #fff; }
 .composer .like { color: var(--accent); display: inline-flex; }
 .composer .cam { flex: 0 0 42px; width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #4F5BD5, #8A3AB9); display: flex; align-items: center; justify-content: center; color: #fff; }
+
+/* Customer compose-typing (DESIGN_DOC_V3 §2): the customer's own message types
+ * into the composer pill (replacing the placeholder) with a blinking caret, then
+ * "sends" as an outgoing bubble and the placeholder is restored. */
+.composer .cbar .composer-typed,
+.wp-composer .composer-typed {
+  flex: 1 1 auto; min-width: 0;
+  font-size: 17px; font-weight: 400; color: #111b21;
+  white-space: nowrap; overflow: hidden; text-overflow: clip;
+}
+.wp-composer .composer-typed { font-size: 15.5px; }
+.composer .cbar.composing, .wp-composer.composing { border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+.composer-typed::after {
+  content: ""; display: inline-block; width: 2px; height: 1.05em;
+  margin-left: 1px; vertical-align: -0.16em;
+  background: var(--accent); animation: ccaret 1s steps(1) infinite;
+}
+@keyframes ccaret { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+
+/* Widget chat composer (the .wp panel input the streaming types into). */
+.wp-composer {
+  flex: 0 0 46px; min-width: 0; overflow: hidden; display: flex; align-items: center; gap: 10px;
+  margin: 4px 12px 8px; padding: 0 8px 0 16px; height: 44px;
+  border-radius: 9999px; background: #f0f2f5; border: 1px solid transparent;
+}
+.wp-composer .ph { flex: 1 1 auto; min-width: 0; font-size: 15.5px; color: #8696a0; white-space: nowrap; overflow: hidden; }
+.wp-composer .wp-send { flex: 0 0 auto; display: inline-flex; color: var(--accent); }
 
 /* ============================================================================
  * INSTAGRAM profile-visible header (DESIGN_DOC §4) — centered profile intro at
@@ -512,6 +560,39 @@ html[data-embedded="1"] .lang-toggle { display: none !important; }
 .ord-body::-webkit-scrollbar { width: 8px; } .ord-body::-webkit-scrollbar-thumb { background: #e4e7ec; border-radius: 8px; }
 .ord-reveal { opacity: 0; transform: translateY(12px); transition: opacity 0.5s ease, transform 0.5s ease; }
 .ord-reveal.shown { opacity: 1; transform: none; }
+
+/* ---- ORDER transition-intro (DESIGN_DOC_V3 §1b/§4): a "saving → saved" card on
+ * the RIGHT that morphs into the dashboard. Both layers stack in the surface. -- */
+.ord-scene { position: relative; width: 100%; height: 100%; }
+.ord-morph { position: absolute; inset: 0; z-index: 1; opacity: 0; transition: opacity 0.55s ease; }
+.ord-morph.shown { opacity: 1; }
+.ord-morph .ord-frame { height: 100%; }
+.ord-intro {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(180deg, #ffffff, #f6f4ff);
+  opacity: 0; transform: scale(0.985);
+  transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.22,1,0.36,1);
+}
+.ord-intro.shown { opacity: 1; transform: none; }
+.ord-intro.gone { opacity: 0; transform: scale(1.03); pointer-events: none; }
+.ord-intro-card {
+  display: flex; flex-direction: column; align-items: center; gap: 18px;
+  padding: 42px 48px; border-radius: 22px; background: #fff; border: 1px solid #ece8fb;
+  box-shadow: 0 30px 64px -28px rgba(87,56,217,0.38), 0 0 0 1px rgba(16,24,40,0.03);
+}
+.ord-intro-icon { width: 58px; height: 58px; display: flex; align-items: center; justify-content: center; }
+.ord-intro-icon .ic { display: inline-flex; }
+.ord-intro-icon.done { animation: ordpop 0.42s cubic-bezier(0.22,1.4,0.4,1); }
+@keyframes ordpop { 0% { transform: scale(0.4); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
+.ord-spin {
+  width: 46px; height: 46px; border-radius: 50%;
+  border: 4px solid #e7e0fb; border-top-color: var(--accent);
+  animation: ordspin 0.85s linear infinite;
+}
+@keyframes ordspin { to { transform: rotate(360deg); } }
+.ord-intro-text { max-width: 300px; font-size: 20px; font-weight: 700; color: #101828; letter-spacing: -0.01em; text-align: center; }
+.ord-intro-text.done { color: #12805f; }
 .ord-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
 .ord-num { font-size: 30px; font-weight: 800; color: #101828; letter-spacing: -0.02em; }
 .ord-badge { display: inline-flex; align-items: center; gap: 7px; font-size: 16px; font-weight: 700; color: var(--ok-green); background: var(--ok-green-bg); border: 1px solid #b7ebe0; border-radius: 9999px; padding: 7px 15px; }
@@ -661,7 +742,7 @@ html[data-embedded="1"] .lang-toggle { display: none !important; }
  * REDUCED MOTION — compose the full static end frame (thread + scene end state).
  * ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
-  .row, .center-pill, .feed, .scene-panel, .headline, .ord-reveal, #phone, .widget-panel, .cta-btn, .bk-day, .bk-slot, .bk-step .num { transition: none !important; }
-  .msg.typing span { animation: none !important; }
+  .row, .center-pill, .feed, .scene-panel, .headline, .ord-reveal, #phone, .widget-panel, .cta-btn, .bk-day, .bk-slot, .bk-step .num, .ord-intro, .ord-morph, .tap-dot { transition: none !important; }
+  .msg.typing span, .composer-typed::after, .ord-spin, .ord-intro-icon.done, .tap-ripple.go { animation: none !important; }
   .widget-launcher.pulsing { animation: none !important; }
 }
