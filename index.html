@@ -269,9 +269,9 @@
 
                 <div class="hidden lg:flex items-center">
                   <div class="flex mr-6">
-                    <button class="!bg-transparent border-none !shadow-none !py-0 hover:text-purple-200 text-white !font-normal flex items-center gap-1">
+                    <button id="langBtn" type="button" class="!bg-transparent border-none !shadow-none !py-0 hover:text-purple-200 text-white !font-normal flex items-center gap-1 cursor-pointer">
                       <i class="ri-global-line"></i>
-                      ES
+                      <span id="langBtnLabel">ES</span>
                     </button>
                   </div>
                   <div class="w-[1px] h-7 bg-brand-gray-200 mr-4"></div>
@@ -1200,19 +1200,31 @@
           b.onclick = function () { select(v.id); };
           tabsEl.appendChild(b);
         });
-        // ES | EN language toggle — drives ?lang on the iframe for every tab (bilingual demo).
-        var langWrap = document.createElement('div');
-        langWrap.className = 'ml-1 inline-flex items-center rounded-full bg-white/15 p-1';
-        ['es', 'en'].forEach(function (lg) {
-          var lb = document.createElement('button');
-          var on = lg === lang;
-          lb.className = 'rounded-full px-3 py-1 text-xs font-bold uppercase transition ' +
-            (on ? 'bg-white text-brand-secondary shadow' : 'text-white/80 hover:text-white');
-          lb.textContent = lg;
-          lb.onclick = function () { if (lg !== lang) { lang = lg; applyFrame(true, true); render(); } };
-          langWrap.appendChild(lb);
-        });
-        tabsEl.appendChild(langWrap);
+        // ES | EN language toggle for the demo. On desktop the site's own header
+        // globe (#langBtn) drives it, so we only render this inline toggle on mobile
+        // (where the header controls are collapsed into the menu).
+        if (mq.matches) {
+          var langWrap = document.createElement('div');
+          langWrap.className = 'ml-1 inline-flex items-center rounded-full bg-white/15 p-1';
+          ['es', 'en'].forEach(function (lg) {
+            var lb = document.createElement('button');
+            var on = lg === lang;
+            lb.className = 'rounded-full px-3 py-1 text-xs font-bold uppercase transition ' +
+              (on ? 'bg-white text-brand-secondary shadow' : 'text-white/80 hover:text-white');
+            lb.textContent = lg;
+            lb.onclick = function () { if (lg !== lang) { setLang(lg); } };
+            langWrap.appendChild(lb);
+          });
+          tabsEl.appendChild(langWrap);
+        }
+      }
+      function setLang(lg) {
+        if (lg === lang) return;
+        lang = lg;
+        var el = document.getElementById('langBtnLabel');
+        if (el) el.textContent = lang.toUpperCase();
+        applyFrame(true, true);
+        render();
       }
       function select(id) {
         if (id === cur) { applyFrame(true, true); return; }
@@ -1231,10 +1243,12 @@
       // design dims (portrait <-> landscape); otherwise just re-fit the scale.
       function onResize() {
         var nowMobile = mq.matches;
-        if (nowMobile !== mobileMode) { mobileMode = nowMobile; applyFrame(true); }
+        if (nowMobile !== mobileMode) { mobileMode = nowMobile; render(); applyFrame(true); }
         else { fit(); }
       }
 
+      var langBtn = document.getElementById('langBtn');
+      if (langBtn) langBtn.onclick = function () { setLang(lang === 'es' ? 'en' : 'es'); };
       applyChrome(curVariant());
       render();
       applyFrame(false);
