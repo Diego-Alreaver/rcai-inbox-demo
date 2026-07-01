@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ReadyChatAI · Tu Instagram contesta como tú, en segundos</title>
+<title>ReadyChatAI · Tu Instagram aprende y no vuelve a fallar</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%237354EF'/%3E%3Ccircle%20cx='12'%20cy='16'%20r='2.6'%20fill='white'/%3E%3Ccircle%20cx='20'%20cy='16'%20r='2.6'%20fill='white'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,53 +22,63 @@ window.DEMO_CONFIG = {
   business: { name: 'Verde Vivo', handle: 'verdevivo.plantas', avatar: 'assets/gen/verdevivo-avatar.webp', online: true },
   igProfile: { followers: { es: '24,1 mil seguidores', en: '24.1K followers' } },
   contentImage: 'assets/gen/verdevivo-plant.webp',
-  scene: null,
+  // "The bot learns": conv1 (bot honestly saves an unknown question) → KB scene
+  // (owner answers it, indexed into RAG) → conv2 (bot now answers it). Real loop.
+  learnFlow: true,
   locales: {
     es: {
       stage: {
         eyebrow: 'Instagram DM · Verde Vivo',
-        h1: 'Contesta como lo harías tú,',
-        h1accent: 'en segundos.',
-        sub: 'Tu bot conoce tus envíos, horarios y cuidados de memoria, y responde cada mensaje al instante, 24/7.',
+        h1: 'Cuando no sabe algo,',
+        h1accent: 'lo aprende de ti.',
+        sub: 'Si el bot no tiene una respuesta, no la inventa: registra la pregunta para que la contestes una vez. La guarda en su base de conocimiento y desde ahí responde solo a quien pregunte lo mismo.',
         ticks: [
-          'Sabe tus envíos, horarios y cuidados de memoria',
-          'Responde en segundos, no en horas',
-          'Contesta con tu tono, hasta mientras duermes'
+          'Nunca inventa: si no sabe, registra la pregunta',
+          'Tú la respondes una sola vez en tu panel',
+          'El bot la aprende y contesta solo la próxima vez'
         ],
         cta: 'Conecta tu Instagram'
       },
-      thread: [
-        { from: 'customer', text: 'holaa 🌿 ¿hacen envíos a domicilio?' },
-        { from: 'bot', text: '¡Hola! 🌿 Sí, enviamos a toda la ciudad. Envío gratis desde $40.000; debajo de eso, $5.000. Llega en 24–48h y va en empaque ecológico para que tu planta llegue feliz 📦' },
-        { from: 'customer', text: 'buenísimo 🙌 oye, ¿y cómo cuido una suculenta? las mías siempre se me secan 😭' },
-        { from: 'bot', text: 'Te entiendo, le pasa a medio mundo 😅 El error #1 es regarlas de más. La suculenta quiere mucha luz indirecta y riego solo cada 10–15 días, cuando la tierra esté totalmente seca. Mejor que le falte a que le sobre 🌵 Te dejo una de nuestras favoritas para empezar:' },
-        { from: 'bot', beat: 'photo' },
-        { from: 'customer', text: 'ahhh con razón 🤦‍♀️ una última: ¿a qué hora abren los sábados?' },
-        { from: 'bot', text: 'Los sábados abrimos de 9:00 a 14:00 en Calle Las Palmas 123 🌱 Entre semana, de 9:00 a 18:00, por si quieres pasar a escoger en persona. Y si te animas, te paso una mini guía de cuidados para principiantes 💚' }
-      ]
+      learn: {
+        conv1: [
+          { from: 'customer', text: 'holaa 🌿 me encanta su tienda. ¿hacen envíos internacionales? me mudo a España el próximo mes 😅' },
+          { from: 'bot', text: '¡Hola! 🌿 Gracias, qué lindo 💚 Mira, te soy honesto: los envíos internacionales aún no los tengo confirmados y no quiero inventarte nada. Ya registré tu pregunta y mi equipo la va a responder en breve — apenas la tenga, te aviso y podré ayudar al toque a quien pregunte lo mismo 🙌' }
+        ],
+        question: { es: '¿Hacen envíos internacionales a España?', en: 'Do you ship internationally to Spain?' },
+        answer: { es: '¡Sí! Enviamos a España vía courier. Llega en 5–8 días hábiles y el costo se calcula al finalizar la compra según el peso 🌍', en: 'Yes! We ship to Spain via courier. It arrives in 5–8 business days and the cost is calculated at checkout by weight 🌍' },
+        conv2: [
+          { from: 'customer', text: 'hola! una consulta rápida: ¿envían a España? 🇪🇸' },
+          { from: 'bot', beat: 'learnedPill' },
+          { from: 'bot', text: '¡Hola! 🌿 ¡Sí! Enviamos a España vía courier ✈️ Llega en 5–8 días hábiles y el costo se calcula al finalizar la compra según el peso. ¿Te ayudo a armar tu pedido? 💚' }
+        ]
+      }
     },
     en: {
       stage: {
         eyebrow: 'Instagram DM · Verde Vivo',
-        h1: 'It answers just like you would,',
-        h1accent: 'in seconds.',
-        sub: 'Your bot knows your shipping, hours and plant care by heart, and answers every message instantly, 24/7.',
+        h1: 'When it doesn’t know,',
+        h1accent: 'it learns from you.',
+        sub: 'If the bot doesn’t have an answer, it doesn’t make one up: it logs the question for you to answer once. It saves it to its knowledge base and answers on its own from then on.',
         ticks: [
-          'Knows your shipping, hours and care tips by heart',
-          'Replies in seconds, not in hours',
-          'Answers in your tone, even while you sleep'
+          'Never makes things up: if unsure, it logs the question',
+          'You answer it once in your dashboard',
+          'The bot learns it and answers on its own next time'
         ],
         cta: 'Connect your Instagram'
       },
-      thread: [
-        { from: 'customer', text: 'hii 🌿 do you deliver to my home?' },
-        { from: 'bot', text: 'Hi there! 🌿 Yes, we deliver across the whole city. Free shipping over $40,000; under that, it’s $5,000. It arrives in 24–48h in eco-friendly packaging so your plant shows up happy 📦' },
-        { from: 'customer', text: 'awesome 🙌 hey, how do I care for a succulent? mine always dry out on me 😭' },
-        { from: 'bot', text: 'I feel you, it happens to almost everyone 😅 The #1 mistake is overwatering. A succulent wants lots of indirect light and water only every 10–15 days, when the soil is fully dry. Better too little than too much 🌵 Here’s one of our favorites to start with:' },
-        { from: 'bot', beat: 'photo' },
-        { from: 'customer', text: 'ahhh that explains it 🤦‍♀️ one last thing: what time do you open on Saturdays?' },
-        { from: 'bot', text: 'On Saturdays we’re open 9 AM–2 PM at Calle Las Palmas 123 🌱 Weekdays, 9 AM–6 PM, in case you’d like to drop by and pick one in person. And if you’re up for it, I can send you a quick beginner care guide 💚' }
-      ]
+      learn: {
+        conv1: [
+          { from: 'customer', text: 'hii 🌿 I love your shop. do you ship internationally? I’m moving to Spain next month 😅' },
+          { from: 'bot', text: 'Hi there! 🌿 Thank you, that’s so kind 💚 I’ll be honest with you: I don’t have international shipping confirmed yet and I don’t want to make something up. I’ve logged your question and my team will answer it shortly — as soon as I have it, I’ll let you know and I’ll be able to help anyone who asks the same, instantly 🙌' }
+        ],
+        question: { es: '¿Hacen envíos internacionales a España?', en: 'Do you ship internationally to Spain?' },
+        answer: { es: '¡Sí! Enviamos a España vía courier. Llega en 5–8 días hábiles y el costo se calcula al finalizar la compra según el peso 🌍', en: 'Yes! We ship to Spain via courier. It arrives in 5–8 business days and the cost is calculated at checkout by weight 🌍' },
+        conv2: [
+          { from: 'customer', text: 'hi! quick one: do you ship to Spain? 🇪🇸' },
+          { from: 'bot', beat: 'learnedPill' },
+          { from: 'bot', text: 'Hi there! 🌿 Yes! We ship to Spain via courier ✈️ It arrives in 5–8 business days and the cost is calculated at checkout by weight. Want me to help you put your order together? 💚' }
+        ]
+      }
     }
   }
 };

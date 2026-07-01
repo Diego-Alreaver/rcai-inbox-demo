@@ -23,11 +23,13 @@ window.DEMO_CONFIG = {
   igProfile: { followers: { es: '18,4 mil seguidores', en: '18.4K followers' } },
   contentImage: 'assets/gen/aura-dress.webp',
   scene: 'order',
-  // Public-post context the flow starts from. The conversation moves to the DM
-  // (shown in the thread) where the order is built and confirmed — no payment link.
+  commentFlow: true,
+  // Public-post context the flow starts from. The phone first shows the post +
+  // the customer's comment + the bot's PUBLIC reply, then cross-fades to the DM
+  // (the thread) where the order is built and confirmed — no payment link.
   post: {
     image: 'assets/gen/aura-dress.webp',
-    sponsored: false,
+    kind: 'post',
     caption: {
       es: '✨ Nuevo drop: Vestido Aura midi en lino. El básico elegante que va de la oficina al brunch sin cambiarte 🤍 #NuevaColección',
       en: '✨ New drop: the Aura midi dress in linen. The elegant staple that takes you from office to brunch without a change 🤍 #NewCollection'
@@ -69,14 +71,13 @@ window.DEMO_CONFIG = {
         cta: 'Conecta tu Instagram'
       },
       thread: [
-        { from: 'customer', text: 'Aaay me encanta este vestido 😍 ¿cuánto cuesta? ¿les queda en talla M?' },
-        { from: 'bot', beat: 'publicReply', text: '¡Hola, hermosa! 🤍 Gracias por comentar ✨ Te respondimos por DM con el precio y las tallas disponibles — ¡revisa tu bandeja! 💬👀' },
         { from: 'bot', text: '¡Hola de nuevo por aquí! 👋 El vestido que comentaste es el Aura midi en lino. Cuesta $139.900 con envío gratis, y sí — ¡nos queda en talla M! 🙌 Mira cómo se ve 👇' },
         { from: 'bot', beat: 'photo' },
         { from: 'customer', text: 'Me encanta 🥹 lo quiero en M porfa' },
         { from: 'bot', text: '¡Excelente elección! 😍 Te lo aparto en talla M. Una última cosa para dejar tu pedido listo: ¿lo quieres con envío a domicilio o prefieres retirarlo en la tienda?' },
         { from: 'customer', text: 'Con envío a domicilio porfa 🏠' },
-        { from: 'bot', beat: 'orderConfirm', text: '¡Perfecto! 🎉 Tu pedido quedó registrado con el número #2074 — Vestido Aura midi (talla M), envío a domicilio. Alguien de Aura Boutique te escribirá por aquí para coordinar el pago y afinar los detalles. ¡Gracias por elegirnos! 🤍' }
+        { from: 'bot', beat: 'orderConfirm', text: '¡Perfecto! 🎉 Tu pedido quedó registrado con el número #2074 — Vestido Aura midi (talla M), envío a domicilio. Alguien de Aura Boutique te escribirá por aquí para coordinar el pago y afinar los detalles. ¡Gracias por elegirnos! 🤍' },
+        { from: 'bot', beat: 'openOrder', text: 'Y aquí lo tienes: tu pedido queda guardado en el sistema para que tu equipo lo revise cuando quiera 👇' }
       ]
     },
     en: {
@@ -93,14 +94,13 @@ window.DEMO_CONFIG = {
         cta: 'Connect your Instagram'
       },
       thread: [
-        { from: 'customer', text: 'Omg I love this dress 😍 how much is it? do you have it in size M?' },
-        { from: 'bot', beat: 'publicReply', text: 'Hi lovely! 🤍 Thanks for commenting ✨ We just replied in your DMs with the price and the sizes we have — check your inbox! 💬👀' },
         { from: 'bot', text: 'Hi again, over here! 👋 The dress you commented on is the Aura midi in linen. It’s $139,900 with free shipping, and yes — we have it in size M! 🙌 Here’s how it looks 👇' },
         { from: 'bot', beat: 'photo' },
         { from: 'customer', text: 'I love it 🥹 I’ll take it in M please' },
         { from: 'bot', text: 'Great choice! 😍 I’ll set one aside in size M. One last thing to lock in your order: would you like home delivery or store pickup?' },
         { from: 'customer', text: 'Home delivery please 🏠' },
-        { from: 'bot', beat: 'orderConfirm', text: 'Perfect! 🎉 Your order is in with number #2074 — Aura midi dress (size M), home delivery. Someone from Aura Boutique will message you here to arrange payment and finalize the details. Thanks for choosing us! 🤍' }
+        { from: 'bot', beat: 'orderConfirm', text: 'Perfect! 🎉 Your order is in with number #2074 — Aura midi dress (size M), home delivery. Someone from Aura Boutique will message you here to arrange payment and finalize the details. Thanks for choosing us! 🤍' },
+        { from: 'bot', beat: 'openOrder', text: 'And here it is: your order stays saved in the system for your team to review anytime 👇' }
       ]
     }
   }

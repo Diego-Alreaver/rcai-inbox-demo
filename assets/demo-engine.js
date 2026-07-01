@@ -53,7 +53,7 @@
     step2:   { es:"Confirmar", en:"Confirm" },
     title:   { es:"Elige fecha y hora", en:"Choose Date & Time" },
     subtitle:{ es:"Selecciona tu fecha y horario preferido", en:"Choose your preferred date and time slot" },
-    selectDate:{ es:"Elige una fecha", en:"Select New Date" },
+    selectDate:{ es:"Elige una fecha", en:"Select a Date" },
     month:   { es:"Junio 2026", en:"June 2026" },
     times:   { es:"Horarios disponibles", en:"Available Times" },
     timesEmpty:{ es:"Selecciona una fecha para ver los horarios disponibles", en:"Please select a date to view available time slots" },
@@ -69,10 +69,28 @@
     es:["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"],
     en:["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
   };
+  var KB_T = {
+    tab:      { es:"Base de conocimiento", en:"Knowledge Base" },
+    title:    { es:"Base de conocimiento", en:"Knowledge Base" },
+    unanswered:{ es:"Sin responder", en:"Unanswered" },
+    answered: { es:"Respondidas", en:"Answered" },
+    open:     { es:"Abierta", en:"Open" },
+    resolved: { es:"Resuelta", en:"Resolved" },
+    answerLabel:{ es:"Respuesta", en:"Answer" },
+    send:     { es:"Enviar", en:"Send" },
+    learning: { es:"El bot está aprendiendo…", en:"The bot is learning…" },
+    learned:  { es:"¡Aprendido! El bot ya sabe responder esto", en:"Learned! The bot can now answer this" },
+    ago2:     { es:"hace 2 min", en:"2 min ago" }
+  };
+  var LEARN_T = {
+    divider:    { es:"Otra clienta, más tarde 🌙", en:"Another customer, later 🌙" },
+    learnedPill:{ es:"El bot aprendió esta respuesta ✨", en:"The bot learned this answer ✨" }
+  };
 
   /* ---- Engine state. ----------------------------------------------------- */
   var cfg, lang, mode, platform, surface, reduce;
   var stageEl, feedEl, threadEl, phoneEl, headlineEl, presenceNode, typingNode = null;
+  var igIntroNode = null;
   var timers = [];
 
   /* ---- Small helpers. ---------------------------------------------------- */
@@ -337,9 +355,262 @@
     var b = cfg.business || {};
     var followers = cfg.igProfile && cfg.igProfile.followers ? tr(cfg.igProfile.followers) : "";
     var meta = "Instagram" + (followers ? " · " + followers : "");
-    var node = el("ig-profile", '<div class="ig-pic"><img src="' + attr(b.avatar) + '" alt=""/></div>' +
-      '<div class="ig-pname">' + (b.name || "") + "</div><div class=\"ig-pmeta\">" + meta + "</div>");
-    node.classList.add("shown");
+    // Pinned overlay at the TOP of the thread (NOT a feed item), so it never
+    // sits at the bottom; it fades away on the first message. (DESIGN_DOC_V2 §3)
+    var node = document.createElement("div");
+    node.className = "ig-profile";
+    node.innerHTML = '<div class="ig-pic"><img src="' + attr(b.avatar) + '" alt=""/></div>' +
+      '<div class="ig-pname">' + (b.name || "") + "</div><div class=\"ig-pmeta\">" + meta + "</div>";
+    (threadEl || feedEl).appendChild(node);
+    igIntroNode = node;
+    reveal(node);
+  }
+  function dismissIgProfile() {
+    if (!igIntroNode) return;
+    var n = igIntroNode; igIntroNode = null;
+    n.classList.add("gone");
+    later(600, function () { if (n.parentNode) n.parentNode.removeChild(n); });
+  }
+
+  /* ======================================================================
+   * POST VIEW + comment→DM (comment-flow channels). DESIGN_DOC_V2 §5.
+   * ==================================================================== */
+  var AV_COLORS = ["#f0729a", "#7a9cf0", "#5ab98f", "#e0a34a", "#c07af0"];
+  function initialsOf(name) {
+    return String(name || "?").replace(/^@/, "").split(/[\s._-]+/)
+      .map(function (w) { return w.charAt(0); }).slice(0, 2).join("").toUpperCase();
+  }
+  function avColor(name) { var s = String(name || "x"); return AV_COLORS[s.length % AV_COLORS.length]; }
+
+  function postScreenHTML() {
+    var b = cfg.business || {};
+    var p = cfg.post || {};
+    var isAd = p.kind === "ad";
+    var handle = b.handle ? String(b.handle).replace(/^@/, "") : (b.name || "");
+    var tag = isAd ? (lang === "es" ? "Publicidad" : "Sponsored") : (lang === "es" ? "Publicación" : "Post");
+    var img = p.image || cfg.contentImage;
+    var actions = platform === "instagram"
+      ? icon("ig-heart", 25) + icon("message-square", 23) + icon("send", 22) + '<span class="pa-right">' + icon("bookmark", 22) + "</span>"
+      : icon("ig-heart", 24) + icon("message-square", 22) + icon("send", 21);
+    var likes = lang === "es" ? "1.204 Me gusta" : "1,204 likes";
+    var commentPh = lang === "es" ? "Añade un comentario…" : "Add a comment…";
+    return '<div class="post-screen" id="post-screen">' +
+      '<div class="post-topbar"><span class="ic">' + ic("chevron-left", 24, { stroke: 2.2 }) + "</span>" +
+        '<span class="ptb-title">' + tag + '</span><span class="ic">' + ic("more-v", 20) + "</span></div>" +
+      '<div class="post-scroll">' +
+        '<div class="post-author"><div class="post-av"><img src="' + attr(b.avatar) + '" alt=""/></div>' +
+          "<div><div class=\"post-name\">" + handle + "</div>" +
+            '<div class="post-tag">' + (isAd ? tag : (b.name || "")) + "</div></div>" +
+          '<span class="ic post-more">' + ic("more-v", 20) + "</span></div>" +
+        '<div class="post-media"><img src="' + attr(img) + '" alt="" decoding="async"/></div>' +
+        '<div class="post-actions">' + actions + "</div>" +
+        '<div class="post-likes">' + likes + "</div>" +
+        '<div class="post-caption"><b>' + handle + "</b> " + tr(p.caption) + "</div>" +
+        '<div class="post-comments" id="post-comments"></div>' +
+        '<div class="post-handoff" id="post-handoff">' + ic("send", 16, { color: "#7354ef" }) + " " + tr(handoffLabel()) + "</div>" +
+      "</div>" +
+      '<div class="post-composer"><div class="pcx-av"></div><span class="pcx-ph">' + commentPh + "</span></div>" +
+    "</div>";
+  }
+  function handoffLabel() {
+    var toMsgr = platform === "facebook";
+    return {
+      es: toMsgr ? "Respondido — seguimos por Messenger 💬" : "Respondido — seguimos por mensaje directo 💬",
+      en: toMsgr ? "Replied — continuing in Messenger 💬" : "Replied — continuing in Direct Messages 💬"
+    };
+  }
+  function runCommentFlow(thread) {
+    var screen = phoneEl.querySelector(".screen");
+    if (!screen) { playTimeline(thread); return; }
+    var host = document.createElement("div"); host.innerHTML = postScreenHTML();
+    var ps = host.firstChild; screen.appendChild(ps); reveal(ps);
+    var comments = ps.querySelector("#post-comments");
+    var handoff = ps.querySelector("#post-handoff");
+    var scroll = ps.querySelector(".post-scroll");
+    function toBottom() { if (scroll) later(60, function () { scroll.scrollTop = scroll.scrollHeight; }); }
+    var b = cfg.business || {};
+    var p = cfg.post || {};
+    var cUser = (p.comment && p.comment.user) || "user";
+    var t = 1500;
+    // 1) the customer's comment on the post
+    after(t, function () {
+      var it = document.createElement("div"); it.className = "pc-item";
+      it.innerHTML = '<div class="pc-av" style="background:' + avColor(cUser) + '">' + initialsOf(cUser) + "</div>" +
+        '<div class="pc-body"><span class="pc-user">' + cUser + '</span><div class="pc-text">' + tr(p.comment && p.comment.text) + "</div></div>";
+      comments.appendChild(it); reveal(it);
+    });
+    // 2) the business "replying" (typing) on the comment
+    t += 1600; var typingRow = null;
+    after(t, function () {
+      typingRow = document.createElement("div"); typingRow.className = "pc-item pc-reply shown";
+      typingRow.innerHTML = '<div class="pc-av"><img src="' + attr(b.avatar) + '" alt=""/></div>' +
+        '<div class="pc-body"><span class="pc-user">' + (b.name || "") + '</span><div class="pc-typing"><span></span><span></span><span></span></div></div>';
+      comments.appendChild(typingRow); toBottom();
+    });
+    // 3) the PUBLIC reply
+    t += 1800;
+    after(t, function () {
+      if (typingRow && typingRow.parentNode) typingRow.parentNode.removeChild(typingRow);
+      var it = document.createElement("div"); it.className = "pc-item pc-reply";
+      it.innerHTML = '<div class="pc-av"><img src="' + attr(b.avatar) + '" alt=""/></div>' +
+        '<div class="pc-body"><span class="pc-user">' + (b.name || "") + '</span><span class="pc-badge">' +
+          (lang === "es" ? "Responde" : "Replied") + '</span><div class="pc-text">' + tr(p.publicReply) + "</div></div>";
+      comments.appendChild(it); reveal(it); toBottom();
+    });
+    // 4) hand-off pill, then cross-fade to the DM and play it
+    t += 2200;
+    after(t, function () { if (handoff) handoff.classList.add("shown"); toBottom(); });
+    t += 1800;
+    after(t, function () {
+      ps.classList.add("gone");
+      later(520, function () { if (ps.parentNode) ps.parentNode.removeChild(ps); });
+      playTimeline(thread);
+    });
+  }
+
+  /* ======================================================================
+   * LEARN FLOW (IG DM "the bot learns"): conv1 → KB scene → conv2.
+   * DESIGN_DOC_V2 §7. The honest loop: bot saves an unanswered question, the
+   * owner answers it in the KB, then the bot answers a similar one next time.
+   * ==================================================================== */
+  function playSubThread(thread, startT, onDone) {
+    var t = startT;
+    thread.forEach(function (item, idx) {
+      var sent = isSent(item.from);
+      if (idx === 0) t += FIRST; else if (sent) t += READ_GAP; else t += AFTER_TYPING;
+      // On the FIRST bubble, fade + remove the IG profile intro (DESIGN_DOC_V2 §3);
+      // mirrors the normal-flow dismiss (t-220). No-op for conv2 (igIntroNode null).
+      if (idx === 0 && igIntroNode) after(Math.max(0, t - 220), dismissIgProfile);
+      if (item.beat === "learnedPill") {
+        after(t, function () { reveal(renderItem(item)); });
+        t += 500; return;
+      }
+      if (!sent) {
+        after(t, showTyping); t += TYPING;
+        after(t, function () { hideTyping(); reveal(renderItem(item)); });
+      } else {
+        after(t, function () { reveal(renderItem(item)); });
+      }
+    });
+    t += BEAT_HOLD;
+    if (onDone) after(t, onDone);
+    return t;
+  }
+
+  function kbHTML(L) {
+    var q = tr(L.question);
+    return '<div class="kb-frame">' +
+      '<div class="kb-titlebar"><div class="kb-dots"><span></span><span></span><span></span></div>' +
+        '<span class="kb-tabname">' + ic("message-square", 16) + " " + tr(KB_T.tab) + "</span></div>" +
+      '<div class="kb-learnbar" id="kb-learnbar">🧠 ' + tr(KB_T.learning) + "</div>" +
+      '<div class="kb-head"><div class="kb-title">' + tr(KB_T.title) + "</div>" +
+        '<div class="kb-tabs"><span class="kb-tab active">' + tr(KB_T.unanswered) + ' <b id="kb-count">1</b></span>' +
+          '<span class="kb-tab">' + tr(KB_T.answered) + ' <b id="kb-answered-count">0</b></span></div></div>' +
+      '<div class="kb-body">' +
+        '<div class="kb-list"><div class="kb-qrow selected" id="kb-qrow">' +
+          '<span class="kb-dot"></span><div class="kb-qmeta"><div class="kb-qtext">' + q + "</div>" +
+            '<div class="kb-qtime">' + ic("ig-logo", 14) + " " + tr(KB_T.ago2) + "</div></div></div></div>" +
+        '<div class="kb-detail"><div class="kb-detail-head">' + ic("ig-logo", 15) + " Instagram " +
+          '<span class="kb-badge open" id="kb-badge">' + tr(KB_T.open) + "</span></div>" +
+          '<div class="kb-question">' + q + "</div>" +
+          '<div class="kb-answer-label">' + tr(KB_T.answerLabel) + "</div>" +
+          '<div class="kb-textarea" id="kb-textarea"></div>' +
+          '<div class="kb-actions"><button type="button" class="kb-send" id="kb-send">' + ic("send", 18, { color: "#fff" }) + " " + tr(KB_T.send) + "</button></div>" +
+        "</div></div></div>";
+  }
+  function typeInto(node, text, cps, done) {
+    node.innerHTML = '<span class="kb-typed"></span><span class="kb-caret"></span>';
+    var typed = node.querySelector(".kb-typed");
+    var caret = node.querySelector(".kb-caret");
+    var i = 0;
+    function step() {
+      if (i >= text.length) { if (caret && caret.parentNode) caret.parentNode.removeChild(caret); if (done) done(); return; }
+      i += 1; typed.textContent = text.slice(0, i);
+      timers.push(setTimeout(step, Math.round(1000 / cps)));
+    }
+    step();
+  }
+  function animateKb(container, L, onLearned) {
+    var ta = container.querySelector("#kb-textarea");
+    var send = container.querySelector("#kb-send");
+    var badge = container.querySelector("#kb-badge");
+    var row = container.querySelector("#kb-qrow");
+    var count = container.querySelector("#kb-count");
+    var bar = container.querySelector("#kb-learnbar");
+    var answer = tr(L.answer);
+    later(1100, function () {
+      if (ta) ta.classList.add("typing");
+      typeInto(ta, answer, 33, function () {
+        later(500, function () { if (send) send.classList.add("ready"); });
+        later(1200, function () { if (send) send.classList.add("pressed"); });
+        later(1520, function () {
+          if (send) send.classList.remove("pressed");
+          if (ta) ta.classList.remove("typing");
+          if (badge) { badge.classList.remove("open"); badge.classList.add("resolved"); badge.textContent = tr(KB_T.resolved); }
+          if (row) row.classList.add("resolved");
+          if (count) count.textContent = "0";
+          var answered = container.querySelector("#kb-answered-count"); if (answered) answered.textContent = "1";
+          if (bar) { bar.classList.add("done"); bar.innerHTML = "✨ " + tr(KB_T.learned); }
+          if (onLearned) later(1000, onLearned);
+        });
+      });
+    });
+  }
+  function openKbScene(L, onLearned, staticEnd) {
+    makeThreadScrollable();
+    if (mode === "desktop" && headlineEl) headlineEl.classList.add("faded");
+    var panel = document.createElement("div");
+    panel.className = "scene-panel kb-panel";
+    panel.innerHTML = kbHTML(L);
+    stageEl.appendChild(panel);
+    if (staticEnd) {
+      panel.classList.add("shown");
+      var ta = panel.querySelector("#kb-textarea"); if (ta) ta.textContent = tr(L.answer);
+      var badge = panel.querySelector("#kb-badge"); if (badge) { badge.classList.remove("open"); badge.classList.add("resolved"); badge.textContent = tr(KB_T.resolved); }
+      var row = panel.querySelector("#kb-qrow"); if (row) row.classList.add("resolved");
+      var count = panel.querySelector("#kb-count"); if (count) count.textContent = "0";
+      var answered = panel.querySelector("#kb-answered-count"); if (answered) answered.textContent = "1";
+      var bar = panel.querySelector("#kb-learnbar"); if (bar) { bar.classList.add("done"); bar.innerHTML = "✨ " + tr(KB_T.learned); }
+      var send = panel.querySelector("#kb-send"); if (send) send.classList.add("ready");
+      return;
+    }
+    reveal(panel);
+    animateKb(panel, L, onLearned);
+  }
+  function resetThreadForConv2() {
+    if (mode === "mobile") { var sp = stageEl.querySelector(".kb-panel"); if (sp) { sp.classList.add("gone"); (function (n) { later(520, function () { if (n.parentNode) n.parentNode.removeChild(n); }); })(sp); } }
+    if (feedEl) feedEl.innerHTML = "";
+    if (threadEl) {
+      threadEl.classList.remove("scrollable"); threadEl.scrollTop = 0;
+      var ig = threadEl.querySelector(".ig-profile"); if (ig && ig.parentNode) ig.parentNode.removeChild(ig);
+    }
+    igIntroNode = null;
+    typingNode = null;
+  }
+  function startConv2(L) {
+    resetThreadForConv2();
+    var t = 300;
+    after(t, function () { var d = el("center-pill pill-date", tr(LEARN_T.divider)); reveal(d); });
+    playSubThread(L.conv2 || [], t + 200, function () { makeThreadScrollable(); });
+  }
+  function runLearnFlow() {
+    var L = locale().learn || {};
+    if (platform === "instagram") igProfileIntro();
+    var t = 200;
+    after(t, addDateSep);
+    if (igIntroNode) t += 1000;
+    t = playSubThread(L.conv1 || [], t, null);
+    t += PRE_SCENE;
+    after(t, function () { openKbScene(L, function () { startConv2(L); }); });
+  }
+  function renderLearnStatic(L) {
+    // Static end frame: conv2 (the "bot knows" end) + KB resolved on the right.
+    addDateSep();
+    var d = el("center-pill pill-date", tr(LEARN_T.divider)); d.classList.add("shown");
+    (L.conv2 || []).forEach(function (item) { renderItem(item).classList.add("shown"); });
+    var pills = feedEl.querySelectorAll(".center-pill"); for (var i = 0; i < pills.length; i++) pills[i].classList.add("shown");
+    makeThreadScrollable();
+    openKbScene(L, null, true);
   }
 
   // Render a single thread item (returns the row node).
@@ -359,6 +630,9 @@
       return el("row in beat-row", '<div class="public-reply"><div class="pr-av"><img src="' + attr(b.avatar) + '" alt=""/></div>' +
         '<div class="pr-body"><div class="pr-name">' + (b.name || "") + '</div><div class="pr-text">' + tr(item.text) + "</div></div></div>");
     }
+    if (beat === "learnedPill") {
+      return el("learn-pill", ic("check-circle-fill", 16, { color: "#7f56d9" }) + " " + tr(LEARN_T.learnedPill));
+    }
     // plain bubble (includes orderConfirm — DESIGN_DOC: a NORMAL text bubble)
     if (sent) return el("row out", '<div class="msg msg-out">' + tr(item.text) + metaOut() + "</div>");
     return el("row in", avatar() + '<div class="msg msg-in">' + tr(item.text) + metaIn() + "</div>");
@@ -374,17 +648,21 @@
     reduce = global.matchMedia && global.matchMedia("(prefers-reduced-motion: reduce)").matches;
     var thread = locale().thread || [];
     if (surface === "widget") { runWidget(thread); return; }
+    if (cfg.learnFlow) { if (reduce) renderLearnStatic(locale().learn || {}); else runLearnFlow(); return; }
     if (reduce) { renderStatic(thread); return; }
+    if (cfg.commentFlow) { runCommentFlow(thread); return; }
     playTimeline(thread);
   }
 
   function playTimeline(thread) {
-    if (platform === "instagram") igProfileIntro();
+    if (platform === "instagram" && !cfg.commentFlow) igProfileIntro();
     var t = 200;
     after(t, addDateSep);
+    if (igIntroNode) t += 1000;   // let the IG profile intro breathe before msg 1
     thread.forEach(function (item, idx) {
       var sent = isSent(item.from);
       if (idx === 0) t += FIRST; else if (sent) t += READ_GAP; else t += AFTER_TYPING;
+      if (idx === 0 && igIntroNode) after(Math.max(0, t - 220), dismissIgProfile);
       if (!sent) {
         after(t, showTyping);
         t += TYPING;
@@ -392,7 +670,7 @@
       } else {
         after(t, function () { reveal(renderItem(item)); });
       }
-      if (item.beat === "orderConfirm" || item.beat === "bookingButton") {
+      if (item.beat === "openOrder" || item.beat === "bookingButton") {
         t += PRE_SCENE;
         after(t, startScene);
       }
@@ -408,7 +686,7 @@
 
   function renderStatic(thread) {
     // Full static end frame: whole thread + (if any) the scene end-state.
-    if (platform === "instagram") igProfileIntro();
+    // (No ig-profile intro: it belongs to the START of the flow, gone by the end.)
     addDateSep();
     var c = chrome();
     // mark date pills shown
@@ -574,7 +852,10 @@
     }
     if (instant) { showConfirm(); return; }
     if (s1) s1.classList.add("hide");
-    later(380, showConfirm);
+    // Overlap the fades: the calendar (.bk-fade 0.25s) is nearly transparent by
+    // ~200ms, and the confirm card starts fading in then — so the panel body
+    // never goes fully blank between the two steps. (DESIGN_DOC_V2 §4/§6)
+    later(200, showConfirm);
   }
   function bookingFinalState(container) {
     var picked = (cfg.bookingService || {}).picked || {};
@@ -586,10 +867,12 @@
   function animateBooking(container) {
     var picked = (cfg.bookingService || {}).picked || {};
     var pickedTime = tr(picked.time) || BOOK_T.slots[lang][1];
-    later(900, function () { var p = container.querySelector('.bk-day[data-pick="1"]'); if (p) p.classList.add("pick"); });
-    later(1700, function () { bookingRevealTimes(container, pickedTime); });
-    later(2700, function () { bookingSelectSlot(container, pickedTime); });
-    later(4000, function () { bookingGoToConfirm(container); });
+    // Wait for the panel slide+settle (~0.74s) before touching the calendar, then
+    // pace the beats with air so nothing "pops". (DESIGN_DOC_V2 §4/§6)
+    later(1250, function () { var p = container.querySelector('.bk-day[data-pick="1"]'); if (p) p.classList.add("pick"); });
+    later(2150, function () { bookingRevealTimes(container, pickedTime); });
+    later(3200, function () { bookingSelectSlot(container, pickedTime); });
+    later(4700, function () { bookingGoToConfirm(container); });
   }
 
   /* ======================================================================

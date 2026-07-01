@@ -1146,15 +1146,46 @@
         if (urlEl && v.url) urlEl.textContent = v.url;
       }
 
-      // Set the iframe + scaler to the active design size, (re)load the right src, then fit.
-      function applyFrame(bust) {
+      // Cross-fade config (item 1): fade the demo container out, swap the iframe src while
+      // hidden (so the browser's white "loading" frame never shows), then fade back in on load.
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var FADE_MS = 220;
+      var fadeTimer = null, safetyTimer = null;
+
+      // Opacity-only transition so fit()'s transform (scale) stays instant, not animated.
+      if (scalerEl && !reduceMotion) { scalerEl.style.transition = 'opacity ' + FADE_MS + 'ms ease'; }
+
+      // Fade the demo back in once the freshly-loaded iframe document is ready.
+      frame.addEventListener('load', function () {
+        clearTimeout(safetyTimer);
+        if (scalerEl && !reduceMotion) { scalerEl.style.opacity = '1'; }
+      });
+
+      // Commit the current variant/lang to the iframe: chrome bar, stage size, (re)load src, re-fit.
+      // Runs while the container is hidden during an animated swap, so any dim/chrome change is masked.
+      function commitFrame(bust) {
         var s = spec(curVariant());
         curW = s.w; curH = s.h;
+        applyChrome(curVariant());
         if (scalerEl) { scalerEl.style.width = curW + 'px'; scalerEl.style.height = curH + 'px'; }
         frame.style.width = curW + 'px';
         frame.style.height = curH + 'px';
         frame.src = s.src + '?lang=' + lang + (bust ? ('&r=' + Date.now()) : '');
         fit();
+      }
+
+      // Set the iframe to the active design size + src. When animate is set (and motion is allowed),
+      // cross-fade: opacity 1->0 over FADE_MS, swap src while hidden, opacity 0->1 on the iframe 'load'.
+      function applyFrame(bust, animate) {
+        if (!animate || reduceMotion || !scalerEl) { commitFrame(bust); return; }
+        clearTimeout(fadeTimer);
+        clearTimeout(safetyTimer);
+        scalerEl.style.opacity = '0';                 // fade OUT the old page (still showing old content)
+        fadeTimer = setTimeout(function () {
+          commitFrame(bust);                          // swap src while hidden -> no white flash
+          // fade IN happens in the 'load' handler; safety net in case load never fires:
+          safetyTimer = setTimeout(function () { scalerEl.style.opacity = '1'; }, 1200);
+        }, FADE_MS);
       }
 
       function render() {
@@ -1178,16 +1209,15 @@
           lb.className = 'rounded-full px-3 py-1 text-xs font-bold uppercase transition ' +
             (on ? 'bg-white text-brand-secondary shadow' : 'text-white/80 hover:text-white');
           lb.textContent = lg;
-          lb.onclick = function () { if (lg !== lang) { lang = lg; applyFrame(true); render(); } };
+          lb.onclick = function () { if (lg !== lang) { lang = lg; applyFrame(true, true); render(); } };
           langWrap.appendChild(lb);
         });
         tabsEl.appendChild(langWrap);
       }
       function select(id) {
-        if (id === cur) { applyFrame(true); return; }
+        if (id === cur) { applyFrame(true, true); return; }
         cur = id;
-        applyChrome(curVariant());
-        applyFrame(true);
+        applyFrame(true, true);   // chrome bar toggles inside the hidden swap (commitFrame)
         render();
       }
       function fit() {
