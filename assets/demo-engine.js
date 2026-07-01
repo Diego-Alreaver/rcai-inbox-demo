@@ -172,13 +172,13 @@
     }).join("");
     if (mode === "mobile") {
       return '<div class="mobile-topbar">' +
-        '<span class="eyebrow">' + BOLT + brandMark() + " " + tr(s.eyebrow) + "</span>" +
+        '<span class="eyebrow">' + brandMark() + " " + tr(s.eyebrow) + "</span>" +
         langToggle() +
       "</div>";
     }
     return '<div class="headline" id="headline">' +
       langToggle() +
-      '<span class="eyebrow">' + BOLT + brandMark() + " " + tr(s.eyebrow) + "</span>" +
+      '<span class="eyebrow">' + brandMark() + " " + tr(s.eyebrow) + "</span>" +
       "<h1>" + tr(s.h1) + '<br><span class="accent">' + tr(s.h1accent) + "</span></h1>" +
       "<p>" + tr(s.sub) + "</p>" +
       '<div class="ticks">' + ticks + "</div>" +
@@ -748,7 +748,7 @@
         t += streamDuration(item);
       }
       if (item.beat === "orderConfirm" || item.beat === "bookingButton") {
-        if (item.beat === "bookingButton") after(Math.max(t, t + PRE_SCENE - 1650), tapCta);
+        if (item.beat === "bookingButton") after(Math.max(t, t + PRE_SCENE - 1500), tapCta);
         t += PRE_SCENE;
         after(t, startScene);
       }
@@ -777,19 +777,19 @@
     dot.style.left = cx + "px";
     dot.style.top = cy + "px";
     wrap.appendChild(dot);
-    reveal(dot);                                   // dot glides onto the button
-    later(430, function () {
-      dot.classList.add("press");                  // finger down
-      btn.classList.add("pressed");                // button scales to ~0.96
+    reveal(dot);                                   // dot glides slowly onto the button
+    later(950, function () {
+      dot.classList.add("press");                  // finger down (held, pronounced)
+      btn.classList.add("pressed");                // button scales to ~0.93
       var rip = document.createElement("span");
       rip.className = "tap-ripple";
       rip.style.left = (btn.offsetWidth * 0.66) + "px";
       rip.style.top = (btn.offsetHeight / 2) + "px";
       btn.appendChild(rip);
-      later(20, function () { rip.classList.add("go"); });
+      later(30, function () { rip.classList.add("go"); });
     });
-    later(780, function () { btn.classList.remove("pressed"); dot.classList.add("lift"); });
-    later(1180, function () { if (dot.parentNode) dot.parentNode.removeChild(dot); });
+    later(1300, function () { btn.classList.remove("pressed"); dot.classList.add("lift"); });
+    later(1850, function () { if (dot.parentNode) dot.parentNode.removeChild(dot); });
   }
 
   function renderStatic(thread) {

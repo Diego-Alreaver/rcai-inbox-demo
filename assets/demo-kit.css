@@ -105,7 +105,7 @@ html, body { margin: 0; height: 100%; background: #fff; }
 /* ============================================================================
  * HEADLINE — the only marketing copy. Lives on the stage, NEVER in the chat.
  * ========================================================================== */
-.headline { position: absolute; left: 560px; top: 200px; width: 720px; z-index: 6; }
+.headline { position: absolute; left: 560px; top: 132px; width: 720px; z-index: 6; }
 .lang-toggle { display: inline-flex; gap: 6px; margin: 0 0 18px; background: rgba(115,84,239,0.08); padding: 5px; border-radius: 9999px; }
 .lang-pill {
   border: 0; cursor: pointer; font-family: var(--font-urbanist);
@@ -308,31 +308,31 @@ html, body { margin: 0; height: 100%; background: #fff; }
   background: var(--accent); color: #fff;
   font-size: 19px; font-weight: 700; letter-spacing: -0.01em;
   box-shadow: 0 10px 22px -10px color-mix(in srgb, var(--accent) 70%, transparent);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition: transform 0.24s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.24s ease;
 }
 .cta-btn.tapped { transform: translateY(1px) scale(0.985); }
-.cta-btn.pressed { transform: translateY(1px) scale(0.955); box-shadow: 0 4px 12px -8px color-mix(in srgb, var(--accent) 70%, transparent); }
+.cta-btn.pressed { transform: translateY(2px) scale(0.93); box-shadow: 0 3px 9px -8px color-mix(in srgb, var(--accent) 70%, transparent); }
 .cta-btn .ic { color: #fff; flex: 0 0 auto; }
 .cta-wrap { position: relative; display: flex; flex-direction: column; max-width: 80%; }
 
 /* CTA tap simulation (DESIGN_DOC_V3 §3): a finger/tap indicator lands on the CTA
  * and a ripple flashes inside it, just before the booking calendar opens. */
 .tap-dot {
-  position: absolute; z-index: 6; width: 30px; height: 30px; margin: -15px 0 0 -15px;
-  border-radius: 50%; background: rgba(17,27,33,0.16); border: 2px solid rgba(17,27,33,0.3);
-  box-shadow: 0 6px 16px -6px rgba(0,0,0,0.45); pointer-events: none;
-  opacity: 0; transform: scale(1.7) translateY(9px);
-  transition: opacity 0.28s ease, transform 0.34s cubic-bezier(0.22,1,0.36,1);
+  position: absolute; z-index: 6; width: 44px; height: 44px; margin: -22px 0 0 -22px;
+  border-radius: 50%; background: rgba(17,27,33,0.22); border: 2.5px solid rgba(17,27,33,0.45);
+  box-shadow: 0 10px 24px -6px rgba(0,0,0,0.5); pointer-events: none;
+  opacity: 0; transform: scale(2) translateY(18px);
+  transition: opacity 0.45s ease, transform 0.6s cubic-bezier(0.22,1,0.36,1);
 }
 .tap-dot.shown { opacity: 1; transform: scale(1); }
-.tap-dot.press { transform: scale(0.72); background: rgba(17,27,33,0.26); }
-.tap-dot.lift { opacity: 0; transform: scale(1.35); }
+.tap-dot.press { transform: scale(0.56); background: rgba(17,27,33,0.4); transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), background 0.28s ease; }
+.tap-dot.lift { opacity: 0; transform: scale(1.55); transition: opacity 0.5s ease, transform 0.5s ease; }
 .tap-ripple {
-  position: absolute; z-index: 1; width: 26px; height: 26px; margin: -13px 0 0 -13px;
-  border-radius: 50%; background: rgba(255,255,255,0.5); pointer-events: none;
-  transform: scale(0); opacity: 0.85;
+  position: absolute; z-index: 1; width: 34px; height: 34px; margin: -17px 0 0 -17px;
+  border-radius: 50%; background: rgba(255,255,255,0.6); pointer-events: none;
+  transform: scale(0); opacity: 0.95;
 }
-.tap-ripple.go { transform: scale(9); opacity: 0; transition: transform 0.6s ease-out, opacity 0.6s ease-out; }
+.tap-ripple.go { transform: scale(12); opacity: 0; transition: transform 0.82s ease-out, opacity 0.82s ease-out; }
 
 /* publicReply — comment channels: the bot's public reply inside the post UI. */
 .public-reply { display: flex; gap: 10px; align-items: flex-start; }
